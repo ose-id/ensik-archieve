@@ -10,18 +10,6 @@ What is the Ensik Archive? To save some ensikolopedia member photos
 
 ✔️ &nbsp;**Fast:** Compressed photo & lazy load
 
-## Setup
+## Contribution
 
-Make sure to install the dependencies:
-
-```bash
-yarn install
-```
-
-## Development Server
-
-Start the development server on `http://localhost:3000`:
-
-```bash
-yarn dev
-```
+[If you want to contribute](CONTRIBUTION.md)
