@@ -11,3 +11,10 @@
         </div>
     </div>
 </template>
+
+<script lang="ts" setup>
+useSeoMeta({
+  title: "Login - Ensik Archieve",
+  description: "What is the Ensik Archive? To save some ensikolopedia member photos",
+});
+</script>
