@@ -10,6 +10,18 @@ What is the Ensik Archive? To save some ensikolopedia member photos
 
 ✔️ &nbsp;**Fast:** Compressed photo & lazy load
 
-## Contribution
+## Built with
 
-[If you want to contribute](CONTRIBUTION.md)
+- [Nuxt](https://nuxt.com/)
+- [Tailwind CSS](https://tailwindcss.com/)
+
+## Contributing
+
+If you want to help us building, you can check our
+[contributing guidelines](CONTRIBUTION.md)
+
+### Top Contributors
+
+<a href="https://github.com/ose-id/ensik-archieve/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=ose-id/ensik-archieve" />
+</a>
