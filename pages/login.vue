@@ -1,32 +1,36 @@
 <template>
-    <div class="container mx-auto">
-        <div class="grid grid-cols-2 ">
-            <div class="bg-[#146C94] w-full">
-
+  <div class="h-screen">
+    <div class="grid lg:grid-cols-2">
+      <div class="bg-[#146C94] w-full h-screen hidden lg:block"></div>
+      <div class="bg-[#146C94]">
+        <div class="w-full h-screen flex flex-col justify-center items-center space-y-12 bg-white lg:rounded-l-3xl shadow-[0_0_300px_0_rgba(0,0,0,0.3)]">
+          <h1 class="font-bold uppercase text-5xl tracking-wider text-center">Login</h1>
+          <form class="flex flex-col min-w-[60%]">
+            <label for="name">Username</label>
+            <input id="name" type="text" :class="inputStyle" />
+            <label for="password" class="mt-7">Password</label>
+            <input id="password" type="password" :class="inputStyle" />
+            <div class="flex justify-between py-4">
+              <NuxtLink v-for="item in navigation" :key="item.title" :to="item.to" :class="linkStyle">{{ item.title }}</NuxtLink>
             </div>
-            <div class="w-full">
-                <section class="bg-white pt-7">
-                    <h1 class="font-bold uppercase text-5xl tracking-[20px] text-b text-center">Login</h1>
-                    <form>
-                        <label class="block">
-                            <span class="block text-sm">Username</span>
-                            <input type="text" value="" class="mt-1 w-auto px-3 py-0.5 bg-white border border-slate-900 rounded-sm" />
-                        </label>
-                        <label class="block mt-6">
-                            <span class="block text-sm">Password</span>
-                            <input type="password" value="" class="mt-1 w-auto px-3 py-0.5 bg-white border border-slate-900 rounded-sm" />
-                        </label>
-                    </form>
-                    <NuxtLink to="/register" class="hover:text-[#146C94] text-[#19A7CE]">Register</NuxtLink>
-                </section>
-            </div>
+            <button class="mx-auto text-[#146C94] border-2 border-[#146C94] py-2 px-12 rounded-lg mt-12">Login</button>
+          </form>
         </div>
+      </div>
     </div>
+  </div>
 </template>
 
 <script lang="ts" setup>
 useSeoMeta({
   title: "Login - Ensik Archieve",
-  description: "What is the Ensik Archive? To save some ensikolopedia member photos",
+  description: "What is the Ensik Archive? To ave some ensikolopedia member photos",
 });
+
+const inputStyle = "mt-1 px-3 py-1.5 bg-white border border-slate-900 rounded-md";
+const linkStyle = "hover:text-[#146C94] text-[#19A7CE]";
+const navigation = [
+  { title: "Forgot Password?", to: "/" },
+  { title: "Register", to: "/uses" },
+];
 </script>
