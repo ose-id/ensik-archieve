@@ -6,14 +6,14 @@
         <div class="w-full h-screen flex flex-col justify-center items-center space-y-12 bg-white lg:rounded-l-3xl shadow-[0_0_300px_0_rgba(0,0,0,0.3)]">
           <h1 class="font-bold uppercase text-5xl tracking-wider text-center">Login</h1>
           <form class="flex flex-col min-w-[60%]">
-            <label for="name">Username</label>
-            <input id="name" type="text" :class="inputStyle" />
+            <label for="email">Email</label>
+            <input id="email" type="text" :class="inputStyle" />
             <label for="password" class="mt-7">Password</label>
             <input id="password" type="password" :class="inputStyle" />
             <div class="flex justify-between py-4">
               <NuxtLink v-for="item in navigation" :key="item.title" :to="item.to" :class="linkStyle">{{ item.title }}</NuxtLink>
             </div>
-            <button class="mx-auto text-[#146C94] border-2 border-[#146C94] py-2 px-12 rounded-lg mt-12">Login</button>
+            <button class="mx-auto text-[#146C94] border-2 border-[#146C94] rounded-lg py-2 px-12 mt-12">Login</button>
           </form>
         </div>
       </div>
@@ -31,6 +31,6 @@ const inputStyle = "mt-1 px-3 py-1.5 bg-white border border-slate-900 rounded-md
 const linkStyle = "hover:text-[#146C94] text-[#19A7CE]";
 const navigation = [
   { title: "Forgot Password?", to: "/" },
-  { title: "Register", to: "/uses" },
+  { title: "Register", to: "/register" },
 ];
 </script>
