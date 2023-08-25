@@ -3,6 +3,7 @@ export default defineNuxtConfig({
   modules: [
     // "@nuxtjs/supabase",
     "@nuxtjs/google-fonts",
+    "@nuxt/image",
   ],
 
   devtools: { enabled: true },
@@ -13,6 +14,11 @@ export default defineNuxtConfig({
       tailwindcss: {},
       autoprefixer: {},
     },
+  },
+
+  image: {
+    quality: 1,
+    format: ['webp']
   },
 
   googleFonts: {
