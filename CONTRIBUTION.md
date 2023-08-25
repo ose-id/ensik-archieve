@@ -11,26 +11,20 @@
 - test: Used when adding or modifying tests for the codebase, including unit tests, integration tests, and other forms of testing.
 
 ## Get Started
-Clone or Fork this repository
+Clone or Fork this repository. If you clone this repo, do this:
 
-if you clone this repo, do this:
-
-### HTTPS
+#### HTTPS
 
 ```bash
 git clone https://github.com/ose-id/ensik-archieve.git
 ```
 
-### SSH
+or
+
+#### SSH
 
 ```bash
 git clone git@github.com:ose-id/ensik-archieve.git
-```
-
-### Github CLI
-
-```bash
-git clone gh repo clone ose-id/ensik-archieve
 ```
 
 ## Setup
