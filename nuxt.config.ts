@@ -1,4 +1,3 @@
-// https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   app: {
     head: {
@@ -16,7 +15,7 @@ export default defineNuxtConfig({
     "@nuxt/image",
   ],
 
-  devtools: { enabled: true },
+  devtools: { enabled: false },
 
   css: ["~/assets/css/main.css"],
   postcss: {
