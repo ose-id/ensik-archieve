@@ -13,7 +13,7 @@
             <div class="flex justify-between py-4">
               <NuxtLink v-for="item in navigation" :key="item.title" :to="item.to" :class="linkStyle">{{ item.title }}</NuxtLink>
             </div>
-            <button class="mx-auto text-[#146C94] border-2 border-[#146C94] rounded-lg py-2 px-12 mt-12">Login</button>
+            <ButtonLogSub/>
           </form>
         </div>
       </div>
