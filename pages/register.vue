@@ -4,7 +4,7 @@
     <section
       class="h-full bg-white rounded-t-[40px] lg:rounded-t-[50px] p-8 lg:pb-0 lg:pt-28 lg:px-36 2xl:py-32 2xl:px-40 shadow-[0_0_300px_0_rgba(0,0,0,0.3)] row-span-6 lg:row-span-4"
     >
-      <form class="flex flex-col space-y-8 lg:space-y-12">
+      <FormRegister>
         <div :class="secDiv">
           <label for="name" :class="label">Name</label>
           <input id="name" type="text" :class="input" maxlength="30" />
@@ -21,8 +21,8 @@
           <label for="password" :class="label">Password</label>
           <input id="password" type="password" :class="input" />
         </div>
-        <ButtonRegSub/>
-      </form>
+        <ButtonRegSub />
+      </FormRegister>
     </section>
   </main>
 </template>

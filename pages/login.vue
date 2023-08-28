@@ -5,7 +5,7 @@
       <div class="bg-[#146C94]">
         <div class="w-full h-screen flex flex-col justify-center items-center space-y-12 bg-white lg:rounded-l-3xl shadow-[0_0_300px_0_rgba(0,0,0,0.3)]">
           <h1 class="font-bold uppercase text-5xl tracking-wider text-center">Login</h1>
-          <form class="flex flex-col min-w-[60%]">
+          <FormLogin>
             <label for="email">Email</label>
             <input id="email" type="text" :class="inputStyle" />
             <label for="password" class="mt-7">Password</label>
@@ -14,7 +14,7 @@
               <NuxtLink v-for="item in navigation" :key="item.title" :to="item.to" :class="linkStyle">{{ item.title }}</NuxtLink>
             </div>
             <ButtonLogSub/>
-          </form>
+          </FormLogin>
         </div>
       </div>
     </div>
