@@ -10,7 +10,7 @@ export default defineNuxtConfig({
   },
   
   modules: [
-    // "@nuxtjs/supabase",
+    "@nuxtjs/supabase",
     "@nuxtjs/google-fonts",
     "@nuxt/image",
   ],
@@ -23,6 +23,16 @@ export default defineNuxtConfig({
       tailwindcss: {},
       autoprefixer: {},
     },
+  },
+
+  supabase: {
+    url: process.env.SUPABASE_URL,
+    key: process.env.SUPABASE_KEY,
+    redirectOptions: {
+      login: '/login',
+      callback: '/confirm',
+      exclude: ['/', '/register'],
+    }
   },
 
   image: {
