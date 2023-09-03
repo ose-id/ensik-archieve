@@ -1,8 +1,8 @@
 <template>
   <main class="container mx-auto py-12">
-    <Nav/>
+    <Nav />
     <div class="grid grid-cols-2 md:grid-cols-3 gap-8 py-12">
-      <Card/>
+      <Card />
     </div>
   </main>
 </template>
