@@ -18,7 +18,7 @@ What is the Ensik Archive? To save some ensikolopedia member photos
 ## Contributing
 
 If you want to help us building, you can check our
-[contributing guidelines](CONTRIBUTION.md)
+[contributing guidelines](CONTRIBUTING.md)
 
 ### Top Contributors
 
