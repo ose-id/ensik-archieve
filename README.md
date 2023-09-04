@@ -22,4 +22,6 @@ If you want to help us building, you can check our [**contributing guidelines**]
 
 ### Top Contributors
 
-&lt;a href="https://github.com/ose-id/ensik-archieve/graphs/contributors"&gt; &lt;img src="https://contrib.rocks/image?repo=ose-id/ensik-archieve" /&gt; &lt;/a&gt;
+<a href="https://github.com/ose-id/ensik-archieve/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=ose-id/ensik-archieve" />
+</a>
