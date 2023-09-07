@@ -8,12 +8,8 @@ export default defineNuxtConfig({
       },
     },
   },
-  
-  modules: [
-    // "@nuxtjs/supabase",
-    "@nuxtjs/google-fonts",
-    "@nuxt/image",
-  ],
+
+  modules: ["@nuxtjs/supabase", "@nuxtjs/google-fonts", "@nuxt/image"],
 
   devtools: { enabled: false },
 
@@ -25,9 +21,19 @@ export default defineNuxtConfig({
     },
   },
 
+  supabase: {
+    url: process.env.SUPABASE_URL,
+    key: process.env.SUPABASE_KEY,
+    redirectOptions: {
+      login: "/login",
+      callback: "/confirm",
+      exclude: ["/", "/register"],
+    },
+  },
+
   image: {
     quality: 1,
-    format: ['webp']
+    format: ["webp"],
   },
 
   googleFonts: {

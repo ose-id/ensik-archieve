@@ -1,24 +1,24 @@
-# Ensik Archieve 📁
+# **Ensik Archieve** 📁
 
-What is the Ensik Archive? To save some ensikolopedia member photos
+Ensik Archive is a captivating online gallery platform dedicated to preserving and showcasing a rich collection of historical, and documents.
 
 ## Features
 
-✔️ &nbsp;**Minimalist:** Clean design layout
+✔️  **Minimalist:** Clean design layout
 
-✔️ &nbsp;**Filter:** Sort photo by publisher or date
+✔️  **Filter:** Sort photo by publisher or date
 
-✔️ &nbsp;**Fast:** Compressed photo & lazy load
+✔️  **Fast:** Compressed photo & lazy load
 
 ## Built with
 
 - [Nuxt](https://nuxt.com/)
 - [Tailwind CSS](https://tailwindcss.com/)
+- [Supabase](https://supabase.com/)
 
 ## Contributing
 
-If you want to help us building, you can check our
-[contributing guidelines](CONTRIBUTION.md)
+If you want to help us building, you can check our [**contributing guidelines**](CONTRIBUTING.md) [📖](https://emojipedia.org/open-book)
 
 ### Top Contributors
 
