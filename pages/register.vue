@@ -4,7 +4,7 @@
     <section
       class="h-full bg-white rounded-t-[40px] lg:rounded-t-[50px] p-8 lg:pb-0 lg:pt-28 lg:px-36 2xl:py-32 2xl:px-40 shadow-[0_0_300px_0_rgba(0,0,0,0.3)] row-span-6 lg:row-span-4"
     >
-      <FormRegister/>
+      <FormRegister />
     </section>
   </main>
 </template>
