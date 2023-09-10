@@ -9,7 +9,7 @@
     "postinstall": "nuxt prepare"
   },
   "devDependencies": {
-    "@nuxt/devtools": "0.8.2",
+    "@nuxt/devtools": "0.8.3",
     "@nuxt/image": "^1.0.0-rc.1",
     "@nuxtjs/google-fonts": "^3.0.2",
     "@nuxtjs/supabase": "^1.0.2",
