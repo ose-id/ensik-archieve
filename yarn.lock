@@ -842,7 +842,7 @@
   optionalDependencies:
     ipx "^1.2.0"
 
-"@nuxt/kit@3.7.0", "@nuxt/kit@^3.5.3", "@nuxt/kit@^3.6.5", "@nuxt/kit@^3.7.0":
+"@nuxt/kit@3.7.0":
   version "3.7.0"
   resolved "https://registry.yarnpkg.com/@nuxt/kit/-/kit-3.7.0.tgz#14046349a7b12412e84782525ef802b65624268f"
   integrity sha512-bsPRb2NTLHRacjyybhhA3pZFIqo2pxB6bcP4FQDuzlGzVTI5PtJzbfNpkmQC7q+LZt8K0pNlxKVGisDvZctk6w==
@@ -866,6 +866,30 @@
     unimport "^3.2.0"
     untyped "^1.4.0"
 
+"@nuxt/kit@^3.5.3", "@nuxt/kit@^3.6.5", "@nuxt/kit@^3.7.0", "@nuxt/kit@^3.7.1":
+  version "3.7.1"
+  resolved "https://registry.yarnpkg.com/@nuxt/kit/-/kit-3.7.1.tgz#d93ac970e5b4c4e11ea2a1bb42a415075ef78817"
+  integrity sha512-8k4q+92qLz5z7RdSOKrEJIjM63xXBg0z/WhTtZgXv1R5ULZ77usdTMjQYhQ+Kgd1NMkpIXeKaAO6903xrSt53Q==
+  dependencies:
+    "@nuxt/schema" "3.7.1"
+    c12 "^1.4.2"
+    consola "^3.2.3"
+    defu "^6.1.2"
+    globby "^13.2.2"
+    hash-sum "^2.0.0"
+    ignore "^5.2.4"
+    jiti "^1.19.3"
+    knitwork "^1.0.0"
+    mlly "^1.4.2"
+    pathe "^1.1.1"
+    pkg-types "^1.0.3"
+    scule "^1.0.0"
+    semver "^7.5.4"
+    ufo "^1.3.0"
+    unctx "^2.3.1"
+    unimport "^3.3.0"
+    untyped "^1.4.0"
+
 "@nuxt/schema@3.7.0", "@nuxt/schema@^3.7.0":
   version "3.7.0"
   resolved "https://registry.yarnpkg.com/@nuxt/schema/-/schema-3.7.0.tgz#60e78916acea20e8c643b8ddbd16fde1bc89742d"
@@ -880,6 +904,22 @@
     std-env "^3.4.3"
     ufo "^1.3.0"
     unimport "^3.2.0"
+    untyped "^1.4.0"
+
+"@nuxt/schema@3.7.1":
+  version "3.7.1"
+  resolved "https://registry.yarnpkg.com/@nuxt/schema/-/schema-3.7.1.tgz#48e3ed5629d6f320c11bae94b0266d79f0add888"
+  integrity sha512-+0W/oos7Ktm3eTwQ/78PrcAObR0+yQzHIUzbQ7HgUnEEntRGVxp4hnfng5dmhvVjJqQvpuGZHa3yIS/g41vE6A==
+  dependencies:
+    "@nuxt/ui-templates" "^1.3.1"
+    defu "^6.1.2"
+    hookable "^5.5.3"
+    pathe "^1.1.1"
+    pkg-types "^1.0.3"
+    postcss-import-resolver "^2.0.0"
+    std-env "^3.4.3"
+    ufo "^1.3.0"
+    unimport "^3.3.0"
     untyped "^1.4.0"
 
 "@nuxt/telemetry@^2.4.1":
@@ -963,13 +1003,13 @@
     google-fonts-helper "^3.3.1"
     pathe "^1.1.1"
 
-"@nuxtjs/supabase@^1.0.2":
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/@nuxtjs/supabase/-/supabase-1.0.2.tgz#339e2cb3ac6d85b94b04b120cd083416893ea9f4"
-  integrity sha512-stHwyZy6pMLBTJVuwdLh9LtaebtVpDIXSkQZ8rnY9lIik8S1+r3HkxUhnpL8VOwMUn4jpBBGqrZUAcRXM/csbQ==
+"@nuxtjs/supabase@^1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@nuxtjs/supabase/-/supabase-1.1.0.tgz#798b08586895ee8b6e855ce3011b1528ebc0c79d"
+  integrity sha512-LW+cSpvnVEzKbrBp3EXN9300LdbGclO9lo+IWTBdLVEhEnY1JIoGDAB4YTJY818jkZ7gFMkMshQE7irYdtcT8A==
   dependencies:
-    "@nuxt/kit" "^3.6.5"
-    "@supabase/supabase-js" "2.31.0"
+    "@nuxt/kit" "^3.7.1"
+    "@supabase/supabase-js" "2.33.1"
     defu "^6.1.2"
     pathe "^1.1.1"
 
@@ -1228,14 +1268,14 @@
   dependencies:
     whatwg-url "^5.0.0"
 
-"@supabase/postgrest-js@^1.7.0":
+"@supabase/postgrest-js@^1.8.0":
   version "1.8.4"
   resolved "https://registry.yarnpkg.com/@supabase/postgrest-js/-/postgrest-js-1.8.4.tgz#89e8355503979ad25e7340b910d17704507ab325"
   integrity sha512-ELjpvhb04wILUiJz9zIsTSwaz9LQNlX+Ig5/LgXQ7k68qQI6NqHVn+ISRNt53DngUIyOnLHjeqqIRHBZ7zpgGA==
   dependencies:
     "@supabase/node-fetch" "^2.6.14"
 
-"@supabase/realtime-js@^2.7.3":
+"@supabase/realtime-js@^2.7.4":
   version "2.7.4"
   resolved "https://registry.yarnpkg.com/@supabase/realtime-js/-/realtime-js-2.7.4.tgz#de41195bd3f2cdd6db82d9f93c4c5b8fae9f809b"
   integrity sha512-FzSzs1k9ruh/uds5AJ95Nc3beiMCCIhougExJ3O98CX1LMLAKUKFy5FivKLvcNhXnNfUEL0XUfGMb4UH2J7alg==
@@ -1251,15 +1291,15 @@
   dependencies:
     cross-fetch "^3.1.5"
 
-"@supabase/supabase-js@2.31.0":
-  version "2.31.0"
-  resolved "https://registry.yarnpkg.com/@supabase/supabase-js/-/supabase-js-2.31.0.tgz#49fe09652fa72b1173efe4ac086592e31c662cef"
-  integrity sha512-W9/4s+KnSUX67wJKBn/3yLq+ieycnMzVjK3nNTLX5Wko3ypNT/081l2iFYrf+nsLQ1CiT4mA92I3dxCy6CmxTg==
+"@supabase/supabase-js@2.33.1":
+  version "2.33.1"
+  resolved "https://registry.yarnpkg.com/@supabase/supabase-js/-/supabase-js-2.33.1.tgz#2407861afe63c2817d030514c87a745f78dfe68a"
+  integrity sha512-jA00rquPTppPOHpBB6KABW98lfg0gYXcuGqP3TB1iiduznRVsi3GGk2qBKXPDLMYSe0kRlQp5xCwWWthaJr8eA==
   dependencies:
     "@supabase/functions-js" "^2.1.0"
     "@supabase/gotrue-js" "^2.46.1"
-    "@supabase/postgrest-js" "^1.7.0"
-    "@supabase/realtime-js" "^2.7.3"
+    "@supabase/postgrest-js" "^1.8.0"
+    "@supabase/realtime-js" "^2.7.4"
     "@supabase/storage-js" "^2.5.1"
     cross-fetch "^3.1.5"
 
@@ -4344,6 +4384,16 @@ mlly@^1.2.0, mlly@^1.3.0, mlly@^1.4.0, mlly@^1.4.1:
     pkg-types "^1.0.3"
     ufo "^1.3.0"
 
+mlly@^1.4.2:
+  version "1.4.2"
+  resolved "https://registry.yarnpkg.com/mlly/-/mlly-1.4.2.tgz#7cf406aa319ff6563d25da6b36610a93f2a8007e"
+  integrity sha512-i/Ykufi2t1EZ6NaPLdfnZk2AX8cs0d+mTzVKuPfqPKPatxLApaBoxJQ9x1/uckXtrS/U5oisPMDkNs0yQTaBRg==
+  dependencies:
+    acorn "^8.10.0"
+    pathe "^1.1.1"
+    pkg-types "^1.0.3"
+    ufo "^1.3.0"
+
 mri@^1.2.0:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/mri/-/mri-1.2.0.tgz#6721480fec2a11a4889861115a48b6cbe7cc8f0b"
@@ -6319,6 +6369,23 @@ unimport@^3.2.0:
     local-pkg "^0.4.3"
     magic-string "^0.30.3"
     mlly "^1.4.0"
+    pathe "^1.1.1"
+    pkg-types "^1.0.3"
+    scule "^1.0.0"
+    strip-literal "^1.3.0"
+    unplugin "^1.4.0"
+
+unimport@^3.3.0:
+  version "3.3.0"
+  resolved "https://registry.yarnpkg.com/unimport/-/unimport-3.3.0.tgz#46b0eb5f83fe5b3cd7e3004b0fae5cb589a6794a"
+  integrity sha512-3jhq3ZG5hFZzrWGDCpx83kjPzefP/EeuKkIO1T0MA4Zwj+dO/Og1mFvZ4aZ5WSDm0FVbbdVIRH1zKBG7c4wOpg==
+  dependencies:
+    "@rollup/pluginutils" "^5.0.4"
+    escape-string-regexp "^5.0.0"
+    fast-glob "^3.3.1"
+    local-pkg "^0.4.3"
+    magic-string "^0.30.3"
+    mlly "^1.4.1"
     pathe "^1.1.1"
     pkg-types "^1.0.3"
     scule "^1.0.0"
