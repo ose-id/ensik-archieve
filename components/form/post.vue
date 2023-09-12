@@ -60,7 +60,7 @@ function handleFileUpload(event: Event) {
 
 async function uploadSelectedImage() {
   if (!selectedImage) {
-    alert("Pilih gambar terlebih dahulu.");
+    alert("Select an image!");
     return;
   }
 
