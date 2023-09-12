@@ -1,16 +1,15 @@
 <template>
-  <nav class="flex justify-center">
-    <ul class="flex space-x-6" v-if="user">
+  <nav class="flex justify-between items-center tracking-widest px-12 pt-12">
+    <NuxtLink to="/"><h1 class="text-xl lg:text-2xl font-extralight uppercase">Ensik Archieve</h1></NuxtLink>
+    <ul class="flex space-x-12">
       <li>
         <NuxtLink to="/profile" class="hover:text-blue-500">Profile</NuxtLink>
       </li>
       <li>
         <NuxtLink to="/post" class="hover:text-blue-500">Post</NuxtLink>
       </li>
-      <li>
-        <button @click="userLogout" class="text-red-400">Logout</button>
-      </li>
     </ul>
+    <button @click="userLogout" class="text-red-400 tracking-widest" v-if="user">Logout</button>
     <ul class="flex space-x-6" v-else>
       <li>
         <NuxtLink to="/register" class="hover:text-blue-500">REGISTER</NuxtLink>

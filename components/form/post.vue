@@ -1,5 +1,5 @@
 <template>
-  <section class="flex items-center justify-center mx-auto container bg-blue-100/50 min-h-screen">
+  <section class="flex items-center justify-center mx-auto container min-h-screen">
     <div class="space-y-4 flex flex-col">
     <input
       type="file"

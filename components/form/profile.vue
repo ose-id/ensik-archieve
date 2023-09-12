@@ -1,6 +1,6 @@
 <template>
-  <section class="flex items-center justify-center mx-auto container bg-blue-100/50 min-h-screen">
-    <form @submit.prevent="updateProfile" class="space-y-4 flex flex-col" v-if="userProfile">
+  <section class="flex items-center justify-center mx-auto container min-h-screen px-4">
+    <form @submit.prevent="updateProfile" class="space-y-4 flex flex-col w-full lg:w-[30%]" v-if="userProfile">
       <p>Name: {{ userProfile.name }}</p>
       <input id="name" type="text" v-model="name" />
       <input id="email" type="text" :value="user.email" disabled />

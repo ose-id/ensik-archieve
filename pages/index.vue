@@ -1,8 +1,7 @@
 <template>
-  <main class="container mx-auto py-12">
-    <Nav />
+  <section class="container mx-auto py-12">
     <Card />
-  </main>
+  </section>
 </template>
 
 <script lang="ts" setup>
