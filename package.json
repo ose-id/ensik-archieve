@@ -10,7 +10,7 @@
   },
   "devDependencies": {
     "@nuxt/devtools": "0.8.2",
-    "@nuxt/image": "^1.0.0-rc.1",
+    "@nuxt/image": "^1.0.0-rc.2",
     "@nuxtjs/google-fonts": "^3.0.2",
     "@nuxtjs/supabase": "^1.0.2",
     "@types/node": "^20.6.0",
