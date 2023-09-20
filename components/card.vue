@@ -1,7 +1,7 @@
 <template>
-  <section class="columns-1 sm:columns-2 md:columns-3 lg:columns-4 gap-8 py-12 space-y-4">
-    <nuxt-img v-for="item in img" :key="item.i" :src="item.i" :class="imgStyle" loading="lazy" alt="" placeholder />
-  </section>
+  <div class="columns-1 sm:columns-2 md:columns-3 lg:columns-4 gap-8 py-12 space-y-4">
+    <NuxtImg v-for="item in img" :key="item.i" :src="item.i" :class="imgStyle" loading="lazy" alt="" placeholder />
+  </div>
 </template>
 
 <script setup>
@@ -31,7 +31,6 @@ async function getPhotoUrls(fileNames) {
     const signedUrls = await Promise.all(
       fileNames.map(async (fileName) => {
         const { data, error } = await supabase.storage.from("post").createSignedUrl(fileName, 60);
-
         if (error) {
           console.error(error);
           return null;

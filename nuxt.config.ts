@@ -38,7 +38,7 @@ export default defineNuxtConfig({
 
   googleFonts: {
     families: {
-      Poppins: [100, 200, 300, 400, 500, 600, 700],
+      Kalam: [300, 400, 700],
     },
     display: "swap",
     prefetch: true,
