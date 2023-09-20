@@ -14,7 +14,7 @@
     "@nuxtjs/google-fonts": "^3.0.2",
     "@nuxtjs/supabase": "^1.0.2",
     "@types/node": "^20.5.8",
-    "nuxt": "^3.7.0"
+    "nuxt": "^3.7.3"
   },
   "dependencies": {
     "autoprefixer": "^10.4.14",

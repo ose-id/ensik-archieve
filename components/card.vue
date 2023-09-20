@@ -31,7 +31,6 @@ async function getPhotoUrls(fileNames) {
     const signedUrls = await Promise.all(
       fileNames.map(async (fileName) => {
         const { data, error } = await supabase.storage.from("post").createSignedUrl(fileName, 60);
-
         if (error) {
           console.error(error);
           return null;
