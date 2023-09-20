@@ -1,6 +1,6 @@
 <template>
-  <div class="columns-1 sm:columns-2 md:columns-3 lg:columns-4 gap-8 py-12 space-y-4">
-    <NuxtImg v-for="item in img" :key="item.i" :src="item.i" :class="imgStyle" loading="lazy" alt="" placeholder />
+  <div class="columns-1 sm:columns-2 md:columns-3 lg:columns-4 gap-8 py-12 space-y-8">
+    <NuxtImg v-for="item in img" :key="item.i" :src="item.i" :class="imgStyle" loading="lazy" alt="" placeholder="loader.svg" />
   </div>
 </template>
 
