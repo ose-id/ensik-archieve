@@ -1,7 +1,9 @@
 <template>
-  <section class="container mx-auto py-12">
-    <Card />
-  </section>
+  <NuxtLayout>
+    <section class="container mx-auto py-12">
+      <Card />
+    </section>
+  </NuxtLayout>
 </template>
 
 <script lang="ts" setup>

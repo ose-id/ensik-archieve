@@ -1,3 +1,5 @@
 <template>
-  <FormProfile />
+  <NuxtLayout>
+    <FormProfile />
+  </NuxtLayout>
 </template>

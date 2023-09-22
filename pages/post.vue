@@ -1,3 +1,5 @@
 <template>
-  <FormPost/>
+  <NuxtLayout>
+    <FormPost />
+  </NuxtLayout>
 </template>
