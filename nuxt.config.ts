@@ -9,17 +9,9 @@ export default defineNuxtConfig({
     },
   },
 
-  modules: ["@nuxtjs/supabase", "@nuxtjs/google-fonts", "@nuxt/image"],
+  modules: ["@nuxtjs/supabase", "@nuxtjs/tailwindcss", "@nuxtjs/google-fonts", "@nuxt/image"],
 
   devtools: { enabled: false },
-
-  css: ["~/assets/css/main.css"],
-  postcss: {
-    plugins: {
-      tailwindcss: {},
-      autoprefixer: {},
-    },
-  },
 
   supabase: {
     url: process.env.SUPABASE_URL,
