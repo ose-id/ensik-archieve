@@ -7,7 +7,7 @@ Fork this repository, and clone.
 Make sure to install the dependencies:
 
 ```bash
-yarn install
+pnpm install
 ```
 
 ## Development Server
@@ -15,7 +15,7 @@ yarn install
 Start the development server
 
 ```bash
-yarn dev
+pnpm dev
 ```
 
 ## Commit Rules
@@ -27,5 +27,7 @@ yarn dev
 ✨ feat: new feature (a non-breaking change that adds functionality)
 
 📖 docs: updates to the documentation, readme or JSdoc annotations
+
+🔨 refactor: refactor existing code in the product, but does not change the behavior of the product
 
 🐞 fix: bug fix (a non-breaking change that fixes an issue)
