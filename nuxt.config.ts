@@ -30,7 +30,7 @@ export default defineNuxtConfig({
 
   googleFonts: {
     families: {
-      Kalam: [300, 400, 700],
+      Quicksand: [300, 400, 700],
     },
     display: "swap",
     prefetch: true,
