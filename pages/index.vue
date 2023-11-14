@@ -1,3 +1,9 @@
+<script setup>
+useSeoMeta({
+  title: "Ensik Archieve",
+});
+</script>
+
 <template>
   <NuxtLayout>
     <section class="container mx-auto py-12">
@@ -5,10 +11,3 @@
     </section>
   </NuxtLayout>
 </template>
-
-<script lang="ts" setup>
-useSeoMeta({
-  title: "Ensik Archieve",
-  description: "What is the Ensik Archive? To save some ensikolopedia member photos",
-});
-</script>
