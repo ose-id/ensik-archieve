@@ -1,3 +1,9 @@
+<script lang="ts" setup>
+useSeoMeta({
+  title: "Register - Ensik Archieve",
+});
+</script>
+
 <template>
   <main class="bg-[#146C94] min-h-screen grid grid-rows-7 lg:grid-rows-5">
     <h1 class="font-bold uppercase text-2xl lg:text-5xl tracking-[5px] lg:tracking-[20px] text-white text-center my-12 lg:mt-12 2xl:mt-16 row-span-1">Register</h1>
@@ -8,10 +14,3 @@
     </section>
   </main>
 </template>
-
-<script lang="ts" setup>
-useSeoMeta({
-  title: "Register - Ensik Archieve",
-  description: "What is the Ensik Archive? To save some ensikolopedia member photos",
-});
-</script>

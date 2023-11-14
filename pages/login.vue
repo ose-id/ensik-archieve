@@ -1,3 +1,9 @@
+<script lang="ts" setup>
+useSeoMeta({
+  title: "Login - Ensik Archieve",
+});
+</script>
+
 <template>
   <div class="h-screen">
     <div class="grid lg:grid-cols-2">
@@ -11,10 +17,3 @@
     </div>
   </div>
 </template>
-
-<script lang="ts" setup>
-useSeoMeta({
-  title: "Login - Ensik Archieve",
-  description: "What is the Ensik Archive? To ave some ensikolopedia member photos",
-});
-</script>
