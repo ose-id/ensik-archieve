@@ -1,15 +1,20 @@
 export default defineNuxtConfig({
   app: {
     head: {
-      charset: "utf-8",
-      viewport: "width=device-width, initial-scale=1",
+      charset: 'utf-8',
+      viewport: 'width=device-width, initial-scale=1',
       htmlAttrs: {
-        lang: "en",
+        lang: 'en',
       },
     },
   },
 
-  modules: ["@nuxtjs/supabase", "@nuxtjs/tailwindcss", "@nuxtjs/google-fonts", "@nuxt/image"],
+  modules: [
+    '@nuxtjs/supabase',
+    '@nuxtjs/tailwindcss',
+    '@nuxtjs/google-fonts',
+    '@nuxt/image',
+  ],
 
   devtools: { enabled: false },
 
@@ -17,22 +22,26 @@ export default defineNuxtConfig({
     url: process.env.SUPABASE_URL,
     key: process.env.SUPABASE_KEY,
     redirectOptions: {
-      login: "/login",
-      callback: "/confirm",
-      exclude: ["/", "/register"],
+      login: '/login',
+      callback: '/confirm',
+      exclude: ['/', '/register'],
     },
   },
 
   image: {
-    quality: 1,
-    format: ["webp"],
+    quality: 30,
+    format: ['webp'],
+  },
+
+  tailwindcss: {
+    viewer: false,
   },
 
   googleFonts: {
     families: {
       Quicksand: [300, 400, 700],
     },
-    display: "swap",
+    display: 'swap',
     prefetch: true,
     preconnect: true,
   },

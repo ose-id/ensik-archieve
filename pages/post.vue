@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 useSeoMeta({
-  title: "Post - Ensik Archieve",
+  title: 'Post - Ensik Archieve',
 });
 </script>
 
