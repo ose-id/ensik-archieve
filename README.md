@@ -4,11 +4,11 @@ Ensik Archive is a captivating online gallery platform dedicated to preserving a
 
 ## Features
 
-✔️  **Minimalist:** Clean design layout
+✔️ **Minimalist:** Clean design layout
 
-✔️  **Filter:** Sort photo by publisher or date
+✔️ **Filter:** Sort photo by publisher or date
 
-✔️  **Fast:** Compressed photo & lazy load
+✔️ **Fast:** Compressed photo & lazy load
 
 ## Built with
 
