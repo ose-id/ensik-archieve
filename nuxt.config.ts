@@ -12,6 +12,7 @@ export default defineNuxtConfig({
   modules: [
     '@nuxt/eslint',
     '@nuxt/image',
+    '@nuxthub/core',
     '@nuxtjs/supabase',
     '@nuxtjs/tailwindcss',
     '@nuxtjs/google-fonts',
