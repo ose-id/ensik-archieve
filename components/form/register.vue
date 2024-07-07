@@ -45,18 +45,48 @@ watchEffect(() => {
 </script>
 
 <template>
-  <form class="flex flex-col space-y-8 lg:space-y-12" @submit.prevent="userRegister">
+  <form
+    class="flex flex-col space-y-8 lg:space-y-12"
+    @submit.prevent="userRegister"
+  >
     <div :class="secDiv">
-      <label for="email" :class="label">Email</label>
-      <input id="email" v-model="email" type="text" name="email" :class="input">
+      <label
+        for="email"
+        :class="label"
+      >Email</label>
+      <input
+        id="email"
+        v-model="email"
+        type="text"
+        name="email"
+        :class="input"
+      >
     </div>
     <div :class="secDiv">
-      <label for="password" :class="label">Password</label>
-      <input id="password" v-model="password" type="password" name="password" :class="input">
+      <label
+        for="password"
+        :class="label"
+      >Password</label>
+      <input
+        id="password"
+        v-model="password"
+        type="password"
+        name="password"
+        :class="input"
+      >
     </div>
     <div :class="secDiv">
-      <label for="password" :class="label">Confirm Password</label>
-      <input id="password" v-model="confirmPassword" type="password" name="confirmPassword" :class="input">
+      <label
+        for="password"
+        :class="label"
+      >Confirm Password</label>
+      <input
+        id="password"
+        v-model="confirmPassword"
+        type="password"
+        name="confirmPassword"
+        :class="input"
+      >
     </div>
     <ButtonRegSub />
     {{ errorMsg }}

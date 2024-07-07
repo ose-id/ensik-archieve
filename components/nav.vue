@@ -50,19 +50,41 @@ onMounted(() => {
         Ensik Archieve
       </h1>
     </NuxtLink>
-    <ul v-if="user" class="flex space-x-12">
-      <li v-for="(link, index) in links" :key="index">
-        <NuxtLink :to="`/${link.to}`" class="hover:text-blue-500">
+    <ul
+      v-if="user"
+      class="flex space-x-12"
+    >
+      <li
+        v-for="(link, index) in links"
+        :key="index"
+      >
+        <NuxtLink
+          :to="`/${link.to}`"
+          class="hover:text-blue-500"
+        >
           {{ link.title }}
         </NuxtLink>
       </li>
     </ul>
-    <button v-if="user" class="text-red-400 tracking-widest" @click="userLogout">
+    <button
+      v-if="user"
+      class="text-red-400 tracking-widest"
+      @click="userLogout"
+    >
       Logout
     </button>
-    <ul v-else class="flex space-x-6">
-      <li v-for="(auth, index) in auths" :key="index">
-        <NuxtLink :to="`/${auth.to}`" class="hover:text-blue-500">
+    <ul
+      v-else
+      class="flex space-x-6"
+    >
+      <li
+        v-for="(auth, index) in auths"
+        :key="index"
+      >
+        <NuxtLink
+          :to="`/${auth.to}`"
+          class="hover:text-blue-500"
+        >
           {{ auth.title }}
         </NuxtLink>
       </li>

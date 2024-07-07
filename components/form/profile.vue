@@ -43,11 +43,27 @@ async function updateProfile() {
 
 <template>
   <section class="flex items-center justify-center mx-auto container min-h-screen px-4">
-    <form v-if="userProfile" class="space-y-4 flex flex-col w-full lg:w-[30%]" @submit.prevent="updateProfile">
+    <form
+      v-if="userProfile"
+      class="space-y-4 flex flex-col w-full lg:w-[30%]"
+      @submit.prevent="updateProfile"
+    >
       <p>Name: {{ userProfile.name }}</p>
-      <input id="name" v-model="name" type="text">
-      <input id="email" type="text" :value="user.email" disabled>
-      <button type="submit" class="bg-black text-white p-2">
+      <input
+        id="name"
+        v-model="name"
+        type="text"
+      >
+      <input
+        id="email"
+        type="text"
+        :value="user.email"
+        disabled
+      >
+      <button
+        type="submit"
+        class="bg-black text-white p-2"
+      >
         Update Profile
       </button>
     </form>

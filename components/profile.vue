@@ -21,10 +21,16 @@ onMounted(() => {
 
 <template>
   <section class="flex items-center justify-center mx-auto container min-h-screen">
-    <div v-if="userProfile" class="space-y-4 flex flex-col">
+    <div
+      v-if="userProfile"
+      class="space-y-4 flex flex-col"
+    >
       <h1>Name: {{ userProfile.name }}</h1>
       <p>Email: {{ user.email }}</p>
-      <NuxtLink to="/profile/update" class="py-2 px-3 bg-blue-300 rounded-md my-2 text-center">
+      <NuxtLink
+        to="/profile/update"
+        class="py-2 px-3 bg-blue-300 rounded-md my-2 text-center"
+      >
         Update
       </NuxtLink>
     </div>

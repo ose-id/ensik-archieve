@@ -36,13 +36,36 @@ watchEffect(() => {
 </script>
 
 <template>
-  <form class="flex flex-col min-w-[60%]" @submit.prevent="userLogin">
+  <form
+    class="flex flex-col min-w-[60%]"
+    @submit.prevent="userLogin"
+  >
     <label for="email">Email</label>
-    <input id="email" v-model="email" type="email" name="email" :class="inputStyle">
-    <label for="password" class="mt-7">Password</label>
-    <input id="password" v-model="password" type="password" name="password" :class="inputStyle">
+    <input
+      id="email"
+      v-model="email"
+      type="email"
+      name="email"
+      :class="inputStyle"
+    >
+    <label
+      for="password"
+      class="mt-7"
+    >Password</label>
+    <input
+      id="password"
+      v-model="password"
+      type="password"
+      name="password"
+      :class="inputStyle"
+    >
     <div class="flex justify-between py-4">
-      <NuxtLink v-for="item in navigation" :key="item.title" :to="item.to" :class="linkStyle">
+      <NuxtLink
+        v-for="item in navigation"
+        :key="item.title"
+        :to="item.to"
+        :class="linkStyle"
+      >
         {{ item.title }}
       </NuxtLink>
     </div>

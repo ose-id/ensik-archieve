@@ -64,7 +64,10 @@ async function uploadSelectedImage() {
         class="block w-full text-sm text-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
         @change="handleFileUpload"
       >
-      <button class="py-2 px-3 bg-blue-300 rounded-md my-2 text-center" @click="uploadSelectedImage">
+      <button
+        class="py-2 px-3 bg-blue-300 rounded-md my-2 text-center"
+        @click="uploadSelectedImage"
+      >
         Post
       </button>
     </div>
