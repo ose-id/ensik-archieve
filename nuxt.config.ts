@@ -10,10 +10,11 @@ export default defineNuxtConfig({
   },
 
   modules: [
+    '@nuxt/eslint',
+    '@nuxt/image',
     '@nuxtjs/supabase',
     '@nuxtjs/tailwindcss',
     '@nuxtjs/google-fonts',
-    '@nuxt/image',
   ],
 
   devtools: { enabled: false },
@@ -25,6 +26,14 @@ export default defineNuxtConfig({
       login: '/login',
       callback: '/confirm',
       exclude: ['/', '/register'],
+    },
+  },
+
+  eslint: {
+    config: {
+      stylistic: {
+        semi: true,
+      },
     },
   },
 
@@ -45,4 +54,6 @@ export default defineNuxtConfig({
     prefetch: true,
     preconnect: true,
   },
+
+  compatibilityDate: '2024-07-08',
 });
