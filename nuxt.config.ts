@@ -13,21 +13,30 @@ export default defineNuxtConfig({
     '@nuxt/eslint',
     '@nuxt/image',
     '@nuxthub/core',
-    '@nuxtjs/supabase',
-    '@nuxtjs/tailwindcss',
-    '@nuxtjs/google-fonts',
+    '@unocss/nuxt',
+    '@vueuse/nuxt',
+    'nuxt-auth-utils',
   ],
 
-  devtools: { enabled: false },
-
-  supabase: {
-    url: process.env.SUPABASE_URL,
-    key: process.env.SUPABASE_KEY,
-    redirectOptions: {
-      login: '/login',
-      callback: '/confirm',
-      exclude: ['/', '/register'],
+  runtimeConfig: {
+    oauth: {
+      discord: {
+        clientId: process.env.NUXT_OAUTH_DISCORD_CLIENT_ID,
+        clientSecret: process.env.NUXT_OAUTH_DISCORD_CLIENT_SECRET,
+        scope: ['identify', 'guilds.members.read'],
+      },
     },
+    session: {
+      maxAge: 60 * 60 * 24 * 7,
+    },
+  },
+
+  routeRules: {
+    '/': { appMiddleware: 'auth' },
+  },
+
+  hub: {
+    blob: true,
   },
 
   eslint: {
@@ -38,22 +47,8 @@ export default defineNuxtConfig({
     },
   },
 
-  image: {
-    quality: 30,
-    format: ['webp'],
-  },
-
-  tailwindcss: {
-    viewer: false,
-  },
-
-  googleFonts: {
-    families: {
-      Quicksand: [300, 400, 700],
-    },
-    display: 'swap',
-    prefetch: true,
-    preconnect: true,
+  devtools: {
+    enabled: false,
   },
 
   compatibilityDate: '2024-07-08',
