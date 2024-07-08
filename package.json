@@ -24,6 +24,7 @@
     "nuxt": "^3.12.3",
     "nuxt-auth-utils": "^0.1.0",
     "vue": "^3.4.31",
-    "vue-router": "^4.4.0"
+    "vue-router": "^4.4.0",
+    "wrangler": "^3.63.1"
   }
 }
