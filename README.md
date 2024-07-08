@@ -12,9 +12,9 @@ Ensik Archive is a captivating online gallery platform dedicated to preserving a
 
 ## Built with
 
-- [Nuxt](https://nuxt.com/)
-- [Tailwind CSS](https://tailwindcss.com/)
-- [Supabase](https://supabase.com/)
+- [Nuxt](https://nuxt.com)
+- [NuxtHub](https://hub.nuxt.com)
+- [UnoCSS](https://unocss.dev)
 
 ## Contributing
 
