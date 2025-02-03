@@ -1,13 +1,4 @@
 export default defineNuxtConfig({
-  app: {
-    head: {
-      charset: 'utf-8',
-      viewport: 'width=device-width, initial-scale=1',
-      htmlAttrs: {
-        lang: 'en',
-      },
-    },
-  },
 
   modules: [
     '@nuxt/eslint',
@@ -17,6 +8,18 @@ export default defineNuxtConfig({
     '@vueuse/nuxt',
     'nuxt-auth-utils',
   ],
+
+  devtools: {
+    enabled: false,
+  }, app: {
+    head: {
+      charset: 'utf-8',
+      viewport: 'width=device-width, initial-scale=1',
+      htmlAttrs: {
+        lang: 'en',
+      },
+    },
+  },
 
   runtimeConfig: {
     oauth: {
@@ -35,6 +38,8 @@ export default defineNuxtConfig({
     '/': { appMiddleware: 'auth' },
   },
 
+  compatibilityDate: '2024-07-08',
+
   hub: {
     blob: true,
   },
@@ -46,10 +51,4 @@ export default defineNuxtConfig({
       },
     },
   },
-
-  devtools: {
-    enabled: false,
-  },
-
-  compatibilityDate: '2024-07-08',
 });

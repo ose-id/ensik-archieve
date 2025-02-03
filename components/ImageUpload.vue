@@ -1,4 +1,3 @@
-<!-- pages/upload.vue -->
 <script setup lang="ts">
 async function uploadImage(e: Event) {
   const form = e.target as HTMLFormElement;

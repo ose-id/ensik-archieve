@@ -12,6 +12,10 @@ function toggleMode() {
     aria-label="Color Mode"
     @click="toggleMode"
   >
-    <div i-mingcute:sun-line dark:i-mingcute:moon-stars-line text-xl />
+    <div
+      i-mingcute:sun-line
+      dark:i-mingcute:moon-stars-line
+      text-xl
+    />
   </button>
 </template>
