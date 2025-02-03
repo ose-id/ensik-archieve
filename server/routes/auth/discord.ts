@@ -1,4 +1,4 @@
-export default oauth.discordEventHandler({
+export default defineOAuthDiscordEventHandler({
   async onSuccess(event, { user, tokens }) {
     const guildId = '614405243773386753';
     const roleId = '614416579475669014';
