@@ -51,50 +51,50 @@ const handleWheel = (event: WheelEvent) => {
   if (event.deltaY < 0) {
     zoomIn();
   }
-  else if(event.deltaY > 0) {
+  else if (event.deltaY > 0) {
     zoomOut();
   }
 };
 
 const zoomIn = () => {
-    zoomLevel.value = Math.min(zoomLevel.value + 0.1, 2);
-  };
+  zoomLevel.value = Math.min(zoomLevel.value + 0.1, 2);
+};
 
-  const zoomOut = () => {
-    zoomLevel.value = Math.max(zoomLevel.value - 0.1, 0.5);
-  };
+const zoomOut = () => {
+  zoomLevel.value = Math.max(zoomLevel.value - 0.1, 0.5);
+};
 
-  const handleMouseDown = (event: MouseEvent) => {
-    isDragging.value = true;
-    lastMousePosition.value = { x: event.clientX, y: event.clientY };
-  };
+const handleMouseDown = (event: MouseEvent) => {
+  isDragging.value = true;
+  lastMousePosition.value = { x: event.clientX, y: event.clientY };
+};
 
-  const handleMouseMove = (event: MouseEvent) => {
-    if (isDragging.value) {
-      const newX = event.clientX;
-      const newY = event.clientY;
-      const deltaX = newX - (lastMousePosition.value?.x || 0);
-      const deltaY = newY - (lastMousePosition.value?.y || 0);
-      translateX.value += deltaX;
-      translateY.value += deltaY;
-      lastMousePosition.value = { x: newX, y: newY };
-    }
-  };
+const handleMouseMove = (event: MouseEvent) => {
+  if (isDragging.value) {
+    const newX = event.clientX;
+    const newY = event.clientY;
+    const deltaX = newX - (lastMousePosition.value?.x || 0);
+    const deltaY = newY - (lastMousePosition.value?.y || 0);
+    translateX.value += deltaX;
+    translateY.value += deltaY;
+    lastMousePosition.value = { x: newX, y: newY };
+  }
+};
 
-  const handleMouseUp = () => {
-    isDragging.value = false;
-    lastMousePosition.value = null;
-  };
+const handleMouseUp = () => {
+  isDragging.value = false;
+  lastMousePosition.value = null;
+};
 
-  const handleKeyDown = (event: KeyboardEvent) => {
-    if (event.key === 'Escape') {
-      closeDetailModal();
-    }
-  };
+const handleKeyDown = (event: KeyboardEvent) => {
+  if (event.key === 'Escape') {
+    closeDetailModal();
+  }
+};
 
-  onUnmounted(() => {
-    document.removeEventListener('keydown', handleKeyDown);
-  });
+onUnmounted(() => {
+  document.removeEventListener('keydown', handleKeyDown);
+});
 </script>
 
 <template>
@@ -145,23 +145,39 @@ const zoomIn = () => {
   </div>
 
   <!-- Modal untuk melihat gambar secara detail -->
-  <div v-if="showDetailModal" class="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-50">
+  <div
+    v-if="showDetailModal"
+    class="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-50"
+  >
     <div class="relative bg-transparent w-11/12 md:w-1/2 lg:w-1/3">
       <!-- Header -->
-      <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-      </div>
+      <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center" />
 
       <!-- Content -->
       <div class="px-6 py-4 flex justify-center items-center">
-        <div class="relative w-full h-full" @wheel.prevent="handleWheel" @mousedown="handleMouseDown" @mousemove="handleMouseMove" @mouseup="handleMouseUp">
-          <img :src="selectedImage?.url" alt="Gambar Detail" class="w-full h-full object-cover block" :style="{ transform: `scale(${zoomLevel}) translate(${translateX}px, ${translateY}px)` }">
+        <div
+          class="relative w-full h-full"
+          @wheel.prevent="handleWheel"
+          @mousedown="handleMouseDown"
+          @mousemove="handleMouseMove"
+          @mouseup="handleMouseUp"
+        >
+          <img
+            :src="selectedImage?.url"
+            alt="Gambar Detail"
+            class="w-full h-full object-cover block"
+            :style="{ transform: `scale(${zoomLevel}) translate(${translateX}px, ${translateY}px)` }"
+          >
         </div>
       </div>
 
       <!-- Footer -->
       <div class="px-6 py-4 border-t border-gray-200 flex justify-center">
         <!-- Tombol untuk menutup modal -->
-        <button @click="closeDetailModal" class="bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition duration-300 transform hover:scale-105">
+        <button
+          class="bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition duration-300 transform hover:scale-105"
+          @click="closeDetailModal"
+        >
           Tutup
         </button>
       </div>
