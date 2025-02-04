@@ -149,7 +149,7 @@ onUnmounted(() => {
 
     <div
       v-else
-      class="columns-1 sm:columns-2 md:columns-3 lg:columns-4 xl:columns-5 gap-4 space-y-4"
+      class="columns-2 md:columns-3 lg:columns-4 xl:columns-5 gap-4 space-y-4"
     >
       <div
         v-for="image in images"
