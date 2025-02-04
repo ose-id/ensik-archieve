@@ -1,5 +1,9 @@
 import { put } from '@vercel/blob';
 
+interface CustomUser {
+  username: string;
+}
+
 const ALLOWED_TYPES = ['image/png', 'image/jpeg', 'image/jpg'];
 const MAX_SIZE = 2 * 1024 * 1024;
 
@@ -9,7 +13,8 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 401, statusMessage: 'Unauthorized. Please log in first.' });
   }
 
-  const username = session.user.username.replace(/\s+/g, '_');
+  const user = session.user as CustomUser;
+  const username = user.username.replace(/\s+/g, '_');
 
   const formData = await readMultipartFormData(event);
   if (!formData) {
