@@ -92,6 +92,33 @@ const handleKeyDown = (event: KeyboardEvent) => {
   }
 };
 
+const downloadImage = async () => {
+  if (!selectedImage.value) return;
+
+  try {
+    const response = await fetch(selectedImage.value.url);
+    const blob = await response.blob();
+
+    const extensionRegex = /\.(jpg|jpeg|png|gif|webp)$/i;
+    let filename = selectedImage.value.pathname;
+
+    // Jika tidak ada ekstensi, tambahkan `.jpg`
+    if (!extensionRegex.test(filename)) {
+      filename += '.jpg';
+    }
+
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+  catch (err) {
+    console.error('Failed to download image:', err);
+  }
+};
+
 onUnmounted(() => {
   document.removeEventListener('keydown', handleKeyDown);
 });
@@ -172,10 +199,18 @@ onUnmounted(() => {
       </div>
 
       <!-- Footer -->
-      <div class="px-6 py-4 border-t border-gray-200 flex justify-center">
-        <!-- Tombol untuk menutup modal -->
+      <div class="px-6 py-4 border-t border-gray-200 flex justify-between">
+        <!-- Tombol Download -->
         <button
-          class="bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition duration-300 transform hover:scale-105 cursor-pointer"
+          class="bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition duration-300 transform hover:scale-105 cursor-pointer"
+          @click="downloadImage"
+        >
+          Download Gambar
+        </button>
+
+        <!-- Tombol Tutup -->
+        <button
+          class="bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition duration-300 transform hover:scale-105 cursor-pointer"
           @click="closeDetailModal"
         >
           Tutup
