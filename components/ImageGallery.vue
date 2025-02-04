@@ -1,18 +1,24 @@
 <script setup lang="ts">
-const images = ref([]);
+const images = ref<{ url: string; pathname: string }[]>([]);
 const isLoading = ref(true);
+const error = ref<string | null>(null);
 
 onMounted(async () => {
   try {
     images.value = await $fetch('/api/images');
   }
-  catch (error) {
-    console.error('Failed to fetch images:', error);
+  catch (err) {
+    console.error('Failed to fetch images:', err);
+    error.value = 'Failed to load images.';
   }
   finally {
     isLoading.value = false;
   }
 });
+
+const getUsername = (pathname: string) => {
+  return pathname.split('-')[0];
+};
 </script>
 
 <template>
@@ -51,10 +57,9 @@ onMounted(async () => {
           :src="image.url"
           :alt="image.pathname"
           class="w-full h-full object-cover"
-          @error="(e) => e.target.src = '/placeholder-image.jpg'"
         />
         <div class="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white p-2 text-sm truncate">
-          {{ image.pathname }}
+          {{ getUsername(image.pathname) }}
         </div>
       </div>
     </div>
