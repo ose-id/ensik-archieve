@@ -79,6 +79,7 @@ const closeModal = () => {
       file:text-sm file:font-semibold
       file:bg-gray-50 file:text-gray-700
       hover:file:bg-gray-100
+      file:cursor-pointer cursor-pointer
     "
           @change="handleFileUpload"
         >

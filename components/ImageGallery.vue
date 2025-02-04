@@ -129,7 +129,7 @@ onUnmounted(() => {
         :key="image.pathname"
         class="break-inside-avoid"
       >
-        <div class="relative overflow-hidden rounded-lg shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.02]">
+        <div class="relative overflow-hidden rounded-lg shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.02] cursor-pointer">
           <NuxtImg
             :src="image.url"
             :alt="image.pathname"
@@ -175,7 +175,7 @@ onUnmounted(() => {
       <div class="px-6 py-4 border-t border-gray-200 flex justify-center">
         <!-- Tombol untuk menutup modal -->
         <button
-          class="bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition duration-300 transform hover:scale-105"
+          class="bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition duration-300 transform hover:scale-105 cursor-pointer"
           @click="closeDetailModal"
         >
           Tutup
