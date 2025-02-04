@@ -1,9 +1,5 @@
 # Get Started
 
-Fork this repository, and clone.
-
-## Setup
-
 Make sure to install the dependencies:
 
 ```bash
