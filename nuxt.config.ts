@@ -3,7 +3,7 @@ export default defineNuxtConfig({
   modules: [
     '@nuxt/eslint',
     '@nuxt/image',
-    '@nuxthub/core',
+    '@nuxtjs/color-mode',
     '@unocss/nuxt',
     '@vueuse/nuxt',
     'nuxt-auth-utils',
@@ -21,6 +21,11 @@ export default defineNuxtConfig({
     },
   },
 
+  colorMode: {
+    classSuffix: '',
+    preference: 'light',
+  },
+
   runtimeConfig: {
     oauth: {
       discord: {
@@ -29,9 +34,6 @@ export default defineNuxtConfig({
         scope: ['identify', 'guilds.members.read'],
       },
     },
-    session: {
-      maxAge: 60 * 60 * 24 * 7,
-    },
   },
 
   routeRules: {
@@ -39,10 +41,6 @@ export default defineNuxtConfig({
   },
 
   compatibilityDate: '2024-07-08',
-
-  hub: {
-    blob: true,
-  },
 
   eslint: {
     config: {
