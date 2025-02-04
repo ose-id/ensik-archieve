@@ -1,7 +1,6 @@
-export default eventHandler(async () => {
-  const { blobs } = await hubBlob().list({
-    limit: 1000,
-  });
+import { list } from '@vercel/blob';
 
-  return blobs;
+export default defineEventHandler(async () => {
+  const { blobs } = await list();
+  return Response.json(blobs);
 });
