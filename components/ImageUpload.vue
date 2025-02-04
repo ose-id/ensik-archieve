@@ -41,9 +41,6 @@ const handleFileUpload = async (event: Event) => {
 
 <template>
   <div v-if="loggedIn">
-    <h2 class="text-xl font-bold">
-      Welcome, {{ discordUser?.username }}
-    </h2>
     <p>You can upload images.</p>
     <input
       type="file"
