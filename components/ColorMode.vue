@@ -13,9 +13,7 @@ function toggleMode() {
     @click="toggleMode"
   >
     <div
-      i-mingcute:sun-line
-      dark:i-mingcute:moon-stars-line
-      text-xl
+      class="i-mingcute:sun-line dark:i-mingcute:moon-stars-line text-xl"
     />
   </button>
 </template>
