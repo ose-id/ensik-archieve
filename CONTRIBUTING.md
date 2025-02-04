@@ -7,7 +7,7 @@ Fork this repository, and clone.
 Make sure to install the dependencies:
 
 ```bash
-pnpm install
+bun install
 ```
 
 ## Development Server
@@ -15,7 +15,7 @@ pnpm install
 Start the development server
 
 ```bash
-pnpm dev
+bun dev
 ```
 
 ## Commit Rules
