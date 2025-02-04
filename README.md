@@ -13,8 +13,8 @@ Ensik Archive is a captivating online gallery platform dedicated to preserving a
 ## Built with
 
 - [Nuxt](https://nuxt.com)
-- [NuxtHub](https://hub.nuxt.com)
 - [UnoCSS](https://unocss.dev)
+- [Vercel Blob](https://vercel.com/docs/storage/vercel-blob)
 
 ## Contributing
 
