@@ -8,7 +8,7 @@ useSeoMeta({
 <template>
   <main
     id="top"
-    min-h-dvh
+    min-h-dvh px-4
   >
     <NuxtPage />
   </main>
