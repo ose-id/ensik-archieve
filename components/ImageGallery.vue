@@ -27,7 +27,7 @@ const getUsername = (pathname: string) => {
       v-if="isLoading"
       class="flex justify-center items-center h-64"
     >
-      <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-gray-900" />
+      <div class="i-lucide-loader-2 animate-spin text-4xl text-gray-900" />
     </div>
 
     <div
@@ -46,20 +46,22 @@ const getUsername = (pathname: string) => {
 
     <div
       v-else
-      class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
+      class="columns-1 sm:columns-2 md:columns-3 lg:columns-4 xl:columns-5 gap-4 space-y-4"
     >
       <div
         v-for="image in images"
         :key="image.pathname"
-        class="relative overflow-hidden rounded-lg shadow-lg transition-transform duration-300 hover:scale-105"
+        class="break-inside-avoid"
       >
-        <NuxtImg
-          :src="image.url"
-          :alt="image.pathname"
-          class="w-full h-full object-cover"
-        />
-        <div class="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white p-2 text-sm truncate">
-          {{ getUsername(image.pathname) }}
+        <div class="relative overflow-hidden rounded-lg shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.02]">
+          <NuxtImg
+            :src="image.url"
+            :alt="image.pathname"
+            class="w-full h-full object-cover block"
+          />
+          <div class="absolute bottom-0 left-0 right-0 bg-black/50 text-white p-2 text-sm truncate">
+            {{ getUsername(image.pathname) }}
+          </div>
         </div>
       </div>
     </div>
