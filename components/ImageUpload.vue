@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const { loggedIn, user, clear } = useUserSession();
+const { loggedIn, user } = useUserSession();
 
 const discordUser = computed(() => user.value as { discordId: string; username: string } | null);
 
