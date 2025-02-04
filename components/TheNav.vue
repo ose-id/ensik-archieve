@@ -3,7 +3,7 @@ const { loggedIn, user, clear } = useUserSession();
 </script>
 
 <template>
-  <nav class="mx-auto flexbetween py-6">
+  <nav class="mx-auto flexcenter py-6">
     <div
       v-if="loggedIn"
       class="flex items-center gap-2"
