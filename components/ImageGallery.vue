@@ -128,11 +128,9 @@ const downloadImage = async (image: { url: string; pathname: string }) => {
     />
     <div class="relative bg-gray-900/70 p-4 rounded-lg max-w-3xl w-full flex flex-col items-center">
       <button
-        class="absolute -top-6 -right-6 bg-red-500 text-white p-3 rounded-full shadow-lg cursor-pointer"
+        class="absolute -top-4 -right-4 text-red text-4xl cursor-pointer i-mingcute:close-circle-line hover:i-mingcute:close-circle-fill hover:bg-red"
         @click="closePopup"
-      >
-        ✖
-      </button>
+      />
       <img
         :src="selectedImage?.url"
         alt="Popup Image"
