@@ -71,7 +71,7 @@ const downloadImage = async (image: { url: string; pathname: string }) => {
 </script>
 
 <template>
-  <div class="container mx-auto py-12">
+  <div class="mx-auto py-12">
     <div
       v-if="isLoading"
       class="flex justify-center items-center h-64"
@@ -107,10 +107,10 @@ const downloadImage = async (image: { url: string; pathname: string }) => {
           <NuxtImg
             :src="image.url"
             :alt="image.pathname"
-            class="w-full h-full object-cover block"
+            class="size-full object-cover block"
           />
           <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity" />
-          <div class="absolute bottom-0 left-0 right-0 bg-black/50 text-white p-2 text-sm truncate">
+          <div class="absolute bottom-0 left-0 right-0 bg-black/50 text-white p-2 text-xs md:text-sm truncate">
             {{ getUsername(image.pathname) }}
           </div>
         </div>
