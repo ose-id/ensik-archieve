@@ -1,20 +1,30 @@
 <script setup lang="ts">
-const { loggedIn, user } = useUserSession();
+const { loggedIn } = useUserSession();
 const emit = defineEmits(['imageUploaded']);
-
-const discordUser = computed(() => user.value as { discordId: string; username: string } | null);
 
 const imageUrl = ref<string>('');
 const isUploading = ref<boolean>(false);
 const showModal = ref<boolean>(false);
 const selectedFile = ref<File | null>(null);
 const fileInputRef = ref<HTMLInputElement | null>(null);
+const alertMessage = ref<string>('');
 
 const handleFileSelect = (event: Event) => {
   const target = event.target as HTMLInputElement;
   if (!target.files || target.files.length === 0) return;
-  selectedFile.value = target.files[0];
-  imageUrl.value = URL.createObjectURL(selectedFile.value);
+
+  const file = target.files[0];
+  if (file.size > 2 * 1024 * 1024) { // 2MB limit
+    alertMessage.value = 'File size exceeds 2MB limit! Please choose a smaller file.';
+    selectedFile.value = null;
+    imageUrl.value = '';
+    resetFileInput();
+    return;
+  }
+
+  selectedFile.value = file;
+  imageUrl.value = URL.createObjectURL(file);
+  alertMessage.value = '';
   showModal.value = true;
 };
 
@@ -69,16 +79,7 @@ const closeModal = () => {
 <template>
   <div v-if="loggedIn">
     <p>You can upload images.</p>
-    <form class="flex items-center">
-      <div class="shrink-0">
-        <img
-          v-if="imageUrl"
-          :src="imageUrl"
-          :alt="discordUser?.username || 'Selected Image'"
-          class="h-16 w-16 object-cover rounded-full mr-6"
-          @click="showModal = true"
-        >
-      </div>
+    <form class="flex flex-col items-start">
       <label class="block">
         <input
           ref="fileInputRef"
@@ -94,41 +95,31 @@ const closeModal = () => {
           @change="handleFileSelect"
         >
       </label>
+      <p class="text-sm text-gray-500 mt-2">
+        Max file size: 2MB
+      </p>
+      <p
+        v-if="alertMessage"
+        class="text-red-500 mt-2"
+      >
+        {{ alertMessage }}
+      </p>
     </form>
 
     <div
       v-if="showModal"
-      class="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-50"
+      class="fixed inset-0 flex justify-center items-center bg-black bg-opacity-90 z-50"
     >
-      <!-- Modal Container -->
       <div class="relative bg-white rounded-lg shadow-lg w-11/12 md:w-1/2 lg:w-1/3">
-        <!-- Header -->
-        <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+        <div class="flexbetween px-6 py-4 border-b border-gray-200">
           <h2 class="text-xl font-semibold text-gray-800">
             Preview Image
           </h2>
           <button
-            class="absolute top-3 right-3 p-2 bg-gray-100 hover:bg-gray-200 transition duration-300 rounded-full text-gray-600 hover:text-gray-800"
+            class="text-red text-4xl cursor-pointer i-mingcute:close-circle-line hover:i-mingcute:close-circle-fill hover:bg-red"
             @click="closeModal"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
+          />
         </div>
-
-        <!-- Content -->
         <div class="px-6 py-4 flex justify-center items-center">
           <img
             :src="imageUrl"
@@ -136,18 +127,16 @@ const closeModal = () => {
             class="max-w-full max-h-96 rounded-lg mx-auto"
           >
         </div>
-
-        <!-- Footer -->
         <div class="px-6 py-4 border-t border-gray-200 flex justify-center space-x-4">
           <button
-            class="bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition duration-300 transform hover:scale-105"
+            class="bg-blue-500 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md border-none cursor-pointer transition duration-300 transform hover:scale-105"
             :disabled="isUploading"
             @click="uploadImage"
           >
             {{ isUploading ? 'Uploading...' : 'Upload' }}
           </button>
           <button
-            class="bg-gradient-to-r from-gray-400 to-gray-600 hover:from-gray-500 hover:to-gray-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition duration-300 transform hover:scale-105"
+            class="bg-gray-400 hover:bg-gray-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md border-none cursor-pointer transition duration-300 transform hover:scale-105"
             :disabled="isUploading"
             @click="cancelUpload"
           >
