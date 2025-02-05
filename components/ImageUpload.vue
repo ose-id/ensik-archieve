@@ -7,19 +7,24 @@ const discordUser = computed(() => user.value as { discordId: string; username: 
 const imageUrl = ref<string>('');
 const isUploading = ref<boolean>(false);
 const showModal = ref<boolean>(false);
+const selectedFile = ref<File | null>(null);
+const fileInputRef = ref<HTMLInputElement | null>(null);
 
-const handleFileUpload = async (event: Event) => {
-  if (!loggedIn.value) return;
-
+const handleFileSelect = (event: Event) => {
   const target = event.target as HTMLInputElement;
   if (!target.files || target.files.length === 0) return;
+  selectedFile.value = target.files[0];
+  imageUrl.value = URL.createObjectURL(selectedFile.value);
+  showModal.value = true;
+};
 
-  const file: File = target.files[0];
+const uploadImage = async () => {
+  if (!loggedIn.value || !selectedFile.value) return;
 
   isUploading.value = true;
 
   const formData = new FormData();
-  formData.append('file', file);
+  formData.append('file', selectedFile.value);
 
   try {
     const response = await fetch('/api/upload', {
@@ -31,7 +36,8 @@ const handleFileUpload = async (event: Event) => {
     const data: { url: string; pathname: string } = await response.json();
     imageUrl.value = data.url;
     emit('imageUploaded', { url: data.url, pathname: data.pathname });
-    showModal.value = true; // Show modal on successful upload
+    showModal.value = false;
+    window.location.reload(); // Refresh the page
   }
   catch (error) {
     console.error('Upload failed:', error);
@@ -41,18 +47,22 @@ const handleFileUpload = async (event: Event) => {
   }
 };
 
-const uploadImage = async () => {
-  showModal.value = false;
-  window.location.reload(); // Refresh the page
+const resetFileInput = () => {
+  if (fileInputRef.value) {
+    fileInputRef.value.value = '';
+  }
 };
 
 const cancelUpload = () => {
   imageUrl.value = '';
+  selectedFile.value = null;
   showModal.value = false;
+  resetFileInput();
 };
 
 const closeModal = () => {
   showModal.value = false;
+  resetFileInput();
 };
 </script>
 
@@ -64,30 +74,27 @@ const closeModal = () => {
         <img
           v-if="imageUrl"
           :src="imageUrl"
-          :alt="discordUser?.username || 'Uploaded Image'"
+          :alt="discordUser?.username || 'Selected Image'"
           class="h-16 w-16 object-cover rounded-full mr-6"
           @click="showModal = true"
         >
       </div>
       <label class="block">
         <input
+          ref="fileInputRef"
           type="file"
           accept="image/*"
           class="block w-full text-sm text-slate-500
-      file:mr-4 file:py-2 file:px-4
-      file:rounded-full file:border-0
-      file:text-sm file:font-semibold
-      file:bg-gray-50 file:text-gray-700
-      hover:file:bg-gray-100
-      file:cursor-pointer cursor-pointer
-    "
-          @change="handleFileUpload"
+            file:mr-4 file:py-2 file:px-4
+            file:rounded-full file:border-0
+            file:text-sm file:font-semibold
+            file:bg-gray-50 file:text-gray-700
+            hover:file:bg-gray-100
+            file:cursor-pointer cursor-pointer"
+          @change="handleFileSelect"
         >
       </label>
     </form>
-    <p v-if="isUploading">
-      Uploading...
-    </p>
 
     <div
       v-if="showModal"
@@ -125,18 +132,26 @@ const closeModal = () => {
         <div class="px-6 py-4 flex justify-center items-center">
           <img
             :src="imageUrl"
-            alt="Gambar yang diunggah"
+            alt="Selected Image"
             class="max-w-full max-h-96 rounded-lg mx-auto"
           >
         </div>
 
         <!-- Footer -->
-        <div class="px-6 py-4 border-t border-gray-200 flex justify-center">
+        <div class="px-6 py-4 border-t border-gray-200 flex justify-center space-x-4">
           <button
             class="bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition duration-300 transform hover:scale-105"
+            :disabled="isUploading"
             @click="uploadImage"
           >
-            Upload
+            {{ isUploading ? 'Uploading...' : 'Upload' }}
+          </button>
+          <button
+            class="bg-gradient-to-r from-gray-400 to-gray-600 hover:from-gray-500 hover:to-gray-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition duration-300 transform hover:scale-105"
+            :disabled="isUploading"
+            @click="cancelUpload"
+          >
+            Cancel
           </button>
         </div>
       </div>
