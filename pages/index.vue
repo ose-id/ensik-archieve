@@ -1,26 +1,32 @@
 <script setup lang="ts">
 useSeoMeta({
-  title: 'Ensik Archieve',
+  title: 'Ensik Archive',
 });
 
 const { loggedIn } = useUserSession();
 </script>
 
 <template>
-  <section class="container mx-auto py-12">
+  <div class="min-h-screen bg-white dark:bg-black">
+    <TheSide />
     <TheNav />
-    <div
-      v-if="loggedIn"
-      class="mt-8"
-    >
-      <ImageUpload />
-    </div>
-    <div
-      v-else
-      class="text-center text-gray-500 mt-8"
-    >
-      <p>Login with Discord to upload images.</p>
-    </div>
-    <ImageGallery />
-  </section>
+
+    <main class="ml-[50px] md:ml-[80px] pt-16 px-2 md:px-4">
+      <div class="mx-auto py-8">
+        <div
+          v-if="loggedIn"
+          class="mb-8"
+        >
+          <ImageUpload />
+        </div>
+        <div
+          v-else
+          class="text-center text-gray-500 mb-8"
+        >
+          <p>Login with Discord to upload images.</p>
+        </div>
+        <ImageGallery />
+      </div>
+    </main>
+  </div>
 </template>
