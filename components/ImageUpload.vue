@@ -100,7 +100,7 @@ const closeModal = () => {
       </p>
       <p
         v-if="alertMessage"
-        class="text-red-500 mt-2"
+        class="text-red-500 mt-2 text-xs md:text-sm"
       >
         {{ alertMessage }}
       </p>
