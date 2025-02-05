@@ -22,7 +22,7 @@ const avatarUrl = computed(() => {
 </script>
 
 <template>
-  <nav class="fixed top-0 right-0 h-16 flex items-center justify-end z-40 w-full md:w-[calc(100%-80px)] px-6">
+  <nav class="fixed bg-white top-0 right-0 h-16 flex items-center justify-end z-40 w-full md:w-[calc(100%-80px)] px-6">
     <div
       v-if="loggedIn"
       class="flex items-center gap-4"
