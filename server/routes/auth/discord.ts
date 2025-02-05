@@ -27,6 +27,7 @@ export default defineOAuthDiscordEventHandler({
         user: {
           discordId: user.id,
           username: user.username,
+          avatar: user.avatar,
         },
         loggedInAt: new Date(),
       });
