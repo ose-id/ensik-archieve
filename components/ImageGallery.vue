@@ -120,14 +120,12 @@ const downloadImage = async (image: { url: string; pathname: string }) => {
 
   <div
     v-if="showPopup"
-    class="fixed inset-0 bg-black bg-opacity-80 flex justify-center items-center z-50"
+    class="fixed inset-0 bg-black bg-opacity-90 flex justify-center items-center z-50"
   >
     <button
-      class="absolute left-4 top-1/2 transform -translate-y-1/2 bg-gray-700 text-white p-3 rounded-full cursor-pointer"
+      class="absolute left-4 top-1/2 transform -translate-y-1/2 cursor-pointer text-white text-3xl hover:text-blue-300 i-mingcute:arrow-left-circle-line"
       @click="prevImage"
-    >
-      ⬅
-    </button>
+    />
     <div class="relative bg-gray-900/70 p-4 rounded-lg max-w-3xl w-full flex flex-col items-center">
       <button
         class="absolute -top-6 -right-6 bg-red-500 text-white p-3 rounded-full shadow-lg cursor-pointer"
@@ -148,10 +146,8 @@ const downloadImage = async (image: { url: string; pathname: string }) => {
       </button>
     </div>
     <button
-      class="absolute right-4 top-1/2 transform -translate-y-1/2 bg-gray-700 text-white p-3 rounded-full cursor-pointer"
+      class="absolute right-4 top-1/2 transform -translate-y-1/2 cursor-pointer text-white text-3xl hover:text-blue-300 i-mingcute:arrow-right-circle-line"
       @click="nextImage"
-    >
-      ➡
-    </button>
+    />
   </div>
 </template>
