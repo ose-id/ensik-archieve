@@ -123,10 +123,10 @@ const downloadImage = async (image: { url: string; pathname: string }) => {
     class="fixed inset-0 bg-black bg-opacity-90 flex justify-center items-center z-50"
   >
     <button
-      class="absolute left-4 top-1/2 transform -translate-y-1/2 cursor-pointer text-white text-3xl hover:text-blue-300 i-mingcute:arrow-left-circle-line"
+      class="absolute left-4 top-1/2 transform -translate-y-1/2 cursor-pointer text-white text-3xl hover:text-blue-300 z-10 i-mingcute:arrow-left-circle-line"
       @click="prevImage"
     />
-    <div class="relative bg-gray-900/70 p-4 rounded-lg max-w-3xl w-full flex flex-col items-center">
+    <div class="relative bg-gray-900/70 p-4 rounded-lg max-w-3xl w-[60%] md:w-full flex flex-col items-center">
       <button
         class="absolute -top-4 -right-4 text-red text-4xl cursor-pointer i-mingcute:close-circle-line hover:i-mingcute:close-circle-fill hover:bg-red"
         @click="closePopup"
@@ -144,7 +144,7 @@ const downloadImage = async (image: { url: string; pathname: string }) => {
       </button>
     </div>
     <button
-      class="absolute right-4 top-1/2 transform -translate-y-1/2 cursor-pointer text-white text-3xl hover:text-blue-300 i-mingcute:arrow-right-circle-line"
+      class="absolute right-4 top-1/2 transform -translate-y-1/2 cursor-pointer text-white text-3xl hover:text-blue-300 z-10 i-mingcute:arrow-right-circle-line"
       @click="nextImage"
     />
   </div>
