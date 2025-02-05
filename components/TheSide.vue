@@ -12,9 +12,9 @@ const menuItems: MenuItem[] = [
 
 <template>
   <aside
-    class="w-12 md:w-20 fixed left-0 top-0 h-full bg-white dark:bg-gray-950 shadow-lg z-50 border-r-solid border-r-1 border-transparent dark:border-gray-800/70"
+    class="w-12 md:w-20 fixed left-0 top-0 h-dvh bg-white dark:bg-gray-950 shadow-lg z-50 border-r-solid border-r-1 border-transparent dark:border-gray-800/70"
   >
-    <div class="flex flex-col h-full">
+    <div class="flex flex-col h-dvh">
       <!-- Logo -->
       <div class="px-4 py-6 flexcenter">
         <img
