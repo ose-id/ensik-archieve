@@ -71,7 +71,7 @@ const downloadImage = async (image: { url: string; pathname: string }) => {
 </script>
 
 <template>
-  <div class="mx-auto py-12">
+  <div class="mx-auto pb-12">
     <div
       v-if="isLoading"
       class="flex justify-center items-center h-64"

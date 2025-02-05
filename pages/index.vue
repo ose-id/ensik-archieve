@@ -15,13 +15,13 @@ const { loggedIn } = useUserSession();
       <div class="mx-auto py-8">
         <div
           v-if="loggedIn"
-          class="mb-8"
+          class="mb-4"
         >
           <ImageUpload />
         </div>
         <div
           v-else
-          class="text-center text-gray-500 mb-8"
+          class="text-center text-gray-500 mb-4"
         >
           <p>Login with Discord to upload images.</p>
         </div>

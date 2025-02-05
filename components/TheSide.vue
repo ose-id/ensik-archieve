@@ -16,11 +16,11 @@ const menuItems: MenuItem[] = [
   >
     <div class="flex flex-col h-full">
       <!-- Logo -->
-      <div class="p-4 flexcenter">
+      <div class="px-4 py-6 flexcenter">
         <img
           src="/img/logo.jpg"
           alt="Logo"
-          class="size-6 md:size-12 rounded-full"
+          class="size-6 md:size-8 rounded-full"
         >
       </div>
 
@@ -41,7 +41,7 @@ const menuItems: MenuItem[] = [
         </ul>
       </nav>
 
-      <div class="p-4 flexcenter">
+      <div class="px-4 py-6 flexcenter">
         <ColorMode />
       </div>
     </div>
