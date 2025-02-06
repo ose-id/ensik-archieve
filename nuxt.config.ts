@@ -1,7 +1,7 @@
+/* eslint-disable node/prefer-global/process */
 export default defineNuxtConfig({
 
   modules: [
-    '@nuxt/eslint',
     '@nuxt/image',
     '@nuxtjs/color-mode',
     '@unocss/nuxt',
@@ -11,7 +11,9 @@ export default defineNuxtConfig({
 
   devtools: {
     enabled: false,
-  }, app: {
+  },
+
+  app: {
     head: {
       charset: 'utf-8',
       viewport: 'width=device-width, initial-scale=1',
@@ -41,12 +43,4 @@ export default defineNuxtConfig({
   },
 
   compatibilityDate: '2024-07-08',
-
-  eslint: {
-    config: {
-      stylistic: {
-        semi: true,
-      },
-    },
-  },
 });
