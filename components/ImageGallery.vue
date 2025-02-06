@@ -74,7 +74,7 @@ async function downloadImage(image: { url: string; pathname: string }) {
 <template>
   <div mx-auto pb-12>
     <div v-if="isLoading" h-64 flex items-center justify-center>
-      <div i-mingcute-loading-fill animate-spin text-4xl text-gray-900 />
+      <div i-mingcute-loading-fill animate-spin text-4xl text-gray-900 dark:text-white />
     </div>
     <div v-else-if="error" rounded-lg bg-red-100 p-4 text-center text-red-500>
       {{ error }}
