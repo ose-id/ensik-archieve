@@ -10,6 +10,7 @@ export default defineConfig({
       provider: 'bunny',
       fonts: {
         sans: 'Outfit:400,600,700',
+        mono: 'Averia Serif Libre:700',
       },
     }),
   ],
