@@ -6,10 +6,7 @@ useSeoMeta({
 </script>
 
 <template>
-  <main
-    id="top"
-    min-h-dvh px-4
-  >
+  <main id="top" px-4 min-h-dvh>
     <NuxtPage />
   </main>
 </template>

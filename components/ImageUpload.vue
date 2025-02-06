@@ -1,7 +1,6 @@
 <script setup lang="ts">
-const { loggedIn } = useUserSession();
 const emit = defineEmits(['imageUploaded']);
-
+const { loggedIn } = useUserSession();
 const imageUrl = ref<string>('');
 const isUploading = ref<boolean>(false);
 const showModal = ref<boolean>(false);
@@ -9,9 +8,10 @@ const selectedFile = ref<File | null>(null);
 const fileInputRef = ref<HTMLInputElement | null>(null);
 const alertMessage = ref<string>('');
 
-const handleFileSelect = (event: Event) => {
+function handleFileSelect(event: Event) {
   const target = event.target as HTMLInputElement;
-  if (!target.files || target.files.length === 0) return;
+  if (!target.files || target.files.length === 0)
+    return;
 
   const file = target.files[0];
   if (file.size > 2 * 1024 * 1024) { // 2MB limit
@@ -26,10 +26,11 @@ const handleFileSelect = (event: Event) => {
   imageUrl.value = URL.createObjectURL(file);
   alertMessage.value = '';
   showModal.value = true;
-};
+}
 
-const uploadImage = async () => {
-  if (!loggedIn.value || !selectedFile.value) return;
+async function uploadImage() {
+  if (!loggedIn.value || !selectedFile.value)
+    return;
 
   isUploading.value = true;
 
@@ -42,7 +43,8 @@ const uploadImage = async () => {
       body: formData,
     });
 
-    if (!response.ok) throw new Error('Upload failed');
+    if (!response.ok)
+      throw new Error('Upload failed');
     const data: { url: string; pathname: string } = await response.json();
     imageUrl.value = data.url;
     emit('imageUploaded', { url: data.url, pathname: data.pathname });
@@ -55,52 +57,46 @@ const uploadImage = async () => {
   finally {
     isUploading.value = false;
   }
-};
+}
 
-const resetFileInput = () => {
+function resetFileInput() {
   if (fileInputRef.value) {
     fileInputRef.value.value = '';
   }
-};
+}
 
-const cancelUpload = () => {
+function cancelUpload() {
   imageUrl.value = '';
   selectedFile.value = null;
   showModal.value = false;
   resetFileInput();
-};
+}
 
-const closeModal = () => {
+function closeModal() {
   showModal.value = false;
   resetFileInput();
-};
+}
 </script>
 
 <template>
   <div v-if="loggedIn">
     <p>You can upload images.</p>
-    <form class="flex flex-col items-start">
-      <label class="block">
+    <form flex flex-col items-start>
+      <label block>
         <input
           ref="fileInputRef"
           type="file"
           accept="image/*"
-          class="block w-full text-sm text-slate-500
-            file:mr-4 file:py-2 file:px-4
-            file:rounded-full file:border-0
-            file:text-sm file:font-semibold
-            file:bg-gray-50 file:text-gray-700
-            hover:file:bg-gray-100
-            file:cursor-pointer cursor-pointer"
+          block w-full cursor-pointer text-sm text-slate-500 file:mr-4 file:cursor-pointer file:border-0 file:rounded-full file:bg-gray-50 file:px-4 file:py-2 file:text-sm file:text-gray-700 file:font-semibold hover:file:bg-gray-100
           @change="handleFileSelect"
         >
       </label>
-      <p class="text-sm text-gray-500 mt-2">
+      <p mt-2 text-sm text-gray-500>
         Max file size: 2MB
       </p>
       <p
         v-if="alertMessage"
-        class="text-red-500 mt-2 text-xs md:text-sm"
+        mt-2 text-xs text-red-500 md:text-sm
       >
         {{ alertMessage }}
       </p>
@@ -108,35 +104,35 @@ const closeModal = () => {
 
     <div
       v-if="showModal"
-      class="fixed inset-0 flex justify-center items-center bg-black bg-opacity-90 z-50"
+      fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90
     >
-      <div class="relative bg-white rounded-lg shadow-lg w-11/12 md:w-1/2 lg:w-1/3">
-        <div class="flexbetween px-6 py-4 border-b border-gray-200">
-          <h2 class="text-xl font-semibold text-gray-800">
+      <div class="relative w-11/12 rounded-lg bg-white shadow-lg lg:w-1/3 md:w-1/2">
+        <div flexbetween border-b border-gray-200 px-6 py-4>
+          <h2 text-xl text-gray-800 font-semibold>
             Preview Image
           </h2>
           <button
-            class="text-red text-4xl cursor-pointer i-mingcute:close-circle-line hover:i-mingcute:close-circle-fill hover:bg-red"
+            i-mingcute:close-circle-line hover:i-mingcute:close-circle-fill cursor-pointer text-4xl text-red hover:bg-red
             @click="closeModal"
           />
         </div>
-        <div class="px-6 py-4 flex justify-center items-center">
-          <img
+        <div flex items-center justify-center px-6 py-4>
+          <NuxtImg
             :src="imageUrl"
             alt="Selected Image"
-            class="max-w-full max-h-96 rounded-lg mx-auto"
-          >
+            mx-auto max-h-96 max-w-full rounded-lg
+          />
         </div>
-        <div class="px-6 py-4 border-t border-gray-200 flex justify-center space-x-4">
+        <div flex justify-center border-t border-gray-200 px-6 py-4 space-x-4>
           <button
-            class="bg-blue-500 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md border-none cursor-pointer transition duration-300 transform hover:scale-105"
+            transform cursor-pointer rounded-lg border-none bg-blue-500 px-6 py-3 text-white font-semibold shadow-md transition duration-300 hover:scale-105 hover:bg-blue-700
             :disabled="isUploading"
             @click="uploadImage"
           >
             {{ isUploading ? 'Uploading...' : 'Upload' }}
           </button>
           <button
-            class="bg-gray-400 hover:bg-gray-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md border-none cursor-pointer transition duration-300 transform hover:scale-105"
+            transform cursor-pointer rounded-lg border-none bg-gray-400 px-6 py-3 text-white font-semibold shadow-md transition duration-300 hover:scale-105 hover:bg-gray-600
             :disabled="isUploading"
             @click="cancelUpload"
           >

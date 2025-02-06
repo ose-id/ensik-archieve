@@ -7,21 +7,21 @@ const { loggedIn } = useUserSession();
 </script>
 
 <template>
-  <div class="min-h-screen bg-white dark:bg-black">
+  <div min-h-screen bg-white dark:bg-black>
     <TheSide />
     <TheNav />
 
-    <main class="ml-[50px] md:ml-[80px] pt-16 px-2 md:px-4">
-      <div class="mx-auto py-8">
+    <main px-2 pt-16 md:px-4 ml="[50px] md:[80px]">
+      <div mx-auto py-8>
         <div
           v-if="loggedIn"
-          class="mb-4"
+          mb-4
         >
           <ImageUpload />
         </div>
         <div
           v-else
-          class="text-center text-gray-500 mb-4"
+          mb-4 text-center text-gray-500
         >
           <p>Login with Discord to upload images.</p>
         </div>
