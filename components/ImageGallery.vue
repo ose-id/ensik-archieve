@@ -69,6 +69,46 @@ async function downloadImage(image: { url: string; pathname: string }) {
     console.error('Failed to download image:', err);
   }
 }
+
+const zoomLevel = ref(2); // Default zoom level
+const zoomCircleSize = ref(100); // Default zoom circle size
+
+function zoomImage(event: MouseEvent) {
+  const imgElement = event.target as HTMLImageElement;
+  const rect = imgElement.getBoundingClientRect();
+
+  const zoomCircle = document.createElement('div');
+  zoomCircle.style.position = 'absolute';
+  zoomCircle.style.width = `${zoomCircleSize.value}px`;
+  zoomCircle.style.height = `${zoomCircleSize.value}px`;
+  zoomCircle.style.borderRadius = '50%';
+  zoomCircle.style.overflow = 'hidden';
+  zoomCircle.style.border = '2px solid white';
+  zoomCircle.style.boxShadow = '0 0 10px rgba(0, 0, 0, 0.5)';
+  zoomCircle.style.pointerEvents = 'none';
+  zoomCircle.style.backgroundImage = `url(${imgElement.src})`;
+  zoomCircle.style.backgroundSize = `${imgElement.width * zoomLevel.value}px ${imgElement.height * zoomLevel.value}px`;
+
+  imgElement.parentElement?.appendChild(zoomCircle);
+
+  function updateZoomCircle(e: MouseEvent) {
+    const offsetX = e.clientX - rect.left;
+    const offsetY = e.clientY - rect.top;
+    zoomCircle.style.transform = `translate(${offsetX - zoomCircleSize.value / 2 }px, ${offsetY - zoomCircleSize.value / 2}px)`;
+    zoomCircle.style.backgroundPosition = `-${offsetX * zoomLevel.value - zoomCircleSize.value / 2}px -${offsetY * zoomLevel.value - zoomCircleSize.value / 2}px`;
+  }
+
+  function removeZoomCircle() {
+    zoomCircle.remove();
+    imgElement.removeEventListener('mousemove', updateZoomCircle);
+    imgElement.removeEventListener('mouseup', removeZoomCircle);
+  }
+
+  updateZoomCircle(event); // Update position on initial press
+
+  imgElement.addEventListener('mousemove', updateZoomCircle);
+  imgElement.addEventListener('mouseup', removeZoomCircle);
+}
 </script>
 
 <template>
@@ -107,9 +147,17 @@ async function downloadImage(image: { url: string; pathname: string }) {
     <button class="i-mingcute:arrow-left-circle-line absolute left-4 top-1/2 z-10 transform cursor-pointer text-3xl text-white -translate-y-1/2 hover:text-blue-300" @click="prevImage" />
     <div class="relative max-w-3xl w-[60%] flex flex-col items-center rounded-lg bg-gray-900/70 p-4 md:w-full">
       <button class="i-mingcute:close-circle-line hover:i-mingcute:close-circle-fill absolute cursor-pointer text-4xl text-red -right-4 -top-4 hover:bg-red" @click="closePopup" />
-      <img :src="selectedImage?.url" alt="Popup Image" class="max-h-[80vh] max-w-full">
+      <img :src="selectedImage?.url" alt="Popup Image" class="max-h-[80vh] max-w-full" @mousedown="zoomImage">
+      <div class="mt-4 flex space-x-4">
+      <label class="text-white">Zoom Level:</label>
+      <input type="range" min="1" max="5" step="0.1" v-model="zoomLevel" class="cursor-pointer">
+      </div>
+      <div class="mt-2 flex space-x-4">
+      <label class="text-white">Zoom Circle Size:</label>
+      <input type="range" min="50" max="200" step="10" v-model="zoomCircleSize" class="cursor-pointer">
+      </div>
       <button class="mt-4 cursor-pointer rounded-lg bg-green-500 p-2 text-white" @click="downloadImage(selectedImage!)">
-        ⬇ Download
+      ⬇ Download
       </button>
     </div>
     <button class="i-mingcute:arrow-right-circle-line absolute right-4 top-1/2 z-10 transform cursor-pointer text-3xl text-white -translate-y-1/2 hover:text-blue-300" @click="nextImage" />
