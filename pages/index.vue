@@ -21,10 +21,10 @@ const { loggedIn } = useUserSession();
         </div>
         <div
           v-else
-          mb-4 text-center text-gray-500
+          mb-8 text-center text-gray-500
         >
-          <h1 class="mb-4 text-7xl text-fuchsia-600 !font-mono">
-            Welcome to Ensik Archieve!
+          <h1 font-melody mb-4 text-lg text-white lg:text-7xl md:text-4xl>
+            Ensik Archieve
           </h1>
           <p>Login with Discord to upload images.</p>
         </div>
