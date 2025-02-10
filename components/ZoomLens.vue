@@ -40,14 +40,13 @@ async function onImageLoaded(event: Event) {
   <div relative size-full overflow-hidden :style="{ cursor }" @mousemove="mouseMoved" @mouseenter="onMouseEnter" @mouseleave="onMouseLeave">
     <div
       class="magic-zoom-lens"
-      pointer-events-none absolute isolate z-1 overflow-hidden border-2 border-white rounded-full border-solid bg-black
+      pointer-events-none absolute isolate z-1 overflow-hidden border-2 border-white rounded-full border-solid
       :style="{
         width: `${lensSize}px`,
         height: `${lensSize}px`,
         opacity,
         top: `${lensY}px`,
         left: `${lensX}px`,
-        transform: 'translate(-50%, -50%)',
       }"
     >
       <div class="magic-zoom-lens-box" :style="{ width: `${lensSize}px`, height: `${lensSize}px` }">
@@ -63,7 +62,8 @@ async function onImageLoaded(event: Event) {
       </div>
     </div>
     <NuxtImg
-      class="magic-zoom-image"
+      object-cover
+      max="h-[80vh] w-full"
       :alt="props.alt || 'Zoomed Image'"
       :src="props.src"
       @load="onImageLoaded"
@@ -79,12 +79,5 @@ async function onImageLoaded(event: Event) {
 
 .magic-zoom-lens-box {
   transform: translate(50%, 50%);
-}
-
-.magic-zoom-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  background: black;
 }
 </style>

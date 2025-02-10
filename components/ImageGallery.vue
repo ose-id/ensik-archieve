@@ -107,7 +107,7 @@ async function downloadImage(image: { url: string; pathname: string }) {
     <button class="i-mingcute:arrow-left-circle-line absolute left-4 top-1/2 z-10 transform cursor-pointer text-3xl text-white -translate-y-1/2 hover:text-blue-300" @click="prevImage" />
     <div class="relative max-w-3xl w-[60%] flex flex-col items-center rounded-lg bg-gray-900/70 p-4 md:w-full">
       <button class="i-mingcute:close-circle-line hover:i-mingcute:close-circle-fill absolute cursor-pointer text-4xl text-red -right-4 -top-4 hover:bg-red" @click="closePopup" />
-      <ZoomLens :src="selectedImage?.url" alt="Popup Image" class="!aspect-auto !max-h-[80vh] !max-w-full" />
+      <ZoomLens :src="selectedImage?.url" alt="Popup Image" />
       <button mt-4 flex cursor-pointer items-center gap-1 border-0 rounded-md bg-blue-500 p-2 text-white hover:bg-blue-600 @click="downloadImage(selectedImage!)">
         <div i-mingcute:download-2-line />Download
       </button>
