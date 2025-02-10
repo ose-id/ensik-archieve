@@ -20,6 +20,11 @@ const avatarUrl = computed(() => {
     return '/default-avatar.png';
   return `https://cdn.discordapp.com/avatars/${u.discordId}/${u.avatar}.png`;
 });
+
+const username = computed(() => {
+  const u = user.value as { username?: string };
+  return u?.username ?? 'Guest';
+});
 </script>
 
 <template>
@@ -37,7 +42,7 @@ const avatarUrl = computed(() => {
           <!-- User Info -->
           <div flexcenter gap-3 border-b border-gray-100 px-4 py-6 text-sm dark:border-gray-800 md:text-base>
             <NuxtImg :src="avatarUrl" alt="img" size-8 rounded-full object-cover />
-            {{ user.username }}
+            {{ username }}
           </div>
 
           <!-- Menu Items -->
