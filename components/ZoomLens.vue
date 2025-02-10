@@ -37,37 +37,39 @@ async function onImageLoaded(event: Event) {
 </script>
 
 <template>
-  <div relative size-full overflow-hidden :style="{ cursor }" @mousemove="mouseMoved" @mouseenter="onMouseEnter" @mouseleave="onMouseLeave">
-    <div
-      class="magic-zoom-lens"
-      pointer-events-none absolute isolate z-1 overflow-hidden border-2 border-white rounded-full border-solid
-      :style="{
-        width: `${lensSize}px`,
-        height: `${lensSize}px`,
-        opacity,
-        top: `${lensY}px`,
-        left: `${lensX}px`,
-      }"
-    >
-      <div class="magic-zoom-lens-box" :style="{ width: `${lensSize}px`, height: `${lensSize}px` }">
-        <NuxtImg
-          fixed inline overflow-hidden object-cover
-          :src="props.src"
-          :style="{
-            width: `${imageWidth * zoomScale}px`,
-            height: `${imageHeight * zoomScale}px`,
-            transform: `translate(${-(lensX * zoomScale)}px, ${-(lensY * zoomScale)}px)`,
-          }"
-        />
+  <div>
+    <div relative size-full overflow-hidden :style="{ cursor }" @mousemove="mouseMoved" @mouseenter="onMouseEnter" @mouseleave="onMouseLeave">
+      <div
+        class="magic-zoom-lens"
+        pointer-events-none absolute isolate z-1 overflow-hidden border-2 border-white rounded-full border-solid
+        :style="{
+          width: `${lensSize}px`,
+          height: `${lensSize}px`,
+          opacity,
+          top: `${lensY}px`,
+          left: `${lensX}px`,
+        }"
+      >
+        <div class="magic-zoom-lens-box" :style="{ width: `${lensSize}px`, height: `${lensSize}px` }">
+          <NuxtImg
+            fixed inline overflow-hidden object-cover
+            :src="props.src"
+            :style="{
+              width: `${imageWidth * zoomScale}px`,
+              height: `${imageHeight * zoomScale}px`,
+              transform: `translate(${-(lensX * zoomScale)}px, ${-(lensY * zoomScale)}px)`,
+            }"
+          />
+        </div>
       </div>
+      <NuxtImg
+        object-cover
+        max="h-[80vh] w-full"
+        :alt="props.alt || 'Zoomed Image'"
+        :src="props.src"
+        @load="onImageLoaded"
+      />
     </div>
-    <NuxtImg
-      object-cover
-      max="h-[80vh] w-full"
-      :alt="props.alt || 'Zoomed Image'"
-      :src="props.src"
-      @load="onImageLoaded"
-    />
   </div>
 </template>
 
