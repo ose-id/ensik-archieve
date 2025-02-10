@@ -26,7 +26,7 @@ const { loggedIn } = useUserSession();
           <h1 font-melody mb-4 text-lg text-white lg:text-7xl md:text-4xl>
             Ensik Archieve
           </h1>
-          <p>Login with Discord to upload images.</p>
+          <p>Sign In with Discord to upload images.</p>
         </div>
         <ImageGallery />
       </div>
