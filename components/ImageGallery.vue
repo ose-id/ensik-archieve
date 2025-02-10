@@ -94,7 +94,7 @@ function zoomImage(event: MouseEvent) {
   function updateZoomCircle(e: MouseEvent) {
     const offsetX = e.clientX - rect.left;
     const offsetY = e.clientY - rect.top;
-    zoomCircle.style.transform = `translate(${offsetX - zoomCircleSize.value / 2 }px, ${offsetY - zoomCircleSize.value / 2}px)`;
+    zoomCircle.style.transform = `translate(${offsetX - zoomCircleSize.value / 2}px, ${offsetY - zoomCircleSize.value / 2}px)`;
     zoomCircle.style.backgroundPosition = `-${offsetX * zoomLevel.value - zoomCircleSize.value / 2}px -${offsetY * zoomLevel.value - zoomCircleSize.value / 2}px`;
   }
 
@@ -149,15 +149,15 @@ function zoomImage(event: MouseEvent) {
       <button class="i-mingcute:close-circle-line hover:i-mingcute:close-circle-fill absolute cursor-pointer text-4xl text-red -right-4 -top-4 hover:bg-red" @click="closePopup" />
       <img :src="selectedImage?.url" alt="Popup Image" class="max-h-[80vh] max-w-full" @mousedown="zoomImage">
       <div class="mt-4 flex space-x-4">
-      <label class="text-white">Zoom Level:</label>
-      <input type="range" min="1" max="5" step="0.1" v-model="zoomLevel" class="cursor-pointer">
+        <label class="text-white">Zoom Level:</label>
+        <input v-model="zoomLevel" type="range" min="1" max="5" step="0.1" class="cursor-pointer">
       </div>
       <div class="mt-2 flex space-x-4">
-      <label class="text-white">Zoom Circle Size:</label>
-      <input type="range" min="50" max="200" step="10" v-model="zoomCircleSize" class="cursor-pointer">
+        <label class="text-white">Zoom Circle Size:</label>
+        <input v-model="zoomCircleSize" type="range" min="50" max="200" step="10" class="cursor-pointer">
       </div>
       <button class="mt-4 cursor-pointer rounded-lg bg-green-500 p-2 text-white" @click="downloadImage(selectedImage!)">
-      ⬇ Download
+        ⬇ Download
       </button>
     </div>
     <button class="i-mingcute:arrow-right-circle-line absolute right-4 top-1/2 z-10 transform cursor-pointer text-3xl text-white -translate-y-1/2 hover:text-blue-300" @click="nextImage" />
