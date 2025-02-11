@@ -63,7 +63,7 @@ async function onImageLoaded(event: Event) {
         </div>
       </div>
       <NuxtImg
-        object-cover
+        min-w-40 object-contain md:min-w-120
         max="h-[80vh] w-full"
         :alt="props.alt || 'Zoomed Image'"
         :src="props.src"
