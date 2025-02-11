@@ -13,7 +13,7 @@ useSeoMeta({
 
 <style lang="postcss">
 * {
-  @apply font-sans;
+  @apply font-sans transition-colors ease-in-out duration-500;
 }
 :root {
   scrollbar-width: thin;
@@ -44,7 +44,7 @@ html.dark ::-webkit-scrollbar {
   background-color: #050505;
 }
 body {
-  @apply bg-white dark:bg-black m-0 transition-colors ease-in-out duration-300;
+  @apply bg-white dark:bg-black m-0;
 }
 .dark {
   color-scheme: dark;
