@@ -11,7 +11,7 @@ const menuItems: MenuItem[] = [
 </script>
 
 <template>
-  <aside class="fixed z-50 min-h-screen w-12 border-r-1 border-transparent border-r-solid bg-white shadow-lg md:w-20 dark:border-gray-800/70 dark:bg-gray-950">
+  <aside class="fixed left-0 z-50 min-h-screen w-12 border-r-1 border-transparent border-r-solid bg-white shadow-lg md:w-20 dark:border-gray-800/70 dark:bg-gray-950">
     <div flex flex-col h-dvh>
       <div flexcenter px-4 py-6>
         <NuxtImg src="/img/logo.jpg" alt="Logo" size-6 rounded-full md:size-8 />
