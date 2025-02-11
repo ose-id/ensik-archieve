@@ -10,8 +10,8 @@ const imageHeight = ref(0);
 const lensX = ref(0);
 const lensY = ref(0);
 
-const zoomScale = 1.7;
-const lensSize = 220;
+const zoomScale = ref(1.7);
+const lensSize = ref(150);
 
 const opacity = computed(() => (isImageHovered.value ? 1 : 0));
 const cursor = computed(() => (isImageHovered.value ? 'zoom-in' : 'default'));
@@ -69,6 +69,16 @@ async function onImageLoaded(event: Event) {
         :src="props.src"
         @load="onImageLoaded"
       />
+    </div>
+    <div class="mt-4 flex space-x-4 items-center justify-between">
+      <div class="flex items-center space-x-2">
+      <label class="text-white">Zoom Level:</label>
+      <input type="range" min="1" max="5" step="0.1" v-model="zoomScale" class="cursor-pointer">
+      </div>
+      <div class="flex items-center space-x-2">
+      <label class="text-white">Circle Size:</label>
+      <input type="range" min="50" max="200" step="10" v-model="lensSize" class="cursor-pointer">
+      </div>
     </div>
   </div>
 </template>
