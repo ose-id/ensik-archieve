@@ -70,15 +70,15 @@ async function onImageLoaded(event: Event) {
         @load="onImageLoaded"
       />
     </div>
-    <div class="mt-4 flex space-x-4 items-center justify-between">
-      <div class="flex items-center space-x-2">
-      <label class="text-white">Zoom Level:</label>
-      <input type="range" min="1" max="5" step="0.1" v-model="zoomScale" class="cursor-pointer">
-      </div>
-      <div class="flex items-center space-x-2">
-      <label class="text-white">Circle Size:</label>
-      <input type="range" min="50" max="200" step="10" v-model="lensSize" class="cursor-pointer">
-      </div>
+  </div>
+  <div mt-4 flex-wrap items-start md:flexbetween md:gap-4 space-y-2 md:space-y-0>
+    <div flexbetween space-x-2>
+      <label text-xs text-white md:text-sm>Zoom Level</label>
+      <input v-model="zoomScale" type="range" min="1" max="5" step="0.1" cursor-pointer>
+    </div>
+    <div flexbetween space-x-2>
+      <label text-xs text-white md:text-sm>Circle Size</label>
+      <input v-model="lensSize" type="range" min="50" max="200" step="10" cursor-pointer>
     </div>
   </div>
 </template>
