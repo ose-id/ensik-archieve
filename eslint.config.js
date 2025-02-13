@@ -5,7 +5,4 @@ export default antfu({
   stylistic: {
     semi: true,
   },
-  ignores: [
-    'content/*',
-  ],
 });
