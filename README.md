@@ -18,7 +18,7 @@ Ensik Archive is a captivating online gallery platform dedicated to preserving a
 
 ## Contributing
 
-If you want to help us building, you can check our [**contributing guidelines**](CONTRIBUTING.md) [📖](https://emojipedia.org/open-book)
+If you want to help us building, you can check our [**contributing guidelines**](.github/CONTRIBUTING.md) 📖
 
 ### Top Contributors
 
