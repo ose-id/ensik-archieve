@@ -21,12 +21,12 @@
     "@nuxtjs/color-mode": "^3.5.2",
     "@unocss/eslint-config": "^66.1.2",
     "@unocss/nuxt": "^66.1.2",
-    "@vueuse/core": "^13.2.0",
-    "@vueuse/nuxt": "^13.2.0",
+    "@vueuse/core": "^13.3.0",
+    "@vueuse/nuxt": "^13.3.0",
     "eslint": "^9.27.0",
     "nuxt": "^3.17.4",
     "nuxt-auth-utils": "0.5.20",
-    "vue": "^3.5.14",
+    "vue": "^3.5.15",
     "vue-router": "^4.5.1"
   }
 }
