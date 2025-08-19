@@ -9,6 +9,13 @@ export default defineNuxtConfig({
     'nuxt-auth-utils',
   ],
 
+  routeRules: {
+    '/': {
+      appMiddleware: 'auth',
+      isr: 3600,
+    },
+  },
+
   devtools: {
     enabled: false,
   },
@@ -48,10 +55,6 @@ export default defineNuxtConfig({
         scope: ['identify', 'guilds.members.read'],
       },
     },
-  },
-
-  routeRules: {
-    '/': { appMiddleware: 'auth' },
   },
 
   compatibilityDate: '2024-07-08',
