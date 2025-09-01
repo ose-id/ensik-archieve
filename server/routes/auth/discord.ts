@@ -3,6 +3,8 @@ export default defineOAuthDiscordEventHandler({
     const guildId = '614405243773386753';
     const roleId = '614416579475669014';
 
+    console.warn('Discord OAuth Success - User:', user.username, 'ID:', user.id);
+
     try {
       const memberResponse = await fetch(`https://discord.com/api/v10/users/@me/guilds/${guildId}/member`, {
         headers: {
@@ -11,18 +13,22 @@ export default defineOAuthDiscordEventHandler({
       });
 
       if (!memberResponse.ok) {
-        console.error('Failed to fetch member information:', await memberResponse.text());
-        throw new Error('Failed to fetch member information');
+        const errorText = await memberResponse.text();
+        console.error('Failed to fetch member information:', errorText);
+        console.error('Response status:', memberResponse.status);
+        throw new Error(`Failed to fetch member information: ${memberResponse.status}`);
       }
 
       const member = await memberResponse.json();
+      console.warn('Member roles:', member.roles);
 
       const hasRole = member.roles.includes(roleId);
       if (!hasRole) {
-        console.error('User does not have the required role');
+        console.error('User does not have the required role. User roles:', member.roles);
         throw new Error('User does not have the required role');
       }
 
+      console.warn('Setting user session for:', user.username);
       await setUserSession(event, {
         user: {
           discordId: user.id,
@@ -32,6 +38,7 @@ export default defineOAuthDiscordEventHandler({
         loggedInAt: new Date(),
       });
 
+      console.warn('User session set successfully');
       return sendRedirect(event, '/');
     }
     catch (error) {
