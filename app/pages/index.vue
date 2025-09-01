@@ -21,7 +21,7 @@ const { loggedIn } = useUserSession();
         </div>
         <div
           v-else
-          mb-8 text-center text-gray-500
+          mb-8 text-center text-neutral-500
         >
           <h1 mb-4 text-lg text-neutral-900 font-melody lg:text-7xl md:text-4xl dark:text-zinc-300>
             Ensik Archieve

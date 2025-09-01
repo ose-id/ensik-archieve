@@ -34,13 +34,13 @@ const username = computed(() => {
       <div relative>
         <button flex cursor-pointer items-center gap-2 rounded-full border-none bg-transparent py-2 @click="toggleDropdown">
           <NuxtImg :src="avatarUrl" alt="img" size-8 rounded-full object-cover />
-          <div i-mingcute:down-line text-xl hover:text-gray-500 />
+          <div i-mingcute:down-line text-xl hover:text-neutral-500 />
         </button>
 
         <!-- Dropdown Menu -->
-        <div v-if="showDropdown" absolute right-0.5rem mt-2 w-60 overflow-hidden rounded-lg bg-white shadow-xl md:w-72 dark:bg-gray-900>
+        <div v-if="showDropdown" absolute right-0.5rem mt-2 w-60 overflow-hidden rounded-lg bg-white shadow-xl md:w-72 dark:bg-neutral-900>
           <!-- User Info -->
-          <div flexcenter gap-3 border-b border-gray-100 px-4 py-6 text-sm dark:border-gray-800 md:text-base>
+          <div flexcenter gap-3 border-b border-neutral-100 px-4 py-6 text-sm dark:border-neutral-800 md:text-base>
             <NuxtImg :src="avatarUrl" alt="img" size-8 rounded-full object-cover />
             {{ username }}
           </div>
@@ -49,7 +49,7 @@ const username = computed(() => {
           <div>
             <button
               v-for="item in dropdownItems" :key="item.label" :class="item.danger ? 'text-red' : ''" aria-label="Logout" w-full
-              flexcenter cursor-pointer gap-2 border-none p-2 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 @click="item.action"
+              flexcenter cursor-pointer gap-2 border-none p-2 dark:bg-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-600 @click="item.action"
             >
               <div class="text-xl text-red" :class="[item.icon]" />
               {{ item.label }}

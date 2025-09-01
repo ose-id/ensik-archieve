@@ -83,12 +83,12 @@ async function downloadImage(image: { url: string; pathname: string }) {
 <template>
   <div mx-auto pb-12>
     <div v-if="isLoading" h-64 flex items-center justify-center>
-      <div i-mingcute-loading-fill animate-spin text-4xl text-gray-900 dark:text-white />
+      <div i-mingcute-loading-fill animate-spin text-4xl text-neutral-900 dark:text-white />
     </div>
     <div v-else-if="error" rounded-lg bg-red-100 p-4 text-center text-red-500>
       {{ error }}
     </div>
-    <div v-else-if="images.length === 0" rounded-lg bg-gray-100 p-4 text-center text-gray-500>
+    <div v-else-if="images.length === 0" rounded-lg bg-neutral-100 p-4 text-center text-neutral-500>
       No images uploaded yet.
     </div>
 
@@ -102,12 +102,12 @@ async function downloadImage(image: { url: string; pathname: string }) {
           class="relative cursor-pointer overflow-hidden rounded-lg shadow-lg transition-all duration-300 hover:scale-[1.02] hover:shadow-xl"
           @click="openPopup(image, index)"
         >
-          <div class="aspect-w-4 aspect-h-3 bg-gray-100">
+          <div class="aspect-w-4 aspect-h-3 bg-neutral-100">
             <div
               v-if="!image.loaded"
               class="absolute inset-0 flex items-center justify-center"
             >
-              <div i-mingcute-loading-fill animate-spin text-2xl text-gray-500 />
+              <div i-mingcute-loading-fill animate-spin text-2xl text-neutral-500 />
             </div>
 
             <NuxtImg
@@ -130,7 +130,7 @@ async function downloadImage(image: { url: string; pathname: string }) {
 
   <div v-if="showPopup" fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90>
     <button class="i-mingcute:arrow-left-circle-line absolute left-4 top-1/2 z-10 transform cursor-pointer text-3xl text-white -translate-y-1/2 hover:text-blue-300" @click="prevImage" />
-    <div class="relative max-w-3xl w-[60%] flex flex-col items-center rounded-lg bg-gray-900/70 p-4 lg:w-full">
+    <div class="relative max-w-3xl w-[60%] flex flex-col items-center rounded-lg bg-neutral-900/70 p-4 lg:w-full">
       <button class="i-mingcute:close-circle-line hover:i-mingcute:close-circle-fill absolute cursor-pointer text-4xl text-red -right-4 -top-4 hover:bg-red" @click="closePopup" />
 
       <div v-if="selectedImage && !selectedImage.loaded" class="h-64 w-full flex items-center justify-center">
