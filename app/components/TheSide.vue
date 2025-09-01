@@ -5,7 +5,11 @@ interface MenuItem {
   route: string;
 }
 
-const { loggedIn } = useUserSession();
+const { loggedIn, fetch } = await useUserSession();
+
+if (process.client) {
+  await fetch();
+}
 
 const menuItems = computed<MenuItem[]>(() => [
   { icon: 'i-mingcute:home-6-line', label: 'Home', route: '/' },

@@ -3,7 +3,11 @@ useSeoMeta({
   title: 'Ensik Archive',
 });
 
-const { loggedIn } = useUserSession();
+const { loggedIn, fetch } = await useUserSession();
+
+if (process.client) {
+  await fetch();
+}
 </script>
 
 <template>

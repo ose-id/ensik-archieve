@@ -1,5 +1,9 @@
 <script setup lang="ts">
-const { loggedIn, user, clear } = useUserSession();
+const { loggedIn, user, clear, fetch } = await useUserSession();
+
+if (process.client) {
+  await fetch();
+}
 const showDropdown = ref(false);
 
 const dropdownItems = [
