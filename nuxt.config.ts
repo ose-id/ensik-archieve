@@ -14,6 +14,9 @@ export default defineNuxtConfig({
       appMiddleware: 'auth',
       isr: 3600,
     },
+    '/dashboard': {
+      appMiddleware: 'auth',
+    },
   },
 
   devtools: {
@@ -53,6 +56,11 @@ export default defineNuxtConfig({
         clientId: process.env.NUXT_OAUTH_DISCORD_CLIENT_ID,
         clientSecret: process.env.NUXT_OAUTH_DISCORD_CLIENT_SECRET,
         scope: ['identify', 'guilds.members.read'],
+      },
+    },
+    public: {
+      authJs: {
+        baseURL: process.env.AUTH_ORIGIN,
       },
     },
   },
