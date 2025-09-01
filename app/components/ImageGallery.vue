@@ -26,7 +26,10 @@ const getUsername = (pathname: string) => pathname.split('-')[0];
 
 function handleImageLoaded(index: number) {
   if (index >= 0 && index < images.value.length) {
-    images.value[index].loaded = true;
+    const image = images.value[index];
+    if (image) {
+      image.loaded = true;
+    }
   }
 }
 
@@ -44,14 +47,14 @@ function closePopup() {
 function nextImage() {
   if (currentIndex.value < images.value.length - 1) {
     currentIndex.value++;
-    selectedImage.value = images.value[currentIndex.value];
+    selectedImage.value = images.value[currentIndex.value] || null;
   }
 }
 
 function prevImage() {
   if (currentIndex.value > 0) {
     currentIndex.value--;
-    selectedImage.value = images.value[currentIndex.value];
+    selectedImage.value = images.value[currentIndex.value] || null;
   }
 }
 
