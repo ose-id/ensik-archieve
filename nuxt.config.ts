@@ -11,11 +11,7 @@ export default defineNuxtConfig({
 
   routeRules: {
     '/': {
-      appMiddleware: 'auth',
       isr: 3600,
-    },
-    '/dashboard': {
-      appMiddleware: 'auth',
     },
   },
 

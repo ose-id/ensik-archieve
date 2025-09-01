@@ -1,9 +1,10 @@
 export default defineNuxtRouteMiddleware(async (to, _from) => {
-  const session = await useUserSession();
+  const { loggedIn } = await useUserSession();
 
-  const protectedRoutes = ['/', '/dashboard'];
+  console.warn('Auth middleware - Path:', to.path, 'LoggedIn value:', loggedIn.value);
 
-  if (!session?.user && protectedRoutes.includes(to.path)) {
-    return navigateTo('/auth/discord');
+  if (to.path === '/dashboard' && !loggedIn.value) {
+    console.warn('Redirecting from dashboard to home - not logged in');
+    return navigateTo('/');
   }
 });
