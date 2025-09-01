@@ -1,0 +1,75 @@
+name: PR Bot
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - run: bun install
+
+      - name: Lint
+        id: lint
+        run: bun run lint
+        continue-on-error: true
+
+      - name: Build
+        id: build
+        run: bun run build
+        continue-on-error: true
+
+      - name: Dev Test
+        id: dev
+        run: |
+          timeout 20s bun run dev &
+          sleep 10
+          kill %1
+        continue-on-error: true
+
+      - name: Comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const lintStatus = '${{ steps.lint.outcome }}' === 'success' ? '✅' : '❌';
+            const buildStatus = '${{ steps.build.outcome }}' === 'success' ? '✅' : '❌';
+            const devStatus = '${{ steps.dev.outcome }}' === 'success' ? '✅' : '❌';
+
+            const body = \`## 🤖 PR Check
+            | Check | Status |
+            |-------|--------|
+            | Lint | \${lintStatus} |
+            | Build | \${buildStatus} |
+            | Dev | \${devStatus} |\`;
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.find(c => c.user.type === 'Bot' && c.body.includes('🤖 PR Check'));
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body
+              });
+            }
