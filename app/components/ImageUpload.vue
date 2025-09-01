@@ -14,6 +14,10 @@ function handleFileSelect(event: Event) {
     return;
 
   const file = target.files[0];
+  if (!file) {
+    return;
+  }
+
   if (file.size > 2 * 1024 * 1024) { // 2MB limit
     alertMessage.value = 'File size exceeds 2MB limit! Please choose a smaller file.';
     selectedFile.value = null;
@@ -87,11 +91,11 @@ function closeModal() {
           ref="fileInputRef"
           type="file"
           accept="image/*"
-          block w-full cursor-pointer text-sm text-slate-500 file:mr-4 file:cursor-pointer file:border-0 file:rounded-full file:bg-gray-50 file:px-4 file:py-2 file:text-sm file:text-gray-700 file:font-semibold hover:file:bg-gray-100
+          block w-full cursor-pointer text-sm text-slate-500 file:mr-4 file:cursor-pointer file:border-0 file:rounded-full file:bg-neutral-50 file:px-4 file:py-2 file:text-sm file:text-neutral-700 file:font-semibold hover:file:bg-neutral-100
           @change="handleFileSelect"
         >
       </label>
-      <p mt-2 text-sm text-gray-500>
+      <p mt-2 text-sm text-neutral-500>
         Max file size: 2MB
       </p>
       <p
@@ -107,8 +111,8 @@ function closeModal() {
       fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90
     >
       <div class="relative w-11/12 rounded-lg bg-white shadow-lg lg:w-1/3 md:w-1/2">
-        <div flexbetween border-b border-gray-200 px-6 py-4>
-          <h2 text-xl text-gray-800 font-semibold>
+        <div flexbetween border-b border-neutral-200 px-6 py-4>
+          <h2 text-xl text-neutral-800 font-semibold>
             Preview Image
           </h2>
           <button
@@ -123,7 +127,7 @@ function closeModal() {
             mx-auto max-h-96 max-w-full rounded-lg
           />
         </div>
-        <div flex justify-center border-t border-gray-200 px-6 py-4 space-x-4>
+        <div flex justify-center border-t border-neutral-200 px-6 py-4 space-x-4>
           <button
             transform cursor-pointer rounded-lg border-none bg-blue-500 px-6 py-3 text-white font-semibold shadow-md transition duration-300 hover:scale-105 hover:bg-blue-700
             :disabled="isUploading"
@@ -132,7 +136,7 @@ function closeModal() {
             {{ isUploading ? 'Uploading...' : 'Upload' }}
           </button>
           <button
-            transform cursor-pointer rounded-lg border-none bg-gray-400 px-6 py-3 text-white font-semibold shadow-md transition duration-300 hover:scale-105 hover:bg-gray-600
+            transform cursor-pointer rounded-lg border-none bg-neutral-400 px-6 py-3 text-white font-semibold shadow-md transition duration-300 hover:scale-105 hover:bg-neutral-600
             :disabled="isUploading"
             @click="cancelUpload"
           >
