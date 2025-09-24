@@ -14,30 +14,33 @@ A captivating online gallery platform dedicated to preserving and showcasing a r
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) v22.19.0+
-- [Bun](https://bun.sh/)
+- [Node.js](https://nodejs.org/) v22.19.0+ - JavaScript runtime
+- [Bun](https://bun.sh/) - Fast JavaScript runtime and package manager
 
 ### Installation
 
 1. Clone the repository:
-   ```bash
-   git clone https://github.com/ose-id/ensik-archieve.git
-   cd ensik-archieve
-   ```
+
+```bash
+git clone https://github.com/ose-id/ensik-archieve.git
+cd ensik-archieve
+```
 
 2. Install dependencies:
-   ```bash
-   bun install
-   ```
 
-   > Note: If you prefer other package managers, you can use `npm install`, `pnpm install`, or `yarn install`.
+```bash
+bun install
+```
+
+> Note: If you prefer other package managers, you can use `npm install`, `pnpm install`, or `yarn install`.
 
 3. Start the development server:
-   ```bash
-   bun run dev
-   ```
 
-   > Note: Or use `npm run dev`, `pnpm dev`, or `yarn dev`.
+```bash
+bun run dev
+```
+
+> Note: Or use `npm run dev`, `pnpm dev`, or `yarn dev`.
 
 4. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
