@@ -1,27 +1,56 @@
-# **Ensik Archieve** 📁
+# Ensik Archive 📁
 
-Ensik Archive is a captivating online gallery platform dedicated to preserving and showcasing a rich collection of historical, and documents.
+A captivating online gallery platform dedicated to preserving and showcasing a rich collection of historical documents and images.
 
-## Features
+## ✨ Features
 
-✔️ **Minimalist:** Clean design layout
+- **Minimalist Design**: Clean and intuitive user interface
+- **Advanced Filtering**: Sort content by publisher or date
+- **Optimized Performance**: Compressed images with lazy loading for fast browsing
+- **Secure Authentication**: Discord OAuth integration
+- **Dark Mode Support**: Seamless light and dark theme switching
 
-✔️ **Filter:** Sort photo by publisher or date
+## 🚀 Getting Started
 
-✔️ **Fast:** Compressed photo & lazy load
+### Prerequisites
 
-## Built with
+- [Node.js](https://nodejs.org/) v22.19.0+
+- [Bun](https://bun.sh/)
 
-- [Nuxt](https://nuxt.com)
-- [UnoCSS](https://unocss.dev)
-- [Vercel Blob](https://vercel.com/docs/storage/vercel-blob)
+### Installation
 
-## Contributing
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/ose-id/ensik-archieve.git
+   cd ensik-archieve
+   ```
 
-If you want to help us building, you can check our [**contributing guidelines**](.github/CONTRIBUTING.md) 📖
+2. Install dependencies:
+   ```bash
+   bun install
+   ```
+
+   > Note: If you prefer other package managers, you can use `npm install`, `pnpm install`, or `yarn install`.
+
+3. Start the development server:
+   ```bash
+   bun run dev
+   ```
+
+   > Note: Or use `npm run dev`, `pnpm dev`, or `yarn dev`.
+
+4. Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+## 🤝 Contributing
+
+We welcome contributions! Please see our [contributing guidelines](.github/CONTRIBUTING.md) for details.
 
 ### Top Contributors
 
 <a href="https://github.com/ose-id/ensik-archieve/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=ose-id/ensik-archieve" />
 </a>
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
