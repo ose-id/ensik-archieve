@@ -10,6 +10,8 @@ A captivating online gallery platform dedicated to preserving and showcasing a r
 - **Secure Authentication**: Discord OAuth integration
 - **Dark Mode Support**: Seamless light and dark theme switching
 
+---
+
 ## 🚀 Getting Started
 
 ### Prerequisites
@@ -44,6 +46,8 @@ bun run dev
 
 4. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
+---
+
 ## 🤝 Contributing
 
 We welcome contributions! Please see our [contributing guidelines](.github/CONTRIBUTING.md) for details.
@@ -53,6 +57,8 @@ We welcome contributions! Please see our [contributing guidelines](.github/CONTR
 <a href="https://github.com/ose-id/ensik-archieve/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=ose-id/ensik-archieve" />
 </a>
+
+---
 
 ## 📄 License
 
