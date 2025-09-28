@@ -20,6 +20,18 @@ const images = ref<ImageBlob[]>([]);
 const showDeleteConfirm = ref<string | null>(null);
 const isDeleting = ref<string | null>(null);
 const viewMode = ref<'list' | 'card'>('list');
+const sortOrder = ref<'desc' | 'asc'>('desc');
+
+const sortedImages = computed(() => {
+  return [...images.value].sort((a, b) => {
+    const dateA = new Date(a.uploadedAt).getTime();
+    const dateB = new Date(b.uploadedAt).getTime();
+
+    return sortOrder.value === 'desc'
+      ? dateB - dateA
+      : dateA - dateB;
+  });
+});
 
 async function deleteImage(imageUrl: string) {
   if (isDeleting.value)
@@ -135,23 +147,44 @@ onMounted(async () => {
                     {{ images.length }} foto tersimpan
                   </p>
                 </div>
-                <div class="flex items-center space-x-1 sm:space-x-2">
-                  <button
-                    class="cursor-pointer rounded-md border-none p-2 transition-colors"
-                    :class="viewMode === 'list' ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' : 'text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300'"
-                    title="Tampilan List"
-                    @click="viewMode = 'list'"
-                  >
-                    <div class="i-mingcute:list-check-line text-base sm:text-lg" />
-                  </button>
-                  <button
-                    class="cursor-pointer rounded-md border-none p-2 transition-colors"
-                    :class="viewMode === 'card' ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' : 'text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300'"
-                    title="Tampilan Card"
-                    @click="viewMode = 'card'"
-                  >
-                    <div class="i-mingcute:grid-line text-base sm:text-lg" />
-                  </button>
+                <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+                  <div class="flex items-center rounded-md bg-neutral-100 px-2 py-1 text-neutral-600 dark:bg-neutral-700/40 dark:text-neutral-200">
+                    <div class="i-mingcute:sort-descending-line mr-2 text-base sm:text-lg" />
+                    <select
+                      v-model="sortOrder"
+                      class="text-xs sm:text-sm"
+                      bg="transparent"
+                      border="none"
+                      cursor="pointer"
+                      focus:outline="none"
+                    >
+                      <option value="desc">
+                        Terbaru
+                      </option>
+                      <option value="asc">
+                        Terlama
+                      </option>
+                    </select>
+                  </div>
+
+                  <div class="flex items-center space-x-1 sm:space-x-2">
+                    <button
+                      class="cursor-pointer rounded-md border-none p-2 transition-colors"
+                      :class="viewMode === 'list' ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' : 'text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300'"
+                      title="Tampilan List"
+                      @click="viewMode = 'list'"
+                    >
+                      <div class="i-mingcute:list-check-line text-base sm:text-lg" />
+                    </button>
+                    <button
+                      class="cursor-pointer rounded-md border-none p-2 transition-colors"
+                      :class="viewMode === 'card' ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' : 'text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300'"
+                      title="Tampilan Card"
+                      @click="viewMode = 'card'"
+                    >
+                      <div class="i-mingcute:grid-line text-base sm:text-lg" />
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -174,7 +207,7 @@ onMounted(async () => {
             </div>
 
             <div v-else-if="viewMode === 'card'" class="grid grid-cols-2 gap-3 p-4 lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 xl:grid-cols-5 md:gap-6 sm:gap-4 md:p-8 sm:p-6">
-              <div v-for="image in images" :key="image.url" class="group relative overflow-hidden rounded-lg bg-white shadow-lg transition-all duration-300 md:rounded-2xl sm:rounded-xl dark:bg-neutral-700/50 hover:shadow-2xl">
+              <div v-for="image in sortedImages" :key="image.url" class="group relative overflow-hidden rounded-lg bg-white shadow-lg transition-all duration-300 md:rounded-2xl sm:rounded-xl dark:bg-neutral-700/50 hover:shadow-2xl">
                 <button
                   class="absolute right-1 top-1 z-20 hidden cursor-pointer rounded-md border-none bg-red-500 p-1.5 text-white opacity-0 shadow-lg transition-all duration-200 sm:right-2 sm:top-2 sm:block hover:scale-110 hover:bg-red-600 md:p-3 sm:p-2 group-hover:opacity-100"
                   title="Hapus foto"
@@ -228,7 +261,7 @@ onMounted(async () => {
 
             <div v-else class="p-4 md:p-8 sm:p-6">
               <div class="space-y-3 sm:space-y-4">
-                <div v-for="image in images" :key="image.url" class="group flex items-center rounded-lg bg-white p-3 shadow-sm transition-all duration-200 sm:rounded-xl dark:bg-neutral-800/50 sm:p-4 hover:shadow-md">
+                <div v-for="image in sortedImages" :key="image.url" class="group flex items-center rounded-lg bg-white p-3 shadow-sm transition-all duration-200 sm:rounded-xl dark:bg-neutral-800/50 sm:p-4 hover:shadow-md">
                   <div class="h-12 w-12 flex-shrink-0 overflow-hidden rounded-md md:h-16 md:w-16 sm:h-14 sm:w-14 sm:rounded-lg">
                     <img
                       :src="image.url"
