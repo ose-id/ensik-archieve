@@ -186,7 +186,11 @@ async function downloadImage(image: ImageItem) {
     </div>
   </div>
 
-  <div v-if="showPopup" fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90>
+  <div
+    v-if="showPopup"
+    fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90
+    @click.self="closePopup"
+  >
     <button class="i-mingcute:arrow-left-circle-line absolute left-4 top-1/2 z-10 transform cursor-pointer text-3xl text-white -translate-y-1/2 hover:text-blue-300" @click="prevImage" />
     <div class="relative max-w-3xl w-[60%] flex flex-col items-center rounded-lg bg-neutral-900/70 p-4 lg:w-full">
       <button class="i-mingcute:close-circle-line hover:i-mingcute:close-circle-fill absolute cursor-pointer text-4xl text-red -right-4 -top-4 hover:bg-red" @click="closePopup" />
