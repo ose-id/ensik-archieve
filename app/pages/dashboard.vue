@@ -149,7 +149,7 @@ onMounted(async () => {
                 </div>
                 <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
                   <div
-                    class="rounded-md px-3 py-1 text-neutral-600 dark:text-neutral-200"
+                    class="rounded-lg px-2 py-1 text-xs text-neutral-600 sm:text-sm dark:text-neutral-200"
                     flex
                     items-center
                     gap-2
@@ -158,22 +158,29 @@ onMounted(async () => {
                     dark:border="~ neutral-600"
                     dark:bg="neutral-800/70"
                   >
-                    <div class="i-mingcute:sort-descending-line mr-2 text-base sm:text-lg" />
-                    <select
-                      v-model="sortOrder"
-                      class="text-xs text-neutral-700 sm:text-sm dark:text-neutral-100"
-                      bg="transparent"
-                      border="none"
-                      cursor="pointer"
-                      focus:outline="none"
-                    >
-                      <option value="desc">
+                    <div class="i-mingcute:sort-descending-line text-base sm:text-lg" />
+                    <div class="flex items-center gap-1">
+                      <button
+                        class="rounded-md px-3 py-1 transition-colors"
+                        border="0"
+                        cursor="pointer"
+                        :class="sortOrder === 'desc' ? 'bg-blue-500 text-white shadow-sm dark:bg-blue-600' : 'bg-transparent text-neutral-600 hover:bg-neutral-200 dark:text-neutral-300 dark:hover:bg-neutral-700'"
+                        type="button"
+                        @click="sortOrder = 'desc'"
+                      >
                         Terbaru
-                      </option>
-                      <option value="asc">
+                      </button>
+                      <button
+                        class="rounded-md px-3 py-1 transition-colors"
+                        border="0"
+                        cursor="pointer"
+                        :class="sortOrder === 'asc' ? 'bg-blue-500 text-white shadow-sm dark:bg-blue-600' : 'bg-transparent text-neutral-600 hover:bg-neutral-200 dark:text-neutral-300 dark:hover:bg-neutral-700'"
+                        type="button"
+                        @click="sortOrder = 'asc'"
+                      >
                         Terlama
-                      </option>
-                    </select>
+                      </button>
+                    </div>
                   </div>
 
                   <div class="flex items-center space-x-1 sm:space-x-2">
