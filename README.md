@@ -16,7 +16,7 @@ A captivating online gallery platform dedicated to preserving and showcasing a r
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) v22.19.0+ - JavaScript runtime
+- [Node.js](https://nodejs.org/) LTS - JavaScript runtime
 - [Bun](https://bun.sh/) - Fast JavaScript runtime and package manager
 
 ### Installation
