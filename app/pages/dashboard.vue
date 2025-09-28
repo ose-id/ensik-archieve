@@ -12,7 +12,7 @@ interface ImageBlob {
 
 const { loggedIn } = useUserSession();
 
-if (process.client && !loggedIn.value) {
+if (import.meta.client && !loggedIn.value) {
   await navigateTo('/');
 }
 
@@ -212,7 +212,7 @@ onMounted(async () => {
                         </span>
                       </div>
                     </div>
-                    
+
                     <button
                       class="cursor-pointer rounded-md border-none bg-red-500 p-1 text-white shadow-sm transition-all duration-200 sm:hidden active:scale-95 hover:bg-red-600"
                       title="Hapus foto"
