@@ -6,8 +6,9 @@ interface MenuItem {
 }
 
 const { loggedIn, fetch } = await useUserSession();
+const route = useRoute();
 
-if (process.client) {
+if (import.meta.client) {
   await fetch();
 }
 
@@ -19,6 +20,15 @@ const menuItems = computed<MenuItem[]>(() => [
       ]
     : []),
 ]);
+
+const currentPath = computed(() => route.path);
+
+function isActive(path: string) {
+  if (path === '/')
+    return currentPath.value === '/';
+
+  return currentPath.value === path || currentPath.value.startsWith(`${path}/`);
+}
 </script>
 
 <template>
@@ -31,8 +41,22 @@ const menuItems = computed<MenuItem[]>(() => [
     <nav flex-grow>
       <ul p-2 space-y-6>
         <li v-for="item in menuItems" :key="item.label">
-          <NuxtLink :to="item.route" flexcenter rounded-lg p-2 transition-colors duration-200 hover:bg-neutral-100 dark:hover:bg-neutral-800>
-            <div text-2xl :class="[item.icon]" />
+          <NuxtLink
+            :to="item.route"
+            class="flexcenter rounded-lg p-2 transition-colors duration-200"
+            :class="[
+              isActive(item.route)
+                ? 'bg-neutral-900 text-white shadow-md dark:bg-neutral-800'
+                : 'hover:bg-neutral-100 text-neutral-500 dark:text-neutral-400 dark:hover:bg-neutral-800',
+            ]"
+          >
+            <div
+              class="text-2xl transition-colors"
+              :class="[
+                item.icon,
+                isActive(item.route) ? 'text-blue-500 dark:text-blue-400' : '',
+              ]"
+            />
           </NuxtLink>
         </li>
       </ul>
