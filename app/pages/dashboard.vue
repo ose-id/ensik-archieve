@@ -148,11 +148,20 @@ onMounted(async () => {
                   </p>
                 </div>
                 <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
-                  <div class="flex items-center rounded-md bg-neutral-100 px-2 py-1 text-neutral-600 dark:bg-neutral-700/40 dark:text-neutral-200">
+                  <div
+                    class="rounded-md px-3 py-1 text-neutral-600 dark:text-neutral-200"
+                    flex
+                    items-center
+                    gap-2
+                    border="~ neutral-200"
+                    bg="neutral-100"
+                    dark:border="~ neutral-600"
+                    dark:bg="neutral-800/70"
+                  >
                     <div class="i-mingcute:sort-descending-line mr-2 text-base sm:text-lg" />
                     <select
                       v-model="sortOrder"
-                      class="text-xs sm:text-sm"
+                      class="text-xs text-neutral-700 sm:text-sm dark:text-neutral-100"
                       bg="transparent"
                       border="none"
                       cursor="pointer"

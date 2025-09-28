@@ -110,9 +110,9 @@ function closeModal() {
       v-if="showModal"
       fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90
     >
-      <div class="relative w-11/12 rounded-lg bg-white shadow-lg lg:w-1/3 md:w-1/2">
-        <div flexbetween border-b border-neutral-200 px-6 py-4>
-          <h2 text-xl text-neutral-800 font-semibold>
+      <div class="relative w-11/12 rounded-lg bg-white shadow-lg lg:w-1/3 md:w-1/2 dark:bg-neutral-900 dark:shadow-neutral-900/50">
+        <div flexbetween border-b border-neutral-200 px-6 py-4 dark:border-neutral-700>
+          <h2 text-xl text-neutral-800 font-semibold dark:text-neutral-100>
             Preview Image
           </h2>
           <button
@@ -127,16 +127,16 @@ function closeModal() {
             mx-auto max-h-96 max-w-full rounded-lg
           />
         </div>
-        <div flex justify-center border-t border-neutral-200 px-6 py-4 space-x-4>
+        <div flex justify-center border-t border-neutral-200 px-6 py-4 space-x-4 dark:border-neutral-700>
           <button
-            transform cursor-pointer rounded-lg border-none bg-blue-500 px-6 py-3 text-white font-semibold shadow-md transition duration-300 hover:scale-105 hover:bg-blue-700
+            class="cursor-pointer rounded-lg border-none bg-blue-500 px-6 py-3 text-white font-semibold shadow-md transition duration-300 hover:scale-105 hover:bg-blue-700"
             :disabled="isUploading"
             @click="uploadImage"
           >
             {{ isUploading ? 'Uploading...' : 'Upload' }}
           </button>
           <button
-            transform cursor-pointer rounded-lg border-none bg-neutral-400 px-6 py-3 text-white font-semibold shadow-md transition duration-300 hover:scale-105 hover:bg-neutral-600
+            class="cursor-pointer rounded-lg border-none bg-neutral-400 px-6 py-3 text-white font-semibold shadow-md transition duration-300 hover:scale-105 dark:bg-neutral-600 hover:bg-neutral-600 dark:hover:bg-neutral-500"
             :disabled="isUploading"
             @click="cancelUpload"
           >
