@@ -1,3 +1,4 @@
+import { randomBytes } from 'node:crypto';
 import { put } from '@vercel/blob';
 
 interface CustomUser {
@@ -30,14 +31,31 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'File size exceeds 2MB limit.' });
   }
 
-  const fileName = `${username}-${Date.now()}-${file.name}`;
+  const now = new Date();
+  const day = String(now.getDate()).padStart(2, '0');
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const year = String(now.getFullYear());
+  const formattedDate = `${day}-${month}-${year}`;
+
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+  const randomSegment = Array.from(randomBytes(5))
+    .map(byte => characters[byte % characters.length])
+    .join('');
+
+  const extensionMatch = file.name.match(/\.[^.]+$/);
+  const extension = extensionMatch ? extensionMatch[0].toLowerCase() : '';
+
+  const fileName = `${username}-img-${formattedDate}-${randomSegment}${extension}`;
 
   try {
     const blob = await put(fileName, file.data, {
       access: 'public',
     });
 
-    return { url: blob.url };
+    return {
+      url: blob.url,
+      pathname: blob.pathname,
+    };
   }
   catch (error) {
     console.error('Upload failed:', error);
