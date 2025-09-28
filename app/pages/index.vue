@@ -5,7 +5,7 @@ useSeoMeta({
 
 const { loggedIn, fetch } = await useUserSession();
 
-if (process.client) {
+if (import.meta.client) {
   await fetch();
 }
 </script>
