@@ -73,11 +73,17 @@ function toggleDarkMode() {
     </NuxtLink>
 
     <button
-      class="flexcenter flex-col gap-1 rounded-lg px-3 py-1 text-xs text-neutral-500 transition-colors duration-200 dark:text-neutral-400"
+      class="flexcenter flex-col gap-1 border-0 rounded-lg bg-transparent px-3 py-1 text-xs transition-colors duration-200"
+      :class="showSettings ? 'text-blue-600 dark:text-blue-400' : 'text-neutral-500 dark:text-neutral-400'"
       type="button"
+      aria-haspopup="dialog"
+      :aria-expanded="showSettings"
       @click="openSettings"
     >
-      <div class="i-mingcute:gear-line text-xl" />
+      <div
+        class="text-xl transition-colors"
+        :class="showSettings ? 'i-mingcute:settings-3-line text-blue-600 dark:text-blue-400' : 'i-mingcute:settings-3-line text-neutral-500 dark:text-neutral-400'"
+      />
       <span>Settings</span>
     </button>
   </nav>
@@ -98,8 +104,8 @@ function toggleDarkMode() {
       aria-modal="true"
       aria-labelledby="mobile-settings-title"
     >
-      <div flex items-center justify-between mb-4>
-        <h2 id="mobile-settings-title" text-base font-semibold text-neutral-900 dark:text-white>
+      <div mb-4 flex items-center justify-between>
+        <h2 id="mobile-settings-title" text-base text-neutral-900 font-semibold dark:text-white>
           Settings
         </h2>
         <button
