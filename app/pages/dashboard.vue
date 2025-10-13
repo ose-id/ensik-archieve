@@ -98,7 +98,7 @@ onMounted(async () => {
       <TheSide />
       <TheNav />
 
-      <main class="ml-[50px] px-3 pt-16 md:ml-[80px] lg:px-8 md:px-6">
+      <main class="px-3 pt-16 md:ml-[50px] md:ml-[80px] lg:px-8 md:px-6">
         <div class="mx-auto py-4 md:py-8">
           <div class="grid grid-cols-1 mb-8 gap-4 md:grid-cols-2 md:mb-12 md:gap-8 sm:gap-6">
             <div class="group relative overflow-hidden rounded-xl from-neutral-50 to-neutral-100 bg-gradient-to-br p-4 shadow-lg transition-all duration-300 sm:rounded-2xl dark:from-neutral-900/20 dark:to-neutral-800/30 md:p-8 sm:p-6 hover:shadow-2xl">
@@ -323,6 +323,7 @@ onMounted(async () => {
           </div>
         </div>
       </main>
+      <MobileBottomNav />
     </template>
 
     <div v-if="showDeleteConfirm" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-3 sm:p-4">
