@@ -29,6 +29,22 @@ function isActive(path: string) {
 
   return currentPath.value === path || currentPath.value.startsWith(`${path}/`);
 }
+
+const showSettings = ref(false);
+const colorMode = useColorMode();
+const isDarkMode = computed(() => colorMode.value === 'dark');
+
+function openSettings() {
+  showSettings.value = true;
+}
+
+function closeSettings() {
+  showSettings.value = false;
+}
+
+function toggleDarkMode() {
+  colorMode.preference = isDarkMode.value ? 'light' : 'dark';
+}
 </script>
 
 <template>
@@ -55,5 +71,60 @@ function isActive(path: string) {
       />
       <span>{{ item.label }}</span>
     </NuxtLink>
+
+    <button
+      class="flexcenter flex-col gap-1 rounded-lg px-3 py-1 text-xs text-neutral-500 transition-colors duration-200 dark:text-neutral-400"
+      type="button"
+      @click="openSettings"
+    >
+      <div class="i-mingcute:gear-line text-xl" />
+      <span>Settings</span>
+    </button>
   </nav>
+
+  <div
+    v-if="showSettings"
+    class="fixed inset-0 z-50 flex items-end justify-center bg-black/50 md:hidden"
+    @click.self="closeSettings"
+  >
+    <div
+      w-full
+      rounded-t-2xl
+      bg-white
+      p-4
+      shadow-lg
+      dark:bg-neutral-900
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="mobile-settings-title"
+    >
+      <div flex items-center justify-between mb-4>
+        <h2 id="mobile-settings-title" text-base font-semibold text-neutral-900 dark:text-white>
+          Settings
+        </h2>
+        <button
+          class="i-mingcute:close-line text-2xl text-neutral-500"
+          type="button"
+          aria-label="Close settings"
+          @click="closeSettings"
+        />
+      </div>
+      <div flex items-center justify-between>
+        <span text-sm text-neutral-700 dark:text-neutral-300>Dark Mode</span>
+        <button
+          type="button"
+          role="switch"
+          :aria-checked="isDarkMode"
+          class="relative h-7 w-12 cursor-pointer rounded-full border-none bg-neutral-200 transition-colors duration-200 dark:bg-neutral-700"
+          :class="isDarkMode ? 'bg-neutral-900 dark:bg-neutral-600' : ''"
+          @click="toggleDarkMode"
+        >
+          <span
+            class="absolute left-1 top-1 h-5 w-5 rounded-full bg-white shadow transition-transform duration-200"
+            :class="isDarkMode ? 'translate-x-5' : 'translate-x-0'"
+          />
+        </button>
+      </div>
+    </div>
+  </div>
 </template>
