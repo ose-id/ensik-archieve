@@ -31,6 +31,7 @@ function isActive(path: string) {
 }
 
 const showSettings = ref(false);
+const showNav = ref(false);
 const colorMode = useColorMode();
 const isDarkMode = computed(() => colorMode.value === 'dark');
 
@@ -45,10 +46,17 @@ function closeSettings() {
 function toggleDarkMode() {
   colorMode.preference = isDarkMode.value ? 'light' : 'dark';
 }
+
+onMounted(() => {
+  showNav.value = true;
+});
 </script>
 
 <template>
-  <nav class="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around border-t border-neutral-200 bg-white px-4 py-2 md:hidden dark:border-neutral-800/70 dark:bg-neutral-950">
+  <nav
+    class="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around border-t border-neutral-200 bg-white px-4 py-2 transition-transform duration-300 md:hidden dark:border-neutral-800/70 dark:bg-neutral-950"
+    :class="showNav ? 'translate-y-0' : 'translate-y-full'"
+  >
     <NuxtLink
       v-for="item in menuItems"
       :key="item.label"
