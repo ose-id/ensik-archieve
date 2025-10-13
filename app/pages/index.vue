@@ -15,7 +15,7 @@ if (import.meta.client) {
     <TheSide />
     <TheNav />
 
-    <main px-2 pt-16 md:px-4 ml="[50px] md:[80px]">
+    <main px-2 pt-16 md:px-4 ml="md:[80px]">
       <div mx-auto py-8>
         <div
           v-if="loggedIn"
