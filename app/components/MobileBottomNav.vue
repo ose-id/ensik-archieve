@@ -96,49 +96,68 @@ onMounted(() => {
     </button>
   </nav>
 
-  <div
-    v-if="showSettings"
-    class="fixed inset-0 z-50 flex items-end justify-center bg-black/50 md:hidden"
-    @click.self="closeSettings"
+  <Transition
+    enter-active-class="transition-opacity duration-200"
+    enter-from-class="opacity-0"
+    enter-to-class="opacity-100"
+    leave-active-class="transition-opacity duration-200"
+    leave-from-class="opacity-100"
+    leave-to-class="opacity-0"
   >
     <div
-      w-full
-      rounded-t-2xl
-      bg-white
-      p-4
-      shadow-lg
-      dark:bg-neutral-900
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="mobile-settings-title"
+      v-if="showSettings"
+      class="fixed inset-0 z-50 flex items-end justify-center bg-black/50 md:hidden"
+      @click.self="closeSettings"
     >
-      <div mb-4 flex items-center justify-between>
-        <h2 id="mobile-settings-title" text-base text-neutral-900 font-semibold dark:text-white>
-          Settings
-        </h2>
-        <button
-          class="i-mingcute:close-line text-2xl text-neutral-500"
-          type="button"
-          aria-label="Close settings"
-          @click="closeSettings"
-        />
-      </div>
-      <div flex items-center justify-between>
-        <span text-sm text-neutral-700 dark:text-neutral-300>Dark Mode</span>
-        <button
-          type="button"
-          role="switch"
-          :aria-checked="isDarkMode"
-          class="relative h-7 w-12 cursor-pointer rounded-full border-none bg-neutral-200 transition-colors duration-200 dark:bg-neutral-700"
-          :class="isDarkMode ? 'bg-neutral-900 dark:bg-neutral-600' : ''"
-          @click="toggleDarkMode"
+      <Transition
+        enter-active-class="transition-transform duration-300"
+        enter-from-class="translate-y-full"
+        enter-to-class="translate-y-0"
+        leave-active-class="transition-transform duration-300"
+        leave-from-class="translate-y-0"
+        leave-to-class="translate-y-full"
+      >
+        <div
+          v-if="showSettings"
+          w-full
+          rounded-t-2xl
+          bg-white
+          p-4
+          shadow-lg
+          dark:bg-neutral-900
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="mobile-settings-title"
         >
-          <span
-            class="absolute left-1 top-1 h-5 w-5 rounded-full bg-white shadow transition-transform duration-200"
-            :class="isDarkMode ? 'translate-x-5' : 'translate-x-0'"
-          />
-        </button>
-      </div>
+          <div mb-4 flex items-center justify-between>
+            <h2 id="mobile-settings-title" text-base text-neutral-900 font-semibold dark:text-white>
+              Settings
+            </h2>
+            <button
+              class="i-mingcute:close-line text-2xl text-neutral-500"
+              type="button"
+              aria-label="Close settings"
+              @click="closeSettings"
+            />
+          </div>
+          <div flex items-center justify-between>
+            <span text-sm text-neutral-700 dark:text-neutral-300>Dark Mode</span>
+            <button
+              type="button"
+              role="switch"
+              :aria-checked="isDarkMode"
+              class="relative h-7 w-12 cursor-pointer rounded-full border-none bg-neutral-200 transition-colors duration-200 dark:bg-neutral-700"
+              :class="isDarkMode ? 'bg-neutral-900 dark:bg-neutral-600' : ''"
+              @click="toggleDarkMode"
+            >
+              <span
+                class="absolute left-1 top-1 h-5 w-5 rounded-full bg-white shadow transition-transform duration-200"
+                :class="isDarkMode ? 'translate-x-5' : 'translate-x-0'"
+              />
+            </button>
+          </div>
+        </div>
+      </Transition>
     </div>
-  </div>
+  </Transition>
 </template>
