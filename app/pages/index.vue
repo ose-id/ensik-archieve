@@ -27,5 +27,6 @@ if (import.meta.client) {
         <ImageGallery />
       </div>
     </main>
+    <MobileBottomNav />
   </div>
 </template>
