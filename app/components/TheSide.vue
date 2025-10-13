@@ -39,14 +39,14 @@ function isActive(path: string) {
 
     <!-- Navigation Menu -->
     <nav flex-grow>
-      <ul p-2 space-y-6>
+      <ul list-none p-4 space-y-6>
         <li v-for="item in menuItems" :key="item.label">
           <NuxtLink
             :to="item.route"
             class="flexcenter rounded-lg p-2 transition-colors duration-200"
             :class="[
               isActive(item.route)
-                ? 'bg-neutral-900 text-white shadow-md dark:bg-neutral-800'
+                ? 'bg-neutral-100 text-neutral-900 dark:bg-neutral-800 dark:text-white'
                 : 'hover:bg-neutral-100 text-neutral-500 dark:text-neutral-400 dark:hover:bg-neutral-800',
             ]"
           >
