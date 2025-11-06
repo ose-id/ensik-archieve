@@ -9,12 +9,6 @@ export default defineNuxtConfig({
     'nuxt-auth-utils',
   ],
 
-  routeRules: {
-    '/': {
-      isr: 3600,
-    },
-  },
-
   devtools: {
     enabled: false,
   },
