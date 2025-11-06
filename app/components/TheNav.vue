@@ -71,7 +71,7 @@ const username = computed(() => {
         </div>
       </div>
 
-      <NuxtLink v-else to="/auth/discord" my-3 flex items-center gap-2 rounded-full bg-indigo-500 px-4 py-2 text-white transition-colors hover:bg-indigo-600>
+      <NuxtLink v-else to="/auth/discord" external my-3 flex items-center gap-2 rounded-full bg-indigo-500 px-4 py-2 text-white transition-colors hover:bg-indigo-600>
         <div i-mingcute:discord-line text-xl />
         <span text-sm>Sign In</span>
       </NuxtLink>
