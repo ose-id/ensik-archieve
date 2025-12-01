@@ -5,11 +5,13 @@ interface MenuItem {
   route: string;
 }
 
-const { loggedIn, fetch } = await useUserSession();
+const { loggedIn, fetch: fetchSession } = await useUserSession();
 const route = useRoute();
+const fileInputRef = ref<HTMLInputElement | null>(null);
+const isUploading = ref(false);
 
 if (import.meta.client) {
-  await fetch();
+  await fetchSession();
 }
 
 const menuItems = computed<MenuItem[]>(() => [
@@ -29,6 +31,56 @@ function isActive(path: string) {
 
   return currentPath.value === path || currentPath.value.startsWith(`${path}/`);
 }
+
+function triggerUpload() {
+  fileInputRef.value?.click();
+}
+
+async function handleFileSelect(event: Event) {
+  const target = event.target as HTMLInputElement;
+  const file = target.files?.[0];
+
+  if (!file || !loggedIn.value)
+    return;
+
+  if (file.size > 2 * 1024 * 1024) {
+    console.warn('File size exceeds 2MB limit!');
+    if (fileInputRef.value)
+      fileInputRef.value.value = '';
+    return;
+  }
+
+  if (!file.type.startsWith('image/')) {
+    console.warn('Please upload an image file.');
+    if (fileInputRef.value)
+      fileInputRef.value.value = '';
+    return;
+  }
+
+  isUploading.value = true;
+  const formData = new FormData();
+  formData.append('file', file);
+
+  try {
+    const response = await fetch('/api/upload', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response || !response.ok)
+      throw new Error('Upload failed');
+
+    window.location.reload();
+  }
+  catch (error) {
+    console.error('Upload failed:', error);
+  }
+  finally {
+    isUploading.value = false;
+    if (fileInputRef.value)
+      fileInputRef.value.value = '';
+  }
+}
 </script>
 
 <template>
@@ -43,10 +95,10 @@ function isActive(path: string) {
         <li v-for="item in menuItems" :key="item.label">
           <NuxtLink
             :to="item.route"
-            class="flexcenter rounded-lg p-2 transition-colors duration-200"
+            class="flexcenter rounded-lg px-2 py-3 transition-colors duration-200"
             :class="[
               isActive(item.route)
-                ? 'bg-neutral-100 text-neutral-900 dark:bg-neutral-800 dark:text-white'
+                ? ' hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-900 dark:text-white'
                 : 'hover:bg-neutral-100 text-neutral-500 dark:text-neutral-400 dark:hover:bg-neutral-800',
             ]"
           >
@@ -58,6 +110,26 @@ function isActive(path: string) {
               ]"
             />
           </NuxtLink>
+        </li>
+
+        <!-- Upload Button -->
+        <li v-if="loggedIn">
+          <button
+            class="w-full flexcenter cursor-pointer rounded-lg border-none bg-transparent px-2 py-3 transition-colors duration-200 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+            :disabled="isUploading"
+            title="Upload Image"
+            @click="triggerUpload"
+          >
+            <div v-if="isUploading" i-mingcute:loading-line animate-spin text-2xl text-blue-500 />
+            <div v-else i-mingcute:plus-line text-2xl text-neutral-500 dark:text-neutral-400 />
+          </button>
+          <input
+            ref="fileInputRef"
+            type="file"
+            accept="image/*"
+            class="hidden"
+            @change="handleFileSelect"
+          >
         </li>
       </ul>
     </nav>
