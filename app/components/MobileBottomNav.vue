@@ -5,11 +5,13 @@ interface MenuItem {
   route: string;
 }
 
-const { loggedIn, fetch } = await useUserSession();
+const { loggedIn, fetch: fetchSession } = await useUserSession();
 const route = useRoute();
+const fileInputRef = ref<HTMLInputElement | null>(null);
+const isUploading = ref(false);
 
 if (import.meta.client) {
-  await fetch();
+  await fetchSession();
 }
 
 const menuItems = computed<MenuItem[]>(() => [
@@ -47,6 +49,56 @@ function toggleDarkMode() {
   colorMode.preference = isDarkMode.value ? 'light' : 'dark';
 }
 
+function triggerUpload() {
+  fileInputRef.value?.click();
+}
+
+async function handleFileSelect(event: Event) {
+  const target = event.target as HTMLInputElement;
+  const file = target.files?.[0];
+
+  if (!file || !loggedIn.value)
+    return;
+
+  if (file.size > 2 * 1024 * 1024) {
+    console.warn('File size exceeds 2MB limit!');
+    if (fileInputRef.value)
+      fileInputRef.value.value = '';
+    return;
+  }
+
+  if (!file.type.startsWith('image/')) {
+    console.warn('Please upload an image file.');
+    if (fileInputRef.value)
+      fileInputRef.value.value = '';
+    return;
+  }
+
+  isUploading.value = true;
+  const formData = new FormData();
+  formData.append('file', file);
+
+  try {
+    const response = await fetch('/api/upload', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response || !response.ok)
+      throw new Error('Upload failed');
+
+    window.location.reload();
+  }
+  catch (error) {
+    console.error('Upload failed:', error);
+  }
+  finally {
+    isUploading.value = false;
+    if (fileInputRef.value)
+      fileInputRef.value.value = '';
+  }
+}
+
 onMounted(() => {
   showNav.value = true;
 });
@@ -79,6 +131,27 @@ onMounted(() => {
       />
       <span>{{ item.label }}</span>
     </NuxtLink>
+
+    <button
+      v-if="loggedIn"
+      class="flexcenter flex-col gap-1 border-0 rounded-lg bg-transparent px-3 py-1 text-xs transition-colors duration-200"
+      :class="isUploading ? 'text-blue-600 dark:text-blue-400' : 'text-neutral-500 dark:text-neutral-400'"
+      :disabled="isUploading"
+      @click="triggerUpload"
+    >
+      <div
+        class="text-xl transition-colors"
+        :class="isUploading ? 'i-mingcute:loading-line animate-spin' : 'i-mingcute:add-line'"
+      />
+      <span>{{ isUploading ? 'Uploading' : 'Upload' }}</span>
+    </button>
+    <input
+      ref="fileInputRef"
+      type="file"
+      accept="image/*"
+      class="hidden"
+      @change="handleFileSelect"
+    >
 
     <button
       class="flexcenter flex-col gap-1 border-0 rounded-lg bg-transparent px-3 py-1 text-xs transition-colors duration-200"
