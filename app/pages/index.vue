@@ -15,8 +15,8 @@ if (import.meta.client) {
     <TheSide />
     <TheNav />
 
-    <main px-2 pt-16 md:px-4 ml="md:[80px]">
-      <div mx-auto py-8>
+    <main px-2 pt-12 md:px-4 ml="md:[80px]">
+      <div mx-auto pb-8>
         <div mb-8 />
         <ImageGallery />
       </div>
