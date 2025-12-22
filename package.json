@@ -15,18 +15,18 @@
     "@vercel/blob": "^2.0.0"
   },
   "devDependencies": {
-    "@antfu/eslint-config": "^6.2.0",
-    "@iconify-json/mingcute": "^1.2.5",
+    "@antfu/eslint-config": "^6.7.3",
+    "@iconify-json/mingcute": "^1.2.6",
     "@nuxt/image": "^2.0.0",
     "@nuxtjs/color-mode": "^4.0.0",
-    "@unocss/eslint-config": "^66.5.7",
-    "@unocss/nuxt": "^66.5.7",
-    "@vueuse/core": "^14.0.0",
-    "@vueuse/nuxt": "^14.0.0",
-    "eslint": "^9.39.1",
-    "nuxt": "^4.2.1",
-    "nuxt-auth-utils": "0.5.25",
-    "vue": "^3.5.24",
-    "vue-router": "^4.6.3"
+    "@unocss/eslint-config": "^66.5.10",
+    "@unocss/nuxt": "^66.5.10",
+    "@vueuse/core": "^14.1.0",
+    "@vueuse/nuxt": "^14.1.0",
+    "eslint": "^9.39.2",
+    "nuxt": "^4.2.2",
+    "nuxt-auth-utils": "0.5.26",
+    "vue": "^3.5.26",
+    "vue-router": "^4.6.4"
   }
 }
