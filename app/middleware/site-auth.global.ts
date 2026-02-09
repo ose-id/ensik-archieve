@@ -4,7 +4,10 @@ export default defineNuxtRouteMiddleware(async (to) => {
     return;
   }
 
-  const { session } = useUserSession();
+  const { session, fetch: fetchSession } = useUserSession();
+
+  // Ensure session is fetched/refreshed (important after login redirect)
+  await fetchSession();
 
   // Check if user has authenticated with site password
   if (!session.value?.siteAuthenticated) {

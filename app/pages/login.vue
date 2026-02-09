@@ -10,6 +10,7 @@ useSeoMeta({
 const password = ref('');
 const error = ref('');
 const loading = ref(false);
+const { fetch: fetchSession } = useUserSession();
 
 async function handleSubmit() {
   error.value = '';
@@ -20,6 +21,10 @@ async function handleSubmit() {
       method: 'POST',
       body: { password: password.value },
     });
+
+    // Refresh session to ensure it's synced before navigation
+    await fetchSession();
+
     navigateTo('/');
   }
   catch {
