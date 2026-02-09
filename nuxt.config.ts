@@ -47,6 +47,7 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
+    sitePassword: process.env.SITE_PASSWORD,
     oauth: {
       discord: {
         clientId: process.env.NUXT_OAUTH_DISCORD_CLIENT_ID,
@@ -58,6 +59,10 @@ export default defineNuxtConfig({
       authJs: {
         baseURL: process.env.AUTH_ORIGIN,
       },
+    },
+    session: {
+      password: process.env.NUXT_SESSION_PASSWORD || '',
+      maxAge: 604800, // 1 week
     },
   },
 
