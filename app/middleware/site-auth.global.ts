@@ -1,16 +1,15 @@
-export default defineNuxtRouteMiddleware(async (to) => {
-  // Skip middleware for login page to prevent redirect loop
-  if (to.path === '/login') {
+export default defineNuxtRouteMiddleware((to) => {
+  // Skip middleware for login page and auth callback routes
+  if (to.path === '/login' || to.path.startsWith('/auth/')) {
     return;
   }
 
-  const { session, fetch: fetchSession } = useUserSession();
+  const { loggedIn, session } = useUserSession();
 
-  // Ensure session is fetched/refreshed (important after login redirect)
-  await fetchSession();
-
-  // Check if user has authenticated with site password
-  if (!session.value?.siteAuthenticated) {
-    return navigateTo('/login');
+  // Allow access if user is logged in via OAuth (Discord) OR via site password
+  if (loggedIn.value || session.value?.siteAuthenticated) {
+    return;
   }
+
+  return navigateTo('/login');
 });

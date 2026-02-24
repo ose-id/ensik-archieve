@@ -7,10 +7,16 @@ useSeoMeta({
   title: 'Login - Ensik Archive',
 });
 
+const { loggedIn, session, fetch: fetchSession } = useUserSession();
+
+// Redirect if already authenticated
+if (loggedIn.value || session.value?.siteAuthenticated) {
+  navigateTo('/');
+}
+
 const password = ref('');
 const error = ref('');
 const loading = ref(false);
-const { fetch: fetchSession } = useUserSession();
 
 async function handleSubmit() {
   error.value = '';

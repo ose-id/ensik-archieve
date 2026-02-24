@@ -36,6 +36,7 @@ export default defineOAuthDiscordEventHandler({
           avatar: user.avatar,
         },
         loggedInAt: new Date(),
+        siteAuthenticated: true,
       });
 
       console.warn('User session set successfully');
