@@ -12,21 +12,21 @@
     "lint:fix": "eslint . --fix"
   },
   "dependencies": {
-    "@vercel/blob": "^2.2.0"
+    "@vercel/blob": "^2.3.0"
   },
   "devDependencies": {
-    "@antfu/eslint-config": "^7.3.0",
+    "@antfu/eslint-config": "^7.4.3",
     "@iconify-json/mingcute": "^1.2.7",
     "@nuxt/image": "^2.0.0",
     "@nuxtjs/color-mode": "^4.0.0",
     "@unocss/eslint-config": "^66.6.0",
     "@unocss/nuxt": "^66.6.0",
-    "@vueuse/core": "^14.2.0",
-    "@vueuse/nuxt": "^14.2.0",
-    "eslint": "^10.0.0",
+    "@vueuse/core": "^14.2.1",
+    "@vueuse/nuxt": "^14.2.1",
+    "eslint": "^10.0.2",
     "nuxt": "^4.3.1",
-    "nuxt-auth-utils": "0.5.28",
+    "nuxt-auth-utils": "0.5.29",
     "vue": "^3.5.28",
-    "vue-router": "^5.0.2"
+    "vue-router": "^5.0.3"
   }
 }
