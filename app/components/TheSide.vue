@@ -173,7 +173,7 @@ async function uploadFile() {
       @click.stop
     >
       <!-- Modal Header -->
-      <div class="flex items-center justify-between border-b border-neutral-200 bg-white p-4 dark:border-neutral-700 dark:bg-neutral-900">
+      <div class="flex items-center justify-between border-b border-neutral-200 rounded-t-xl bg-white p-4 dark:border-neutral-700 dark:bg-neutral-900">
         <h3 class="text-lg text-neutral-800 font-semibold dark:text-neutral-200">
           Image Preview
         </h3>
