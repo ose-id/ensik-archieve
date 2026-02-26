@@ -9,6 +9,9 @@ const { loggedIn, fetch: fetchSession } = await useUserSession();
 const route = useRoute();
 const fileInputRef = ref<HTMLInputElement | null>(null);
 const isUploading = ref(false);
+const showPreviewModal = ref(false);
+const selectedFile = ref<File | null>(null);
+const previewImageUrl = ref<string>('');
 
 if (import.meta.client) {
   await fetchSession();
@@ -36,13 +39,7 @@ function triggerUpload() {
   fileInputRef.value?.click();
 }
 
-async function handleFileSelect(event: Event) {
-  const target = event.target as HTMLInputElement;
-  const file = target.files?.[0];
-
-  if (!file || !loggedIn.value)
-    return;
-
+function processFile(file: File) {
   if (file.size > 2 * 1024 * 1024) {
     console.warn('File size exceeds 2MB limit!');
     if (fileInputRef.value)
@@ -57,9 +54,36 @@ async function handleFileSelect(event: Event) {
     return;
   }
 
+  selectedFile.value = file;
+  previewImageUrl.value = URL.createObjectURL(file);
+  showPreviewModal.value = true;
+}
+
+function closePreviewModal() {
+  showPreviewModal.value = false;
+  selectedFile.value = null;
+  previewImageUrl.value = '';
+  if (fileInputRef.value)
+    fileInputRef.value.value = '';
+}
+
+async function handleFileSelect(event: Event) {
+  const target = event.target as HTMLInputElement;
+  const file = target.files?.[0];
+
+  if (!file || !loggedIn.value)
+    return;
+
+  processFile(file);
+}
+
+async function uploadFile() {
+  if (!selectedFile.value)
+    return;
+
   isUploading.value = true;
   const formData = new FormData();
-  formData.append('file', file);
+  formData.append('file', selectedFile.value);
 
   try {
     const response = await fetch('/api/upload', {
@@ -77,8 +101,7 @@ async function handleFileSelect(event: Event) {
   }
   finally {
     isUploading.value = false;
-    if (fileInputRef.value)
-      fileInputRef.value.value = '';
+    closePreviewModal();
   }
 }
 </script>
@@ -138,4 +161,86 @@ async function handleFileSelect(event: Event) {
       <ColorMode />
     </div>
   </aside>
+
+  <!-- Preview Modal -->
+  <div
+    v-if="showPreviewModal"
+    class="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm"
+    @click="closePreviewModal"
+  >
+    <div
+      class="relative mx-4 h-auto max-h-[100vh] max-w-3xl w-full rounded-xl bg-white shadow-2xl dark:bg-neutral-900"
+      @click.stop
+    >
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between border-b border-neutral-200 bg-white p-4 dark:border-neutral-700 dark:bg-neutral-900">
+        <h3 class="text-lg text-neutral-800 font-semibold dark:text-neutral-200">
+          Image Preview
+        </h3>
+        <button
+          type="button"
+          class="cursor-pointer rounded-lg border-none p-2 text-neutral-500 transition-all duration-200 hover:rotate-90 hover:scale-110 hover:bg-red-100 dark:text-neutral-400 hover:text-red-500 dark:hover:bg-red-900/20 dark:hover:text-red-400"
+          @click="closePreviewModal"
+        >
+          <div i-mingcute:close-line text-xl />
+        </button>
+      </div>
+
+      <!-- Modal Content -->
+      <div class="p-4">
+        <div class="mb-4">
+          <img
+            :src="previewImageUrl"
+            alt="Preview"
+            class="max-h-[50vh] w-full rounded-lg object-contain"
+          >
+        </div>
+
+        <!-- File Info -->
+        <div v-if="selectedFile" class="mb-4 rounded-lg bg-neutral-50 p-3 dark:bg-neutral-800">
+          <div class="grid grid-cols-2 gap-3 text-xs">
+            <div>
+              <span class="text-neutral-500 dark:text-neutral-400">File Name:</span>
+              <p class="truncate text-neutral-800 font-medium dark:text-neutral-200">
+                {{ selectedFile.name }}
+              </p>
+            </div>
+            <div>
+              <span class="text-neutral-500 dark:text-neutral-400">File Size:</span>
+              <p class="text-neutral-800 font-medium dark:text-neutral-200">
+                {{ (selectedFile.size / 1024 / 1024).toFixed(2) }} MB
+              </p>
+            </div>
+            <div class="col-span-2">
+              <span class="text-neutral-500 dark:text-neutral-400">File Type:</span>
+              <p class="truncate text-neutral-800 font-medium dark:text-neutral-200">
+                {{ selectedFile.type }}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal Actions -->
+        <div class="flex justify-end gap-3">
+          <button
+            type="button"
+            class="cursor-pointer rounded-lg border-none bg-neutral-100 px-4 py-2 text-sm text-neutral-600 font-medium transition-colors dark:bg-neutral-800 hover:bg-neutral-200 dark:text-neutral-300 dark:hover:bg-neutral-700"
+            @click="closePreviewModal"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            class="flex cursor-pointer items-center gap-2 rounded-lg border-none bg-blue-600 px-6 py-2 text-sm text-white font-medium shadow-sm transition-all disabled:cursor-not-allowed hover:bg-blue-700 disabled:opacity-50 hover:shadow-md"
+            :disabled="isUploading"
+            @click="uploadFile"
+          >
+            <div v-if="isUploading" i-mingcute:loading-line animate-spin />
+            <div v-else i-mingcute:upload-line />
+            {{ isUploading ? 'Uploading...' : 'Upload Image' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
