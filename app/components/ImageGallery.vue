@@ -133,8 +133,12 @@ async function downloadImage(image: ImageItem) {
 
 <template>
   <div mx-auto pb-12>
-    <div v-if="isLoading" h-64 flex items-center justify-center>
-      <div i-mingcute-loading-fill animate-spin text-4xl text-neutral-900 dark:text-white />
+    <div v-if="isLoading" columns-2 gap-4 lg:columns-4 md:columns-3 xl:columns-5 space-y-4>
+      <div v-for="i in 10" :key="i" break-inside-avoid>
+        <div class="relative overflow-hidden rounded-lg shadow-lg">
+          <div class="aspect-w-4 aspect-h-3 animate-pulse bg-neutral-200 dark:bg-neutral-700" />
+        </div>
+      </div>
     </div>
     <div v-else-if="error" rounded-lg bg-red-100 p-4 text-center text-red-500>
       {{ error }}
@@ -158,13 +162,9 @@ async function downloadImage(image: ImageItem) {
             <!-- Placeholder while image is not visible or loading -->
             <div
               v-if="!image.visible || !image.loaded"
-              class="absolute inset-0 flex items-center justify-center bg-neutral-200 dark:bg-neutral-700"
-            >
-              <div v-if="image.visible && !image.loaded" i-mingcute-loading-fill animate-spin text-2xl text-neutral-500 />
-              <div v-else class="text-neutral-400">
-                <div i-mingcute:image-line text-4xl />
-              </div>
-            </div>
+              class="absolute inset-0 bg-neutral-200 dark:bg-neutral-700"
+              :class="{ 'animate-pulse': image.visible && !image.loaded }"
+            />
 
             <!-- Only render NuxtImg when image is visible -->
             <NuxtImg
