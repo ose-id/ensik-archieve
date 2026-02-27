@@ -5,6 +5,8 @@ interface MenuItem {
   route: string;
 }
 
+const { addToast } = useToast();
+
 const { loggedIn, fetch: fetchSession } = await useUserSession();
 const route = useRoute();
 const fileInputRef = ref<HTMLInputElement | null>(null);
@@ -41,14 +43,14 @@ function triggerUpload() {
 
 function processFile(file: File) {
   if (file.size > 2 * 1024 * 1024) {
-    console.warn('File size exceeds 2MB limit!');
+    addToast('File size exceeds 2MB limit!', 'error');
     if (fileInputRef.value)
       fileInputRef.value.value = '';
     return;
   }
 
   if (!file.type.startsWith('image/')) {
-    console.warn('Please upload an image file.');
+    addToast('Please upload an image file.', 'warning');
     if (fileInputRef.value)
       fileInputRef.value.value = '';
     return;
@@ -94,10 +96,12 @@ async function uploadFile() {
     if (!response || !response.ok)
       throw new Error('Upload failed');
 
+    addToast('File uploaded successfully!', 'success');
     window.location.reload();
   }
   catch (error) {
     console.error('Upload failed:', error);
+    addToast('Upload failed, please try again.', 'error');
   }
   finally {
     isUploading.value = false;
@@ -137,15 +141,16 @@ async function uploadFile() {
 
         <!-- Upload Button -->
         <li v-if="loggedIn">
-          <button
-            class="w-full flexcenter cursor-pointer rounded-lg border-none bg-transparent px-2 py-3 transition-colors duration-200 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+          <AtomsButton
+            variant="secondary"
+            class="w-full flexcenter py-3 !bg-transparent !px-2 hover:!bg-neutral-100 dark:hover:!bg-neutral-800"
             :disabled="isUploading"
             title="Upload Image"
             @click="triggerUpload"
           >
             <div v-if="isUploading" i-mingcute:loading-line animate-spin text-2xl text-blue-500 />
             <div v-else i-mingcute:plus-line text-2xl text-neutral-500 dark:text-neutral-400 />
-          </button>
+          </AtomsButton>
           <input
             ref="fileInputRef"
             type="file"
@@ -158,7 +163,7 @@ async function uploadFile() {
     </nav>
 
     <div flexcenter px-4 py-6>
-      <ColorMode />
+      <MoleculesColorMode />
     </div>
   </aside>
 
@@ -177,13 +182,10 @@ async function uploadFile() {
         <h3 class="text-lg text-neutral-800 font-semibold dark:text-neutral-200">
           Image Preview
         </h3>
-        <button
-          type="button"
-          class="cursor-pointer rounded-lg border-none p-2 text-neutral-500 transition-all duration-200 hover:rotate-90 hover:scale-110 hover:bg-red-100 dark:text-neutral-400 hover:text-red-500 dark:hover:bg-red-900/20 dark:hover:text-red-400"
+        <AtomsCloseButton
+          class="transition-all duration-200 hover:rotate-90 md:hover:bg-red-100 hover:!text-red-500 md:dark:hover:bg-red-900/20 md:dark:hover:!text-red-400"
           @click="closePreviewModal"
-        >
-          <div i-mingcute:close-line text-xl />
-        </button>
+        />
       </div>
 
       <!-- Modal Content -->
@@ -222,23 +224,21 @@ async function uploadFile() {
 
         <!-- Modal Actions -->
         <div class="flex justify-end gap-3">
-          <button
-            type="button"
-            class="cursor-pointer rounded-lg border-none bg-neutral-100 px-4 py-2 text-sm text-neutral-600 font-medium transition-colors dark:bg-neutral-800 hover:bg-neutral-200 dark:text-neutral-300 dark:hover:bg-neutral-700"
+          <AtomsButton
+            variant="secondary"
             @click="closePreviewModal"
           >
             Cancel
-          </button>
-          <button
-            type="button"
-            class="flex cursor-pointer items-center gap-2 rounded-lg border-none bg-blue-600 px-6 py-2 text-sm text-white font-medium shadow-sm transition-all disabled:cursor-not-allowed hover:bg-blue-700 disabled:opacity-50 hover:shadow-md"
-            :disabled="isUploading"
+          </AtomsButton>
+          <AtomsButton
+            variant="primary"
+            class="flex items-center gap-2 px-6"
+            :loading="isUploading"
             @click="uploadFile"
           >
-            <div v-if="isUploading" i-mingcute:loading-line animate-spin />
-            <div v-else i-mingcute:upload-line />
+            <div v-if="!isUploading" i-mingcute:upload-line />
             {{ isUploading ? 'Uploading...' : 'Upload Image' }}
-          </button>
+          </AtomsButton>
         </div>
       </div>
     </div>

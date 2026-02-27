@@ -7,7 +7,7 @@ function toggleMode() {
 </script>
 
 <template>
-  <button cursor-pointer rounded border-none bg-transparent p-2 lg:hover:bg-neutral-100 lg:dark:hover:bg-neutral-700 aria-label="Color Mode" @click="toggleMode">
+  <AtomsButton variant="ghost" size="icon" aria-label="Color Mode" @click="toggleMode">
     <div i-mingcute:sun-line dark:i-mingcute:moon-stars-line text-xl />
-  </button>
+  </AtomsButton>
 </template>

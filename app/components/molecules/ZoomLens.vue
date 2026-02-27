@@ -37,11 +37,11 @@ async function onImageLoaded(event: Event) {
 </script>
 
 <template>
-  <div>
-    <div relative size-full overflow-hidden :style="{ cursor }" @mousemove="mouseMoved" @mouseenter="onMouseEnter" @mouseleave="onMouseLeave">
+  <div class="h-full w-full flex flex-col items-center justify-center">
+    <div class="relative inline-block" :style="{ cursor }" @mousemove="mouseMoved" @mouseenter="onMouseEnter" @mouseleave="onMouseLeave">
       <div
         class="magic-zoom-lens"
-        pointer-events-none absolute isolate z-1 overflow-hidden border-2 border-white rounded-full border-solid
+        pointer-events-none absolute isolate z-1 overflow-hidden border-2 border-white rounded-full border-solid shadow-xl
         :style="{
           width: `${lensSize}px`,
           height: `${lensSize}px`,
@@ -63,22 +63,22 @@ async function onImageLoaded(event: Event) {
         </div>
       </div>
       <NuxtImg
-        min-w-40 object-contain md:min-w-120
-        max="h-[80vh] w-full"
+        class="max-h-[75vh] max-w-full min-w-[320px] w-auto rounded-md object-contain shadow-2xl transition-opacity duration-300 sm:min-w-[480px]"
         :alt="props.alt || 'Zoomed Image'"
         :src="props.src"
         @load="onImageLoaded"
       />
     </div>
-  </div>
-  <div mt-4 flex-wrap items-start md:flexbetween md:gap-4 space-y-2 md:space-y-0>
-    <div flexbetween space-x-2>
-      <label text-xs text-white md:text-sm>Zoom Level</label>
-      <input v-model="zoomScale" type="range" min="1" max="5" step="0.1" cursor-pointer>
-    </div>
-    <div flexbetween space-x-2>
-      <label text-xs text-white md:text-sm>Circle Size</label>
-      <input v-model="lensSize" type="range" min="50" max="200" step="10" cursor-pointer>
+
+    <div class="mt-6 flex flex-wrap items-center justify-center gap-6 rounded-full bg-black/50 px-6 py-3 text-white backdrop-blur-sm">
+      <div class="flex items-center gap-3">
+        <label class="text-xs font-medium md:text-sm">Zoom Level</label>
+        <input v-model="zoomScale" type="range" class="w-24 cursor-pointer accent-white sm:w-32" min="1" max="5" step="0.1">
+      </div>
+      <div class="flex items-center gap-3">
+        <label class="text-xs font-medium md:text-sm">Circle Size</label>
+        <input v-model="lensSize" type="range" class="w-24 cursor-pointer accent-white sm:w-32" min="50" max="200" step="10">
+      </div>
     </div>
   </div>
 </template>

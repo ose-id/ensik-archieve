@@ -8,6 +8,7 @@ useSeoMeta({
 <template>
   <main id="top" min-h-dvh>
     <NuxtPage />
+    <OrganismToastContainer />
   </main>
 </template>
 

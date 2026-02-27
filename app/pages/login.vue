@@ -73,15 +73,14 @@ async function handleSubmit() {
               Password
             </label>
             <div class="relative">
-              <input
+              <AtomsInput
                 id="password"
                 v-model="password"
                 type="password"
-                class="box-border h-10 w-full border border-zinc-800 rounded-md bg-zinc-950 px-3 text-sm text-zinc-100 outline-none transition-colors duration-200 focus:border-zinc-600 placeholder:text-zinc-600 focus:ring-1 focus:ring-zinc-600"
                 placeholder="••••••••••••"
                 autocomplete="current-password"
                 required
-              >
+              />
             </div>
           </div>
 
@@ -94,17 +93,14 @@ async function handleSubmit() {
           </div>
 
           <!-- Submit Button -->
-          <button
+          <AtomsButton
             type="submit"
-            class="h-10 w-full flex cursor-pointer items-center justify-center gap-2 rounded-md bg-zinc-100 text-sm text-zinc-900 font-medium transition-colors duration-200 disabled:cursor-not-allowed hover:bg-zinc-200 disabled:opacity-50"
-            :disabled="loading"
+            variant="primary"
+            class="w-full bg-zinc-100 text-zinc-900 hover:bg-zinc-200"
+            :loading="loading"
           >
-            <svg v-if="loading" class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-            </svg>
             {{ loading ? 'Memverifikasi...' : 'Masuk' }}
-          </button>
+          </AtomsButton>
         </form>
       </div>
 

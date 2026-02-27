@@ -17,10 +17,14 @@ const observer = ref<IntersectionObserver | null>(null);
 
 onMounted(async () => {
   try {
-    const fetchedImages = await $fetch('/api/images');
-    images.value = Array.isArray(fetchedImages)
-      ? fetchedImages.map(img => ({ ...img, loaded: false, visible: false }))
+    const fetchedImages = (await $fetch('/api/images')) as any[];
+
+    // Shuffle the array for randomized order
+    const shuffledImages = Array.isArray(fetchedImages)
+      ? [...fetchedImages].sort(() => Math.random() - 0.5)
       : [];
+
+    images.value = shuffledImages.map((img: any) => ({ ...img, loaded: false, visible: false }));
 
     // Initialize Intersection Observer for lazy loading
     setupIntersectionObserver();
@@ -39,8 +43,6 @@ onUnmounted(() => {
     observer.value.disconnect();
   }
 });
-
-const getUsername = (pathname: string) => pathname.split('-')[0];
 
 function handleImageLoaded(index: number) {
   if (index >= 0 && index < images.value.length) {
@@ -92,42 +94,29 @@ function closePopup() {
   selectedImage.value = null;
 }
 
-function nextImage() {
-  if (currentIndex.value < images.value.length - 1) {
-    currentIndex.value++;
-    selectedImage.value = images.value[currentIndex.value] || null;
+watch(showPopup, (isShowing) => {
+  if (import.meta.client) {
+    if (isShowing) {
+      document.body.style.overflow = 'hidden';
+    }
+    else {
+      document.body.style.overflow = '';
+    }
   }
+});
+
+function nextImage() {
+  if (images.value.length === 0)
+    return;
+  currentIndex.value = (currentIndex.value + 1) % images.value.length;
+  selectedImage.value = images.value[currentIndex.value] || null;
 }
 
 function prevImage() {
-  if (currentIndex.value > 0) {
-    currentIndex.value--;
-    selectedImage.value = images.value[currentIndex.value] || null;
-  }
-}
-
-async function downloadImage(image: ImageItem) {
-  try {
-    const response = await fetch(image.url);
-    const blob = await response.blob();
-
-    const extensionRegex = /\.(jpg|jpeg|png|gif|webp)$/i;
-    const match = image.pathname.match(extensionRegex);
-    let filename = image.pathname;
-    if (!match) {
-      filename += '.jpg';
-    }
-
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  }
-  catch (err) {
-    console.error('Failed to download image:', err);
-  }
+  if (images.value.length === 0)
+    return;
+  currentIndex.value = (currentIndex.value - 1 + images.value.length) % images.value.length;
+  selectedImage.value = images.value[currentIndex.value] || null;
 }
 </script>
 
@@ -178,9 +167,6 @@ async function downloadImage(image: ImageItem) {
           </div>
 
           <div class="absolute inset-0 bg-black/50 opacity-0 transition-opacity group-hover:opacity-100" />
-          <div class="absolute bottom-0 left-0 right-0 truncate bg-black/50 p-2 text-xs text-white md:text-sm">
-            {{ getUsername(image.pathname) }}
-          </div>
         </div>
       </div>
     </div>
@@ -188,28 +174,56 @@ async function downloadImage(image: ImageItem) {
 
   <div
     v-if="showPopup"
-    fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90
+    class="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black/95 p-2 backdrop-blur-sm sm:p-6"
     @click.self="closePopup"
   >
-    <button class="i-mingcute:arrow-left-circle-line absolute left-4 top-1/2 z-10 transform cursor-pointer text-3xl text-white -translate-y-1/2 hover:text-blue-300" @click="prevImage" />
-    <div class="relative max-w-3xl w-[60%] flex flex-col items-center rounded-lg bg-neutral-900/70 p-4 lg:w-full">
-      <button class="i-mingcute:close-circle-line hover:i-mingcute:close-circle-fill absolute cursor-pointer text-4xl text-red -right-4 -top-4 hover:bg-red" @click="closePopup" />
+    <!-- Top Bar -->
+    <div class="absolute left-0 right-0 top-0 z-[110] flex items-center justify-end gap-2 p-4 pt-4 sm:pr-6 sm:pt-6">
+      <AtomsCloseButton
+        class="!text-neutral-300 hover:!text-white"
+        @click="closePopup"
+      />
+    </div>
 
-      <div v-if="selectedImage && !selectedImage.loaded" class="h-64 w-full flex items-center justify-center">
-        <div i-mingcute-loading-fill animate-spin text-4xl text-white />
+    <!-- Main Content Area -->
+    <div class="pointer-events-none relative max-w-7xl min-h-0 w-full flex flex-1 items-center justify-center">
+      <!-- Previous Button (Left) -->
+      <div class="pointer-events-auto absolute left-0 z-[110] lg:-left-16 md:-left-8 sm:-left-2">
+        <AtomsArrowButton
+          v-if="images.length > 1"
+          direction="left"
+          class="!text-white hover:!text-blue-400"
+          @click.stop="prevImage"
+        />
       </div>
 
-      <ZoomLens
-        v-if="selectedImage"
-        :src="selectedImage.url"
-        :alt="selectedImage.pathname"
-        :class="{ hidden: !selectedImage.loaded }"
-      />
+      <!-- Image Display -->
+      <div
+        class="pointer-events-auto relative max-h-full w-full flex items-center justify-center transition-transform duration-300"
+        @click.stop
+      >
+        <div v-if="selectedImage && !selectedImage.loaded" class="absolute inset-0 flex items-center justify-center">
+          <div i-mingcute-loading-fill animate-spin text-4xl text-neutral-400 />
+        </div>
 
-      <button mt-4 flex cursor-pointer items-center gap-1 border-0 rounded-md bg-blue-500 p-2 text-white hover:bg-blue-600 @click="downloadImage(selectedImage!)">
-        <div i-mingcute:download-2-line />Download
-      </button>
+        <MoleculesZoomLens
+          v-if="selectedImage"
+          :src="selectedImage.url"
+          :alt="selectedImage.pathname"
+          class="transition-opacity duration-300"
+          :class="{ 'opacity-0': !selectedImage.loaded, 'opacity-100': selectedImage.loaded }"
+        />
+      </div>
+
+      <!-- Next Button (Right) -->
+      <div class="pointer-events-auto absolute right-0 z-[110] lg:-right-16 md:-right-8 sm:-right-2">
+        <AtomsArrowButton
+          v-if="images.length > 1"
+          direction="right"
+          class="!text-white hover:!text-blue-400"
+          @click.stop="nextImage"
+        />
+      </div>
     </div>
-    <button class="i-mingcute:arrow-right-circle-line absolute right-4 top-1/2 z-10 transform cursor-pointer text-3xl text-white -translate-y-1/2 hover:text-blue-300" @click="nextImage" />
   </div>
 </template>

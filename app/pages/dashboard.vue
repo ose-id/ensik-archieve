@@ -95,8 +95,8 @@ onMounted(async () => {
     </div>
 
     <template v-else>
-      <TheSide />
-      <TheNav />
+      <OrganismTheSide />
+      <OrganismTheNav />
 
       <main class="px-3 pt-16 md:ml-[50px] md:ml-[80px] lg:px-8 md:px-6">
         <div class="mx-auto py-4 md:py-8">
@@ -149,22 +149,24 @@ onMounted(async () => {
                 </div>
                 <div class="flex flex-col gap-2 sm:flex-row-reverse sm:items-center sm:gap-3">
                   <div class="flex items-center space-x-1 sm:space-x-2">
-                    <button
-                      class="cursor-pointer rounded-md border-none p-2 transition-colors"
-                      :class="viewMode === 'list' ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' : 'text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300'"
+                    <AtomsButton
+                      :variant="viewMode === 'list' ? 'secondary' : 'ghost'"
+                      size="icon"
+                      class="bg-blue-100 text-blue-600 dark:bg-blue-900/30 !p-2 dark:text-blue-400"
                       title="Tampilan List"
                       @click="viewMode = 'list'"
                     >
                       <div class="i-mingcute:list-check-line text-base sm:text-lg" />
-                    </button>
-                    <button
-                      class="cursor-pointer rounded-md border-none p-2 transition-colors"
-                      :class="viewMode === 'card' ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' : 'text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300'"
+                    </AtomsButton>
+                    <AtomsButton
+                      :variant="viewMode === 'card' ? 'secondary' : 'ghost'"
+                      size="icon"
+                      class="bg-blue-100 text-blue-600 dark:bg-blue-900/30 !p-2 dark:text-blue-400"
                       title="Tampilan Card"
                       @click="viewMode = 'card'"
                     >
                       <div class="i-mingcute:grid-line text-base sm:text-lg" />
-                    </button>
+                    </AtomsButton>
                   </div>
 
                   <div
@@ -179,26 +181,20 @@ onMounted(async () => {
                   >
                     <div class="i-mingcute:sort-descending-line text-base sm:text-lg" />
                     <div class="flex items-center gap-1">
-                      <button
-                        class="rounded-md px-3 py-1 transition-colors"
-                        border="0"
-                        cursor="pointer"
-                        :class="sortOrder === 'desc' ? 'bg-blue-500 text-white shadow-sm dark:bg-blue-600' : 'bg-transparent text-neutral-600 hover:bg-neutral-200 dark:text-neutral-300 dark:hover:bg-neutral-700'"
-                        type="button"
+                      <AtomsButton
+                        :variant="sortOrder === 'desc' ? 'primary' : 'ghost'"
+                        size="sm"
                         @click="sortOrder = 'desc'"
                       >
                         Terbaru
-                      </button>
-                      <button
-                        class="rounded-md px-3 py-1 transition-colors"
-                        border="0"
-                        cursor="pointer"
-                        :class="sortOrder === 'asc' ? 'bg-blue-500 text-white shadow-sm dark:bg-blue-600' : 'bg-transparent text-neutral-600 hover:bg-neutral-200 dark:text-neutral-300 dark:hover:bg-neutral-700'"
-                        type="button"
+                      </AtomsButton>
+                      <AtomsButton
+                        :variant="sortOrder === 'asc' ? 'primary' : 'ghost'"
+                        size="sm"
                         @click="sortOrder = 'asc'"
                       >
                         Terlama
-                      </button>
+                      </AtomsButton>
                     </div>
                   </div>
                 </div>
@@ -227,14 +223,16 @@ onMounted(async () => {
               class="grid grid-cols-1 gap-3 p-4 lg:grid-cols-4 md:(grid-cols-3 gap-6 p-8) sm:(grid-cols-2 gap-4 p-6) xl:grid-cols-5"
             >
               <div v-for="image in sortedImages" :key="image.url" class="group relative overflow-hidden rounded-lg bg-white shadow-lg transition-all duration-300 md:rounded-2xl sm:rounded-xl dark:bg-neutral-700/50 hover:shadow-2xl">
-                <button
-                  class="absolute right-1 top-1 z-20 hidden cursor-pointer rounded-md border-none bg-red-500 p-1.5 text-white opacity-0 shadow-lg transition-all duration-200 sm:right-2 sm:top-2 sm:block hover:scale-110 hover:bg-red-600 md:p-3 sm:p-2 group-hover:opacity-100"
+                <AtomsButton
+                  variant="danger"
+                  size="icon"
+                  class="absolute right-1 top-1 z-20 hidden opacity-0 transition-opacity sm:right-2 sm:top-2 sm:block md:p-3 sm:p-2 focus:opacity-100 group-hover:opacity-100"
                   title="Hapus foto"
                   :disabled="isDeleting === image.url"
                   @click="showDeleteConfirm = image.url"
                 >
                   <div class="i-mingcute:delete-line text-xs sm:text-sm" />
-                </button>
+                </AtomsButton>
 
                 <div class="aspect-square overflow-hidden rounded-t-lg md:rounded-t-2xl sm:rounded-t-xl">
                   <img
@@ -265,14 +263,16 @@ onMounted(async () => {
                       </div>
                     </div>
 
-                    <button
-                      class="cursor-pointer rounded-md border-none bg-red-500 p-1 text-white shadow-sm transition-all duration-200 sm:hidden active:scale-95 hover:bg-red-600"
+                    <AtomsButton
+                      variant="danger"
+                      size="icon"
+                      class="sm:hidden !p-1.5"
                       title="Hapus foto"
                       :disabled="isDeleting === image.url"
                       @click="showDeleteConfirm = image.url"
                     >
                       <div class="i-mingcute:delete-line text-xs" />
-                    </button>
+                    </AtomsButton>
                   </div>
                 </div>
               </div>
@@ -308,14 +308,16 @@ onMounted(async () => {
                   </div>
 
                   <div class="flex items-center">
-                    <button
-                      :disabled="isDeleting === image.url"
-                      class="cursor-pointer rounded-md border-none p-1.5 text-neutral-400 transition-colors sm:p-2 hover:text-red-600 disabled:opacity-50"
+                    <AtomsButton
+                      variant="ghost"
+                      size="icon"
+                      class="hover:bg-red-100 !text-red-500 dark:hover:bg-red-900/30"
                       title="Hapus foto"
+                      :disabled="isDeleting === image.url"
                       @click="showDeleteConfirm = image.url"
                     >
                       <div class="i-mingcute:delete-line text-base sm:text-lg" />
-                    </button>
+                    </AtomsButton>
                   </div>
                 </div>
               </div>
@@ -323,7 +325,7 @@ onMounted(async () => {
           </div>
         </div>
       </main>
-      <MobileBottomNav />
+      <OrganismMobileBottomNav />
     </template>
 
     <div v-if="showDeleteConfirm" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-3 sm:p-4">
@@ -335,21 +337,20 @@ onMounted(async () => {
           Apakah Anda yakin ingin menghapus foto ini? Tindakan ini tidak dapat dibatalkan.
         </p>
         <div class="flex flex-col gap-2 sm:flex-row sm:justify-end sm:gap-3">
-          <button
-            class="cursor-pointer border border-neutral-300 rounded-md bg-transparent px-4 py-2 text-sm text-neutral-700 transition-colors dark:border-neutral-600 hover:bg-neutral-50 sm:text-base dark:text-neutral-300 dark:hover:bg-neutral-700"
+          <AtomsButton
+            variant="outline"
             :disabled="isDeleting === showDeleteConfirm"
             @click="showDeleteConfirm = null"
           >
             Batal
-          </button>
-          <button
-            class="cursor-pointer rounded-md border-none bg-red-600 px-4 py-2 text-sm text-white transition-colors hover:bg-red-700 sm:text-base disabled:opacity-50"
-            :disabled="isDeleting === showDeleteConfirm"
+          </AtomsButton>
+          <AtomsButton
+            variant="danger"
+            :loading="isDeleting === showDeleteConfirm"
             @click="deleteImage(showDeleteConfirm!)"
           >
-            <span v-if="isDeleting === showDeleteConfirm">Menghapus...</span>
-            <span v-else>Hapus</span>
-          </button>
+            Hasus
+          </AtomsButton>
         </div>
       </div>
     </div>

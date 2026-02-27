@@ -12,15 +12,15 @@ if (import.meta.client) {
 
 <template>
   <div min-h-screen bg-white dark:bg-black>
-    <TheSide />
-    <TheNav />
+    <OrganismTheSide />
+    <OrganismTheNav />
 
     <main px-2 pt-12 md:px-4 ml="md:[80px]">
       <div mx-auto pb-8>
         <div mb-8 />
-        <ImageGallery />
+        <OrganismImageGallery />
       </div>
     </main>
-    <MobileBottomNav />
+    <OrganismMobileBottomNav />
   </div>
 </template>
