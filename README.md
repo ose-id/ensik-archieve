@@ -2,14 +2,6 @@
 
 A captivating online gallery platform dedicated to preserving and showcasing a rich collection of historical documents and images.
 
-## ✨ Features
-
-- **Minimalist Design**: Clean and intuitive user interface
-- **Advanced Filtering**: Sort content by publisher or date
-- **Optimized Performance**: Compressed images with lazy loading for fast browsing
-- **Secure Authentication**: Discord OAuth integration
-- **Dark Mode Support**: Seamless light and dark theme switching
-
 ---
 
 ## 🚀 Getting Started
@@ -55,7 +47,7 @@ We welcome contributions! Please see our [contributing guidelines](.github/CONTR
 ### Top Contributors
 
 <a href="https://github.com/ose-id/ensik-archieve/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=ose-id/ensik-archieve" />
+  <img src="https://contrib.rocks/image?repo=ose-id/ensik-archieve" alt="Ensik Archieve Contributors" />
 </a>
 
 ---
