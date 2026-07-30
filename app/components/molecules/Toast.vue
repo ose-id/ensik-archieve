@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { ToastType } from '~/composables/useToast';
-import { onMounted, onUnmounted, ref } from 'vue';
 
 const props = defineProps<{
   id: string;
@@ -13,10 +12,7 @@ const emit = defineEmits<{
   close: [id: string];
 }>();
 
-const progress = ref(100);
-let intervalId: number;
-let timeoutId: number;
-const updateInterval = 10; // Update progress every 10ms for smooth animation
+let timeoutId: number | undefined;
 
 const typeClasses: Record<ToastType, string> = {
   success: 'bg-green-100 dark:bg-green-950 border-green-200 dark:border-green-800 text-green-800 dark:text-green-300',
@@ -39,27 +35,21 @@ const progressClasses: Record<ToastType, string> = {
   warning: 'bg-yellow-500',
 };
 
+const closeClasses: Record<ToastType, string> = {
+  success: 'text-green-600 dark:text-green-400',
+  error: 'text-red-600 dark:text-red-400',
+  info: 'text-blue-600 dark:text-blue-400',
+  warning: 'text-yellow-600 dark:text-yellow-400',
+};
+
 onMounted(() => {
-  if (props.duration > 0) {
-    const step = (updateInterval / props.duration) * 100;
-
-    intervalId = window.setInterval(() => {
-      progress.value = Math.max(0, progress.value - step);
-    }, updateInterval);
-
-    timeoutId = window.setTimeout(() => {
-      emit('close', props.id);
-    }, props.duration);
-  }
+  if (props.duration > 0)
+    timeoutId = window.setTimeout(handleClose, props.duration);
 });
 
-onUnmounted(() => {
-  if (intervalId) {
-    clearInterval(intervalId);
-  }
-  if (timeoutId) {
-    clearTimeout(timeoutId);
-  }
+onBeforeUnmount(() => {
+  if (timeoutId !== undefined)
+    window.clearTimeout(timeoutId);
 });
 
 function handleClose() {
@@ -74,33 +64,45 @@ function handleClose() {
     role="alert"
   >
     <div class="flex items-center gap-3 p-4">
-      <div :class="iconClasses[props.type]" class="flex shrink-0 items-center text-2xl" />
+      <span :class="iconClasses[props.type]" class="flex shrink-0 items-center text-2xl" aria-hidden="true" />
       <p class="m-0 flex flex-1 items-center text-sm font-medium leading-normal">
         {{ message }}
       </p>
 
       <button
         type="button"
-        class="m-0 ml-2 flex shrink-0 cursor-pointer items-center justify-center rounded-md border-none bg-transparent p-0 opacity-70 outline-none transition-all active:scale-95 hover:scale-110 hover:opacity-100"
-        :class="[
-          props.type === 'error' ? 'text-red-600 dark:text-red-400' : '',
-          props.type === 'success' ? 'text-green-600 dark:text-green-400' : '',
-          props.type === 'info' ? 'text-blue-600 dark:text-blue-400' : '',
-          props.type === 'warning' ? 'text-yellow-600 dark:text-yellow-400' : '',
-        ]"
+        class="m-0 ml-2 flex shrink-0 cursor-pointer items-center justify-center rounded-md border-none bg-transparent p-0 opacity-70 outline-none transition-[opacity,transform] active:scale-95 hover:scale-110 hover:opacity-100"
+        :class="closeClasses[props.type]"
+        aria-label="Tutup notifikasi"
         @click="handleClose"
       >
-        <div class="i-mingcute:close-line text-2xl" />
+        <span class="i-mingcute:close-line text-2xl" aria-hidden="true" />
       </button>
     </div>
 
-    <!-- Progress Bar -->
     <div v-if="duration > 0" class="absolute bottom-0 left-0 h-1 w-full bg-black/10 dark:bg-white/10">
       <div
-        class="h-full origin-left transition-all duration-[10ms] ease-linear"
+        class="toast-progress h-full origin-left"
         :class="progressClasses[props.type]"
-        :style="{ width: `${progress}%` }"
+        :style="{ animationDuration: `${duration}ms` }"
       />
     </div>
   </div>
 </template>
+
+<style scoped>
+.toast-progress {
+  animation-name: toast-countdown;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+
+@keyframes toast-countdown {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
+</style>

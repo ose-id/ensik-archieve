@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { useToast } from '~/composables/useToast';
-
 const { toasts, removeToast } = useToast();
 </script>
 
@@ -25,10 +23,12 @@ const { toasts, removeToast } = useToast();
 </template>
 
 <style scoped>
-.toast-move, /* apply transition to moving elements */
+.toast-move,
 .toast-enter-active,
 .toast-leave-active {
-  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transition:
+    opacity 0.4s cubic-bezier(0.25, 0.8, 0.25, 1),
+    transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 .toast-enter-from {
@@ -41,8 +41,6 @@ const { toasts, removeToast } = useToast();
   transform: translateX(100%) scale(0.95);
 }
 
-/* ensure leaving items are taken out of layout flow so that moving
-   animations can be calculated correctly. */
 .toast-leave-active {
   position: absolute;
 }
