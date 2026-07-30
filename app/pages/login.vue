@@ -9,9 +9,8 @@ useSeoMeta({
 
 const { loggedIn, session, fetch: fetchSession } = useUserSession();
 
-// Redirect if already authenticated
 if (loggedIn.value || session.value?.siteAuthenticated) {
-  navigateTo('/');
+  await navigateTo('/');
 }
 
 const password = ref('');
@@ -28,10 +27,8 @@ async function handleSubmit() {
       body: { password: password.value },
     });
 
-    // Refresh session to ensure it's synced before navigation
     await fetchSession();
-
-    navigateTo('/');
+    await navigateTo('/');
   }
   catch {
     error.value = 'Password salah. Silakan coba lagi.';
@@ -44,12 +41,9 @@ async function handleSubmit() {
 
 <template>
   <div class="min-h-screen flex flex-col items-center justify-center bg-zinc-950 px-4">
-    <!-- Subtle gradient background -->
     <div class="pointer-events-none fixed inset-0 from-zinc-900 via-zinc-950 to-black bg-gradient-to-br" />
 
-    <!-- Content -->
     <div class="z-10 max-w-[360px] w-full">
-      <!-- Logo/Header -->
       <div class="mb-8 text-center">
         <div class="mx-auto mb-4 h-12 w-12 flex items-center justify-center rounded-xl bg-zinc-800 ring-1 ring-zinc-700/50">
           <svg class="h-6 w-6 text-zinc-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -64,10 +58,8 @@ async function handleSubmit() {
         </p>
       </div>
 
-      <!-- Card -->
       <div class="border border-zinc-800 rounded-lg bg-zinc-900/50 p-6 shadow-xl backdrop-blur-sm">
         <form class="space-y-4" @submit.prevent="handleSubmit">
-          <!-- Password Field -->
           <div class="space-y-2">
             <label for="password" class="block text-sm text-zinc-300 font-medium">
               Password
@@ -84,7 +76,6 @@ async function handleSubmit() {
             </div>
           </div>
 
-          <!-- Error Message -->
           <div v-if="error" class="flex items-center gap-2 border border-red-900/50 rounded-md bg-red-950/50 px-3 py-2 text-sm text-red-400">
             <svg class="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -92,7 +83,6 @@ async function handleSubmit() {
             {{ error }}
           </div>
 
-          <!-- Submit Button -->
           <AtomsButton
             type="submit"
             variant="primary"
@@ -104,7 +94,6 @@ async function handleSubmit() {
         </form>
       </div>
 
-      <!-- Footer -->
       <p class="mt-6 text-center text-xs text-zinc-600">
         Protected access • Ensik Archive
       </p>

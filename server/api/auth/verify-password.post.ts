@@ -1,11 +1,29 @@
 export default defineEventHandler(async (event) => {
-  const { password } = await readBody(event);
-  const config = useRuntimeConfig();
+  assertSameOrigin(event);
+  assertRateLimit(event, 'site-password', 8, 15 * 60 * 1000);
 
-  if (password === config.sitePassword) {
-    const session = await getUserSession(event);
+  const body = await readBody<{ password?: unknown }>(event);
+  const password = typeof body?.password === 'string' ? body.password : '';
+  if (!password || password.length > 256) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'A valid password is required.',
+    });
+  }
+
+  const config = useRuntimeConfig(event);
+  const hash = config.sitePasswordHash;
+  if (!hash) {
+    throw createError({
+      statusCode: 503,
+      statusMessage: 'Site access is not configured.',
+    });
+  }
+
+  const isValid = await verifyPassword(hash, password);
+
+  if (isValid) {
     await setUserSession(event, {
-      ...session,
       siteAuthenticated: true,
     });
     return { success: true };
@@ -13,6 +31,6 @@ export default defineEventHandler(async (event) => {
 
   throw createError({
     statusCode: 401,
-    statusMessage: 'Invalid password',
+    statusMessage: 'Invalid password.',
   });
 });
