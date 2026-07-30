@@ -1,95 +1,215 @@
 <script setup lang="ts">
-const props = defineProps<{
-  src?: string;
+import type { ImageOptions } from '@nuxt/image';
+
+type EnsikImage = (
+  source: string,
+  modifiers?: ImageOptions<'ensik'>['modifiers'],
+  options?: ImageOptions<'ensik'>,
+) => string;
+
+const props = withDefaults(defineProps<{
   alt?: string;
-}>();
+  src: string;
+}>(), {
+  alt: 'Pratinjau gambar',
+});
 
-const isImageHovered = ref(false);
-const imageWidth = ref(0);
-const imageHeight = ref(0);
-const lensX = ref(0);
-const lensY = ref(0);
+const stage = ref<HTMLElement>();
+const lens = ref<HTMLElement>();
+const ensikImage = useImage() as unknown as EnsikImage;
+const cachedHighQuality = ref(false);
+const highQualityReady = ref(false);
+const highQualitySrc = ref('');
+const lowQualityLoaded = ref(false);
+const lensVisible = ref(false);
+const zoomScale = ref(2);
+const lensSize = ref(160);
+let animationFrame = 0;
+let pointerClientX = 0;
+let pointerClientY = 0;
 
-const zoomScale = ref(1.7);
-const lensSize = ref(150);
+const requestedHighQualitySrc = computed(() => ensikImage(
+  props.src,
+  {
+    fit: 'inside',
+    format: 'webp',
+    quality: 100,
+    width: 1920,
+  },
+  { provider: 'ensik' },
+));
 
-const opacity = computed(() => (isImageHovered.value ? 1 : 0));
-const cursor = computed(() => (isImageHovered.value ? 'zoom-in' : 'default'));
+const lensStyle = computed(() => ({
+  backgroundImage: highQualitySrc.value ? `url("${highQualitySrc.value}")` : undefined,
+  backgroundRepeat: 'no-repeat',
+  height: `${lensSize.value}px`,
+  opacity: lensVisible.value && highQualityReady.value ? 1 : 0,
+  transform: 'translate(-50%, -50%)',
+  width: `${lensSize.value}px`,
+}));
 
-function mouseMoved(event: MouseEvent) {
-  lensX.value = event.offsetX;
-  lensY.value = event.offsetY;
+watch(() => props.src, useCachedHighQuality, { immediate: import.meta.client });
+watch([zoomScale, lensSize], scheduleLensUpdate);
+
+onBeforeUnmount(() => {
+  if (animationFrame)
+    cancelAnimationFrame(animationFrame);
+});
+
+function useCachedHighQuality() {
+  cachedHighQuality.value = isArchiveImagePreloaded(requestedHighQualitySrc.value);
+  highQualityReady.value = cachedHighQuality.value;
+  highQualitySrc.value = cachedHighQuality.value ? requestedHighQualitySrc.value : '';
+  lowQualityLoaded.value = false;
+  lensVisible.value = false;
 }
 
-function onMouseEnter() {
-  isImageHovered.value = true;
+function startHighQualityLoad() {
+  highQualityReady.value = false;
+  lowQualityLoaded.value = true;
 }
 
-function onMouseLeave() {
-  isImageHovered.value = false;
+function finishHighQualityLoad(event: Event) {
+  const image = event.target as HTMLImageElement;
+  highQualitySrc.value = image.currentSrc || image.src;
+  markArchiveImagePreloaded(highQualitySrc.value);
+  highQualityReady.value = true;
 }
 
-async function onImageLoaded(event: Event) {
-  const img = event.target as HTMLImageElement;
-  imageHeight.value = img.clientHeight;
-  imageWidth.value = img.clientWidth;
+function renderLens() {
+  animationFrame = 0;
+  const bounds = stage.value?.getBoundingClientRect();
+  const element = lens.value;
+  if (!bounds || !element)
+    return;
+
+  const x = Math.min(Math.max(pointerClientX - bounds.left, 0), bounds.width);
+  const y = Math.min(Math.max(pointerClientY - bounds.top, 0), bounds.height);
+  Object.assign(element.style, {
+    backgroundPosition: `${lensSize.value / 2 - x * zoomScale.value}px ${lensSize.value / 2 - y * zoomScale.value}px`,
+    backgroundSize: `${bounds.width * zoomScale.value}px ${bounds.height * zoomScale.value}px`,
+    left: `${x}px`,
+    top: `${y}px`,
+  });
+}
+
+function scheduleLensUpdate() {
+  if (!animationFrame)
+    animationFrame = requestAnimationFrame(renderLens);
+}
+
+function updateLens(event: PointerEvent) {
+  pointerClientX = event.clientX;
+  pointerClientY = event.clientY;
+  scheduleLensUpdate();
+}
+
+function showLens(event: PointerEvent) {
+  if (event.pointerType === 'touch')
+    return;
+
+  updateLens(event);
+  lensVisible.value = true;
+}
+
+function hideLens() {
+  lensVisible.value = false;
 }
 </script>
 
 <template>
-  <div class="h-full w-full flex flex-col items-center justify-center">
-    <div class="relative inline-block" :style="{ cursor }" @mousemove="mouseMoved" @mouseenter="onMouseEnter" @mouseleave="onMouseLeave">
-      <div
-        class="magic-zoom-lens"
-        pointer-events-none absolute isolate z-1 overflow-hidden border-2 border-white rounded-full border-solid shadow-xl
-        :style="{
-          width: `${lensSize}px`,
-          height: `${lensSize}px`,
-          opacity,
-          top: `${lensY}px`,
-          left: `${lensX}px`,
-        }"
-      >
-        <div class="magic-zoom-lens-box" :style="{ width: `${lensSize}px`, height: `${lensSize}px` }">
-          <NuxtImg
-            fixed inline overflow-hidden object-cover
-            :src="props.src"
-            :style="{
-              width: `${imageWidth * zoomScale}px`,
-              height: `${imageHeight * zoomScale}px`,
-              transform: `translate(${-(lensX * zoomScale)}px, ${-(lensY * zoomScale)}px)`,
-            }"
-          />
-        </div>
-      </div>
+  <div class="max-w-full flex flex-col items-center justify-center">
+    <div
+      ref="stage"
+      class="relative inline-block max-w-full"
+      :class="highQualityReady ? 'cursor-zoom-in' : 'cursor-progress'"
+      role="img"
+      :aria-label="alt"
+      @pointerenter="showLens"
+      @pointermove="updateLens"
+      @pointerleave="hideLens"
+    >
       <NuxtImg
-        class="max-h-[75vh] max-w-full min-w-[320px] w-auto rounded-md object-contain shadow-2xl transition-opacity duration-300 sm:min-w-[480px]"
-        :alt="props.alt || 'Zoomed Image'"
-        :src="props.src"
-        @load="onImageLoaded"
+        v-if="cachedHighQuality"
+        provider="ensik"
+        :src="src"
+        alt=""
+        width="1920"
+        format="webp"
+        quality="100"
+        fit="inside"
+        loading="eager"
+        decoding="async"
+        fetchpriority="high"
+        class="block max-h-[82vh] max-w-[calc(100vw-3rem)] w-auto object-contain md:max-w-[calc(100vw-10rem)]"
+        @load="finishHighQualityLoad"
+      />
+      <NuxtImg
+        v-else
+        provider="ensik"
+        :src="src"
+        alt=""
+        width="1920"
+        format="webp"
+        quality="20"
+        fit="inside"
+        loading="eager"
+        decoding="async"
+        fetchpriority="high"
+        class="block max-h-[82vh] max-w-[calc(100vw-3rem)] w-auto object-contain md:max-w-[calc(100vw-10rem)]"
+        @load="startHighQualityLoad"
+      />
+      <NuxtImg
+        v-if="lowQualityLoaded"
+        provider="ensik"
+        :src="src"
+        alt=""
+        width="1920"
+        format="webp"
+        quality="100"
+        fit="inside"
+        loading="eager"
+        decoding="async"
+        class="absolute inset-0 h-full w-full object-contain transition-opacity duration-200"
+        :class="highQualityReady ? 'opacity-100' : 'opacity-0'"
+        @load="finishHighQualityLoad"
+      />
+      <span
+        ref="lens"
+        class="pointer-events-none absolute z-2 border-2 border-white rounded-full border-solid shadow-2xl transition-opacity duration-150"
+        :style="lensStyle"
+        aria-hidden="true"
       />
     </div>
 
-    <div class="mt-6 flex flex-wrap items-center justify-center gap-6 rounded-full bg-black/50 px-6 py-3 text-white backdrop-blur-sm">
-      <div class="flex items-center gap-3">
-        <label class="text-xs font-medium md:text-sm">Zoom Level</label>
-        <input v-model="zoomScale" type="range" class="w-24 cursor-pointer accent-white sm:w-32" min="1" max="5" step="0.1">
-      </div>
-      <div class="flex items-center gap-3">
-        <label class="text-xs font-medium md:text-sm">Circle Size</label>
-        <input v-model="lensSize" type="range" class="w-24 cursor-pointer accent-white sm:w-32" min="50" max="200" step="10">
-      </div>
+    <div class="mt-4 flex flex-wrap items-center justify-center gap-4 rounded-full bg-black/60 px-5 py-2.5 text-white backdrop-blur-sm">
+      <label class="flex items-center gap-2 text-xs font-medium sm:text-sm">
+        Zoom
+        <input
+          v-model.number="zoomScale"
+          type="range"
+          class="w-24 cursor-pointer accent-white sm:w-32"
+          min="1.5"
+          max="5"
+          step="0.1"
+        >
+        <span class="w-8 text-right tabular-nums">{{ zoomScale.toFixed(1) }}x</span>
+      </label>
+      <label class="flex items-center gap-2 text-xs font-medium sm:text-sm">
+        Lensa
+        <input
+          v-model.number="lensSize"
+          type="range"
+          class="w-24 cursor-pointer accent-white sm:w-32"
+          min="80"
+          max="220"
+          step="10"
+        >
+      </label>
     </div>
+
+    <p class="mb-0 mt-2 hidden text-xs text-white/70 md:block">
+      Arahkan kursor ke gambar untuk menggunakan lensa.
+    </p>
   </div>
 </template>
-
-<style scoped>
-.magic-zoom-lens {
-  transition: opacity 0.25s ease-in-out;
-  transform: translate(-50%, -50%);
-}
-
-.magic-zoom-lens-box {
-  transform: translate(50%, 50%);
-}
-</style>
