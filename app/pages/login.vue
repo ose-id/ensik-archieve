@@ -14,6 +14,7 @@ if (loggedIn.value || session.value?.siteAuthenticated) {
 }
 
 const password = ref('');
+const showPassword = ref(false);
 const error = ref('');
 const loading = ref(false);
 
@@ -68,11 +69,25 @@ async function handleSubmit() {
               <AtomsInput
                 id="password"
                 v-model="password"
-                type="password"
+                :type="showPassword ? 'text' : 'password'"
+                class="!pr-11"
                 placeholder="••••••••••••"
                 autocomplete="current-password"
                 required
               />
+              <button
+                type="button"
+                class="absolute inset-y-0 right-0 w-11 flex cursor-pointer items-center justify-center border-0 bg-transparent text-zinc-500 transition-colors hover:text-zinc-200 focus-visible:outline-2 focus-visible:outline-zinc-500"
+                :aria-label="showPassword ? 'Sembunyikan password' : 'Tampilkan password'"
+                :aria-pressed="showPassword"
+                @click="showPassword = !showPassword"
+              >
+                <span
+                  :class="showPassword ? 'i-mingcute:eye-close-line' : 'i-mingcute:eye-2-line'"
+                  class="text-xl"
+                  aria-hidden="true"
+                />
+              </button>
             </div>
           </div>
 

@@ -9,6 +9,7 @@ interface ImagePreloadJob {
 const MAX_CONCURRENT_PRELOADS = 2;
 const jobs = new Map<string, ImagePreloadJob>();
 const loadedUrls = new Set<string>();
+const previewUrls = new Map<string, string>();
 const queue: ImagePreloadJob[] = [];
 let activePreloads = 0;
 let preloadingPaused = false;
@@ -66,6 +67,15 @@ export function isArchiveImagePreloaded(url: string) {
 export function markArchiveImagePreloaded(url: string) {
   if (url)
     loadedUrls.add(url);
+}
+
+export function getArchiveImagePreview(source: string) {
+  return previewUrls.get(source);
+}
+
+export function markArchiveImagePreview(source: string, url: string) {
+  if (source && url)
+    previewUrls.set(source, url);
 }
 
 export function setArchiveImagePreloadingPaused(paused: boolean) {

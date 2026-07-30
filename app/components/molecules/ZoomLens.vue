@@ -20,6 +20,7 @@ const ensikImage = useImage() as unknown as EnsikImage;
 const cachedHighQuality = ref(false);
 const highQualityReady = ref(false);
 const highQualitySrc = ref('');
+const previewSrc = ref('');
 const lowQualityLoaded = ref(false);
 const lensVisible = ref(false);
 const zoomScale = ref(2);
@@ -57,10 +58,11 @@ onBeforeUnmount(() => {
 });
 
 function useCachedHighQuality() {
+  previewSrc.value = getArchiveImagePreview(props.src) || '';
   cachedHighQuality.value = isArchiveImagePreloaded(requestedHighQualitySrc.value);
   highQualityReady.value = cachedHighQuality.value;
   highQualitySrc.value = cachedHighQuality.value ? requestedHighQualitySrc.value : '';
-  lowQualityLoaded.value = false;
+  lowQualityLoaded.value = Boolean(previewSrc.value) && !cachedHighQuality.value;
   lensVisible.value = false;
 }
 
@@ -129,27 +131,32 @@ function hideLens() {
       @pointermove="updateLens"
       @pointerleave="hideLens"
     >
-      <NuxtImg
+      <img
         v-if="cachedHighQuality"
-        provider="ensik"
-        :src="src"
+        :src="requestedHighQualitySrc"
         alt=""
         width="1920"
-        format="webp"
-        quality="100"
-        fit="inside"
         loading="eager"
         decoding="async"
         fetchpriority="high"
         class="block max-h-[82vh] max-w-[calc(100vw-3rem)] w-auto object-contain md:max-w-[calc(100vw-10rem)]"
         @load="finishHighQualityLoad"
-      />
+      >
+      <img
+        v-else-if="previewSrc"
+        :src="previewSrc"
+        alt=""
+        loading="eager"
+        decoding="async"
+        fetchpriority="high"
+        class="block max-h-[82vh] max-w-[calc(100vw-3rem)] w-auto object-contain md:max-w-[calc(100vw-10rem)]"
+      >
       <NuxtImg
         v-else
         provider="ensik"
         :src="src"
         alt=""
-        width="1920"
+        width="480"
         format="webp"
         quality="20"
         fit="inside"

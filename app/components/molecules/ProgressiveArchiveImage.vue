@@ -66,7 +66,10 @@ async function loadHighQuality() {
     highQualityReady.value = true;
 }
 
-function onLowQualityLoaded() {
+function onLowQualityLoaded(event: Event) {
+  const image = event.target as HTMLImageElement;
+  markArchiveImagePreview(props.src, image.currentSrc || image.src);
+
   if (lowQualityLoaded.value)
     return;
 
