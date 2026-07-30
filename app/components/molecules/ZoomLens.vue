@@ -71,9 +71,9 @@ function startHighQualityLoad() {
   lowQualityLoaded.value = true;
 }
 
-function finishHighQualityLoad(event: Event) {
-  const image = event.target as HTMLImageElement;
-  highQualitySrc.value = image.currentSrc || image.src;
+function finishHighQualityLoad(event?: Event) {
+  const image = event?.target instanceof HTMLImageElement ? event.target : undefined;
+  highQualitySrc.value = image?.currentSrc || image?.src || requestedHighQualitySrc.value;
   markArchiveImagePreloaded(highQualitySrc.value);
   highQualityReady.value = true;
 }

@@ -7,6 +7,10 @@ type EnsikImage = (
   options?: ImageOptions<'ensik'>,
 ) => string;
 
+interface NuxtImageInstance {
+  imgEl?: HTMLImageElement | { readonly value: HTMLImageElement | null } | null;
+}
+
 defineOptions({
   inheritAttrs: false,
 });
@@ -30,8 +34,20 @@ const props = withDefaults(defineProps<{
 
 const ensikImage = useImage() as unknown as EnsikImage;
 const highQualityReady = ref(false);
+const lowQualityImage = ref<NuxtImageInstance>();
 const lowQualityLoaded = ref(false);
 let activeSource = props.src;
+
+const lowQualitySrc = computed(() => ensikImage(
+  props.src,
+  {
+    fit: 'inside',
+    format: 'webp',
+    quality: 20,
+    width: props.lowWidth,
+  },
+  { provider: 'ensik' },
+));
 
 const highQualitySrc = computed(() => ensikImage(
   props.src,
@@ -66,9 +82,13 @@ async function loadHighQuality() {
     highQualityReady.value = true;
 }
 
-function onLowQualityLoaded(event: Event) {
-  const image = event.target as HTMLImageElement;
-  markArchiveImagePreview(props.src, image.currentSrc || image.src);
+function onLowQualityLoaded(event?: Event) {
+  const target = event?.target instanceof HTMLImageElement ? event.target : undefined;
+  const exposed = lowQualityImage.value?.imgEl;
+  const image = target
+    || (exposed instanceof HTMLImageElement ? exposed : exposed?.value)
+    || undefined;
+  markArchiveImagePreview(props.src, image?.currentSrc || image?.src || lowQualitySrc.value);
 
   if (lowQualityLoaded.value)
     return;
@@ -85,6 +105,7 @@ function onLowQualityLoaded(event: Event) {
   >
     <NuxtImg
       v-if="!highQualityReady"
+      ref="lowQualityImage"
       provider="ensik"
       :src="src"
       alt=""
