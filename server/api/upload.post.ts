@@ -1,64 +1,70 @@
-import { randomBytes } from 'node:crypto';
-import { put } from '@vercel/blob';
-
-interface CustomUser {
-  username: string;
-}
-
-const ALLOWED_TYPES = ['image/png', 'image/jpeg', 'image/jpg'];
-const MAX_SIZE = 2 * 1024 * 1024;
+import type { UploadedArchiveImage } from '~~/shared/types/images';
+import { randomUUID } from 'node:crypto';
+import { head, put } from '@vercel/blob';
 
 export default defineEventHandler(async (event) => {
-  const session = await getUserSession(event);
-  if (!session?.user) {
-    throw createError({ statusCode: 401, statusMessage: 'Unauthorized. Please log in first.' });
-  }
+  assertSameOrigin(event);
+  assertRateLimit(event, 'image-upload', 20, 60 * 60 * 1000);
+  const user = await requireOAuthUser(event);
 
-  const user = session.user as CustomUser;
-  const username = user.username.replace(/\s+/g, '_');
+  const contentLength = Number(getRequestHeader(event, 'content-length'));
+  if (Number.isFinite(contentLength) && contentLength > MAX_MULTIPART_SIZE) {
+    throw createError({
+      statusCode: 413,
+      statusMessage: 'Upload exceeds the 3 MB image limit.',
+    });
+  }
 
   const formData = await readMultipartFormData(event);
-  if (!formData) {
-    throw createError({ statusCode: 400, statusMessage: 'No file uploaded' });
+  if (!formData || formData.length !== 1) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Upload exactly one image at a time.',
+    });
   }
 
-  const file = formData.find(file => file.type && ALLOWED_TYPES.includes(file.type));
-  if (!file || !file.name) {
-    throw createError({ statusCode: 400, statusMessage: 'Invalid file type. Only PNG, JPG, and JPEG are allowed.' });
+  const file = formData[0];
+  if (!file?.name || !file.data?.length) {
+    throw createError({ statusCode: 400, statusMessage: 'No image was uploaded.' });
   }
 
-  if (file.data.length > MAX_SIZE) {
-    throw createError({ statusCode: 400, statusMessage: 'File size exceeds 2MB limit.' });
+  if (file.data.length > MAX_IMAGE_SIZE) {
+    throw createError({
+      statusCode: 413,
+      statusMessage: 'Image exceeds the 3 MB limit.',
+    });
+  }
+
+  const detected = detectImage(file.data);
+  if (!detected) {
+    throw createError({
+      statusCode: 415,
+      statusMessage: 'Only valid PNG and JPEG images are supported.',
+    });
   }
 
   const now = new Date();
-  const day = String(now.getDate()).padStart(2, '0');
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const year = String(now.getFullYear());
-  const formattedDate = `${day}-${month}-${year}`;
+  const year = now.getUTCFullYear();
+  const month = String(now.getUTCMonth() + 1).padStart(2, '0');
+  const pathname = [
+    'users',
+    user.discordId,
+    String(year),
+    month,
+    `${randomUUID()}-${sanitizeImageName(file.name)}.${detected.extension}`,
+  ].join('/');
 
-  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-  const randomSegment = Array.from(randomBytes(5))
-    .map(byte => characters[byte % characters.length])
-    .join('');
+  const blob = await put(pathname, file.data, {
+    access: 'private',
+    addRandomSuffix: false,
+    allowOverwrite: false,
+    cacheControlMaxAge: 31_536_000,
+    contentType: detected.mime,
+  });
+  const metadata = await head(blob.pathname);
+  invalidateArchiveImageCache();
 
-  const extensionMatch = file.name.match(/\.[^.]+$/);
-  const extension = extensionMatch ? extensionMatch[0].toLowerCase() : '';
-
-  const fileName = `${username}-img-${formattedDate}-${randomSegment}${extension}`;
-
-  try {
-    const blob = await put(fileName, file.data, {
-      access: 'public',
-    });
-
-    return {
-      url: blob.url,
-      pathname: blob.pathname,
-    };
-  }
-  catch (error) {
-    console.error('Upload failed:', error);
-    throw createError({ statusCode: 500, statusMessage: 'Failed to upload file.' });
-  }
+  return {
+    item: toArchiveImage(event, metadata),
+  } satisfies UploadedArchiveImage;
 });

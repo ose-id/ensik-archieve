@@ -1,39 +1,27 @@
 import { del } from '@vercel/blob';
 
-interface CustomUser {
-  username: string;
-}
-
 export default defineEventHandler(async (event) => {
-  const session = await getUserSession(event);
-  if (!session?.user) {
-    throw createError({ statusCode: 401, statusMessage: 'Unauthorized. Please log in first.' });
+  assertSameOrigin(event);
+  assertRateLimit(event, 'image-delete', 60, 60 * 60 * 1000);
+  const user = await requireOAuthUser(event);
+  const body = await readBody<{ etag?: unknown; id?: unknown }>(event);
+
+  if (
+    typeof body?.id !== 'string'
+    || body.id.length > 1_024
+    || !/^[\w-]+$/.test(body.id)
+  ) {
+    throw createError({ statusCode: 400, statusMessage: 'A valid image ID is required.' });
   }
 
-  const user = session.user as CustomUser;
-  const username = user.username.replace(/\s+/g, '_');
-
-  const body = await readBody(event);
-  const { url } = body;
-
-  if (!url) {
-    throw createError({ statusCode: 400, statusMessage: 'Image URL is required.' });
+  if (typeof body.etag !== 'string' || !body.etag || body.etag.length > 256) {
+    throw createError({ statusCode: 400, statusMessage: 'A valid image ETag is required.' });
   }
 
-  try {
-    const urlParts = url.split('/');
-    const filename = urlParts[urlParts.length - 1];
+  const pathname = validateArchivePathname(fromArchiveReference(event, body.id));
+  assertImageOwnership(pathname, user);
+  await del(pathname, { ifMatch: body.etag });
+  invalidateArchiveImageCache();
 
-    if (!filename.startsWith(`${username}-`)) {
-      throw createError({ statusCode: 403, statusMessage: 'You can only delete your own images.' });
-    }
-
-    await del(url);
-
-    return { success: true, message: 'Image deleted successfully.' };
-  }
-  catch (error) {
-    console.error('Failed to delete image:', error);
-    throw createError({ statusCode: 500, statusMessage: 'Failed to delete image.' });
-  }
+  return { success: true };
 });
