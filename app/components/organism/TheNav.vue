@@ -29,7 +29,7 @@ async function logout() {
 <template>
   <nav
     fixed right-0 top-0 z-40 h-16 w-full border-b
-    class="border-neutral-200/50 bg-white/80 backdrop-blur-md md:w-[calc(100%-80px)] dark:border-neutral-800/50 dark:bg-black/80"
+    class="border-neutral-200/50 bg-white md:w-[calc(100%-80px)] dark:border-neutral-800/50 dark:bg-black"
   >
     <div h-full min-w-0 flex items-center justify-between gap-2 px-2 md:px-4>
       <h1 class="min-w-0 truncate whitespace-nowrap" text-xl text-neutral-900 font-bold font-melody lg:text-3xl md:text-2xl xl:text-4xl dark:text-zinc-100>
