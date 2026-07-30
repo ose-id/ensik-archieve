@@ -12,7 +12,9 @@
     "lint:fix": "eslint . --fix"
   },
   "dependencies": {
-    "@vercel/blob": "^2.6.1"
+    "@nuxt/fonts": "^0.14.0",
+    "@vercel/blob": "^2.6.1",
+    "sharp": "^0.35.3"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^9.2.0",

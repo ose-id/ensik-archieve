@@ -1,7 +1,6 @@
-/* eslint-disable node/prefer-global/process */
 export default defineNuxtConfig({
-
   modules: [
+    '@nuxt/fonts',
     '@nuxt/image',
     '@nuxtjs/color-mode',
     '@unocss/nuxt',
@@ -16,19 +15,20 @@ export default defineNuxtConfig({
   app: {
     head: {
       charset: 'utf-8',
-      viewport: 'width=device-width, initial-scale=1',
+      viewport: 'width=device-width, initial-scale=1, viewport-fit=cover',
       htmlAttrs: {
-        lang: 'en',
+        lang: 'id',
       },
       meta: [
-        { name: 'keywords', content: 'Ensik Archive is a captivating online gallery platform dedicated to preserving and showcasing a rich collection of historical, and documents.' },
+        { name: 'description', content: 'Galeri privat untuk menyimpan dan menampilkan arsip gambar komunitas Ensik.' },
+        { name: 'keywords', content: 'Ensik Archive, galeri, arsip gambar, komunitas' },
         { name: 'author', content: 'OSE' },
-        { name: 'apple-mobile-web-app-title', content: 'Ensik Arch' },
+        { name: 'apple-mobile-web-app-title', content: 'Ensik Archive' },
       ],
       link: [
         { rel: 'icon', type: 'image/png', href: '/favicon/favicon-96x96.png', sizes: '96x96' },
         { rel: 'icon', type: 'image/svg+xml', href: '/favicon/favicon.svg' },
-        { rel: 'shortcut icon', href: 'favicon.ico' },
+        { rel: 'shortcut icon', href: '/favicon.ico' },
         { rel: 'apple-touch-icon', sizes: '180x180', href: '/favicon/apple-touch-icon.png' },
         { rel: 'manifest', href: '/favicon/site.webmanifest' },
       ],
@@ -40,23 +40,69 @@ export default defineNuxtConfig({
     preference: 'light',
   },
 
+  fonts: {
+    defaults: {
+      formats: ['woff2'],
+      styles: ['normal'],
+      subsets: ['latin'],
+    },
+    families: [
+      {
+        name: 'Outfit',
+        provider: 'google',
+        weights: [400, 500, 600, 700],
+        global: true,
+      },
+      {
+        name: 'Hi Melody',
+        provider: 'fontsource',
+        weights: [400],
+        global: true,
+      },
+    ],
+  },
+
+  image: {
+    domains: [
+      'cdn.discordapp.com',
+    ],
+    providers: {
+      ensik: {
+        provider: '~/providers/ensik.ts',
+      },
+    },
+    screens: {
+      'xs': 320,
+      'sm': 480,
+      'md': 640,
+      'lg': 768,
+      'xl': 1024,
+      'xxl': 1280,
+      '2xl': 1536,
+      '3xl': 1920,
+    },
+  },
+
   runtimeConfig: {
-    sitePassword: process.env.SITE_PASSWORD,
+    sitePasswordHash: '',
+    discordGuildId: '',
+    discordRoleId: '',
+    discordRoleRecheckSeconds: 900,
     oauth: {
       discord: {
-        clientId: process.env.NUXT_OAUTH_DISCORD_CLIENT_ID,
-        clientSecret: process.env.NUXT_OAUTH_DISCORD_CLIENT_SECRET,
+        clientId: '',
+        clientSecret: '',
         scope: ['identify', 'guilds.members.read'],
       },
     },
-    public: {
-      authJs: {
-        baseURL: process.env.AUTH_ORIGIN,
-      },
-    },
     session: {
-      password: process.env.NUXT_SESSION_PASSWORD || '',
-      maxAge: 604800, // 1 week
+      password: '',
+      maxAge: 604800,
+      cookie: {
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: !import.meta.dev,
+      },
     },
   },
 
