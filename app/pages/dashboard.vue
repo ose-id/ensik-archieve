@@ -1,358 +1,464 @@
 <script setup lang="ts">
+import type { ArchiveImage, ArchiveImagePage } from '~~/shared/types/images';
+
 definePageMeta({
   middleware: 'auth',
 });
 
-interface ImageBlob {
-  url: string;
-  pathname: string;
-  size: number;
-  uploadedAt: string;
-}
-
-const { loggedIn } = useUserSession();
-
-if (import.meta.client && !loggedIn.value) {
-  await navigateTo('/');
-}
-
-const images = ref<ImageBlob[]>([]);
-const showDeleteConfirm = ref<string | null>(null);
-const isDeleting = ref<string | null>(null);
-const viewMode = ref<'list' | 'card'>('list');
-const sortOrder = ref<'desc' | 'asc'>('desc');
-
-const sortedImages = computed(() => {
-  return [...images.value].sort((a, b) => {
-    const dateA = new Date(a.uploadedAt).getTime();
-    const dateB = new Date(b.uploadedAt).getTime();
-
-    return sortOrder.value === 'desc'
-      ? dateB - dateA
-      : dateA - dateB;
-  });
+useSeoMeta({
+  title: 'Dashboard - Ensik Archive',
 });
 
-async function deleteImage(imageUrl: string) {
-  if (isDeleting.value)
+const PAGE_SIZE = 30;
+const FILE_SIZE_UNITS = ['B', 'KB', 'MB', 'GB'];
+const dateFormatter = new Intl.DateTimeFormat('id-ID', {
+  dateStyle: 'medium',
+  timeStyle: 'short',
+});
+const { addToast } = useToast();
+const { notifyArchiveChanged, revision } = useArchiveEvents();
+const viewMode = ref<'card' | 'list'>('list');
+const sortOrder = useCookie<'asc' | 'desc'>('ensik-dashboard-sort', {
+  default: () => 'desc',
+  sameSite: 'lax',
+});
+const deleteCandidate = ref<ArchiveImage>();
+const deletingImageId = ref('');
+const loadingMore = ref(false);
+const paginationError = ref('');
+const paginationSentinel = ref<HTMLElement>();
+const sentinelVisible = ref(false);
+
+const {
+  data,
+  error,
+  refresh,
+  status,
+} = await useFetch<ArchiveImagePage>('/api/user-images', {
+  key: 'user-archive-images',
+  deep: false,
+  lazy: true,
+  query: { limit: PAGE_SIZE },
+  watch: false,
+});
+
+const images = shallowRef<ArchiveImage[]>(data.value?.items || []);
+const cursor = ref<string | null>(data.value?.cursor || null);
+const hasMore = ref(data.value?.hasMore || false);
+
+watch(data, (page) => {
+  images.value = page?.items || [];
+  cursor.value = page?.cursor || null;
+  hasMore.value = page?.hasMore || false;
+});
+
+watch(revision, () => {
+  void refresh();
+});
+
+const sortedImages = computed(() => [...images.value].sort((left, right) => {
+  const leftDate = new Date(left.uploadedAt).getTime();
+  const rightDate = new Date(right.uploadedAt).getTime();
+  return sortOrder.value === 'desc' ? rightDate - leftDate : leftDate - rightDate;
+}));
+
+const loadedSize = computed(() => images.value.reduce((total, image) => total + image.size, 0));
+
+useIntersectionObserver(
+  paginationSentinel,
+  ([entry]) => {
+    sentinelVisible.value = Boolean(entry?.isIntersecting);
+    if (sentinelVisible.value)
+      void loadMore();
+  },
+  { rootMargin: '600px 0px' },
+);
+
+async function loadMore() {
+  if (!cursor.value || !hasMore.value || loadingMore.value)
     return;
 
-  isDeleting.value = imageUrl;
+  loadingMore.value = true;
+  paginationError.value = '';
+  try {
+    const page = await $fetch<ArchiveImagePage>('/api/user-images', {
+      query: {
+        cursor: cursor.value,
+        limit: PAGE_SIZE,
+      },
+    });
+    images.value = [...images.value, ...page.items];
+    cursor.value = page.cursor;
+    hasMore.value = page.hasMore;
+  }
+  catch {
+    paginationError.value = 'Gagal memuat gambar berikutnya.';
+  }
+  finally {
+    loadingMore.value = false;
+    await nextTick();
+    if (sentinelVisible.value && hasMore.value && !paginationError.value)
+      requestAnimationFrame(() => void loadMore());
+  }
+}
 
+async function deleteImage() {
+  const image = deleteCandidate.value;
+  if (!image || deletingImageId.value)
+    return;
+
+  deletingImageId.value = image.id;
   try {
     await $fetch('/api/delete-image', {
       method: 'DELETE',
-      body: { url: imageUrl },
+      body: {
+        etag: image.etag,
+        id: image.id,
+      },
     });
-    images.value = images.value.filter(img => img.url !== imageUrl);
-    showDeleteConfirm.value = null;
+    images.value = images.value.filter(item => item.id !== image.id);
+    deleteCandidate.value = undefined;
+    notifyArchiveChanged();
+    addToast('Gambar berhasil dihapus.', 'success');
   }
-  catch {}
+  catch {
+    addToast('Gambar gagal dihapus. Muat ulang lalu coba lagi.', 'error');
+  }
   finally {
-    isDeleting.value = null;
+    deletingImageId.value = '';
   }
 }
 
 function formatFileSize(bytes: number) {
-  if (bytes === 0)
-    return '0 Bytes';
-  const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return `${Number.parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
+  if (!bytes)
+    return '0 B';
+
+  const unit = Math.min(
+    Math.floor(Math.log(bytes) / Math.log(1024)),
+    FILE_SIZE_UNITS.length - 1,
+  );
+  return `${(bytes / 1024 ** unit).toFixed(unit === 0 ? 0 : 1)} ${FILE_SIZE_UNITS[unit]}`;
 }
 
-function formatDate(dateString: string) {
-  return new Date(dateString).toLocaleDateString('id-ID', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+function formatDate(value: string) {
+  return dateFormatter.format(new Date(value));
 }
 
-onMounted(async () => {
-  try {
-    const userImages = await $fetch('/api/user-images');
-    images.value = userImages || [];
-  }
-  catch (error) {
-    console.error('Failed to fetch images:', error);
-  }
-});
+function getDownloadUrl(id: string) {
+  return `/api/media/${encodeURIComponent(id)}?download=1`;
+}
+
+function reloadImages() {
+  void refresh();
+}
 </script>
 
 <template>
-  <div class="min-h-screen bg-white dark:bg-black">
-    <div v-if="!loggedIn" class="fixed inset-0 z-50 flex items-center justify-center bg-white dark:bg-black">
-      <div class="flex flex-col items-center gap-4">
-        <div class="h-8 w-8 animate-spin border-4 border-neutral-300 border-t-blue-600 rounded-full" />
-        <p class="text-sm text-neutral-600 dark:text-neutral-400">
-          Redirecting...
-        </p>
-      </div>
-    </div>
+  <div class="mx-auto max-w-[1600px] py-4 md:py-8">
+    <section class="grid grid-cols-1 mb-8 gap-4 md:grid-cols-2 md:mb-12 md:gap-8 sm:gap-6" aria-label="Ringkasan arsip">
+      <article class="relative overflow-hidden rounded-xl from-neutral-50 to-neutral-100 bg-gradient-to-br p-4 shadow-lg sm:rounded-2xl dark:from-neutral-900/20 dark:to-neutral-800/30 md:p-8 sm:p-6">
+        <div class="relative z-1 flex items-center justify-between">
+          <div class="flex-1">
+            <p class="m-0 text-xs text-neutral-600 font-semibold tracking-wide uppercase sm:text-sm dark:text-neutral-400">
+              Foto dimuat
+            </p>
+            <p class="mb-0 mt-1 text-2xl text-neutral-900 font-bold sm:mt-2 md:text-4xl sm:text-3xl dark:text-neutral-100">
+              {{ images.length }}
+            </p>
+          </div>
+          <div class="rounded-xl bg-neutral-600 p-2 shadow-lg sm:rounded-2xl dark:bg-neutral-700 md:p-4 sm:p-3">
+            <span class="i-mingcute:pic-line block text-xl text-white md:text-3xl sm:text-2xl" aria-hidden="true" />
+          </div>
+        </div>
+        <span class="absolute h-12 w-12 rounded-full bg-neutral-200/50 -bottom-2 -right-2 md:h-20 md:w-20 sm:h-16 sm:w-16 dark:bg-neutral-700/30" aria-hidden="true" />
+      </article>
 
-    <template v-else>
-      <OrganismTheSide />
-      <OrganismTheNav />
+      <article class="relative overflow-hidden rounded-xl from-neutral-50 to-neutral-100 bg-gradient-to-br p-4 shadow-lg sm:rounded-2xl dark:from-neutral-900/20 dark:to-neutral-800/30 md:p-8 sm:p-6">
+        <div class="relative z-1 flex items-center justify-between">
+          <div class="min-w-0 flex-1">
+            <p class="m-0 text-xs text-neutral-600 font-semibold tracking-wide uppercase sm:text-sm dark:text-neutral-400">
+              Ukuran dimuat
+            </p>
+            <p class="mb-0 mt-1 truncate text-2xl text-neutral-900 font-bold sm:mt-2 md:text-4xl sm:text-3xl dark:text-neutral-100">
+              {{ formatFileSize(loadedSize) }}
+            </p>
+          </div>
+          <div class="rounded-xl bg-neutral-600 p-2 shadow-lg sm:rounded-2xl dark:bg-neutral-700 md:p-4 sm:p-3">
+            <span class="i-mingcute:storage-line block text-xl text-white md:text-3xl sm:text-2xl" aria-hidden="true" />
+          </div>
+        </div>
+        <span class="absolute h-12 w-12 rounded-full bg-neutral-200/50 -bottom-2 -right-2 md:h-20 md:w-20 sm:h-16 sm:w-16 dark:bg-neutral-700/30" aria-hidden="true" />
+      </article>
+    </section>
 
-      <main class="px-3 pt-16 md:ml-[50px] md:ml-[80px] lg:px-8 md:px-6">
-        <div class="mx-auto py-4 md:py-8">
-          <div class="grid grid-cols-1 mb-8 gap-4 md:grid-cols-2 md:mb-12 md:gap-8 sm:gap-6">
-            <div class="group relative overflow-hidden rounded-xl from-neutral-50 to-neutral-100 bg-gradient-to-br p-4 shadow-lg transition-all duration-300 sm:rounded-2xl dark:from-neutral-900/20 dark:to-neutral-800/30 md:p-8 sm:p-6 hover:shadow-2xl">
-              <div class="flex items-center justify-between">
-                <div class="flex-1">
-                  <p class="text-xs text-neutral-600 font-semibold tracking-wide uppercase sm:text-sm dark:text-neutral-400">
-                    Total Foto
-                  </p>
-                  <p class="mt-1 text-2xl text-neutral-900 font-bold sm:mt-2 md:text-4xl sm:text-3xl dark:text-neutral-100">
-                    {{ images.length }}
-                  </p>
-                </div>
-                <div class="rounded-xl bg-neutral-500 p-2 shadow-lg sm:rounded-2xl dark:bg-neutral-600 md:p-4 sm:p-3">
-                  <div class="i-mingcute:pic-line text-xl text-white md:text-3xl sm:text-2xl" />
-                </div>
-              </div>
-              <div class="absolute h-12 w-12 rounded-full bg-neutral-200/50 -bottom-2 -right-2 md:h-20 md:w-20 sm:h-16 sm:w-16 dark:bg-neutral-700/30" />
-            </div>
-
-            <div class="group relative overflow-hidden rounded-xl from-neutral-50 to-neutral-100 bg-gradient-to-br p-4 shadow-lg transition-all duration-300 sm:rounded-2xl dark:from-neutral-900/20 dark:to-neutral-800/30 md:p-8 sm:p-6 hover:shadow-2xl">
-              <div class="flex items-center justify-between">
-                <div class="min-w-0 flex-1">
-                  <p class="text-xs text-neutral-600 font-semibold tracking-wide uppercase sm:text-sm dark:text-neutral-400">
-                    Total Ukuran
-                  </p>
-                  <p class="mt-1 truncate text-2xl text-neutral-900 font-bold sm:mt-2 md:text-4xl sm:text-3xl dark:text-neutral-100">
-                    {{ formatFileSize(images.reduce((acc, img) => acc + img.size, 0)) }}
-                  </p>
-                </div>
-                <div class="rounded-xl bg-neutral-500 p-2 shadow-lg sm:rounded-2xl dark:bg-neutral-600 md:p-4 sm:p-3">
-                  <div class="i-mingcute:storage-line text-xl text-white md:text-3xl sm:text-2xl" />
-                </div>
-              </div>
-              <div class="absolute h-12 w-12 rounded-full bg-neutral-200/50 -bottom-2 -right-2 md:h-20 md:w-20 sm:h-16 sm:w-16 dark:bg-neutral-700/30" />
-            </div>
+    <section class="overflow-hidden rounded-xl bg-white shadow-xl sm:rounded-2xl dark:bg-neutral-800/50" aria-labelledby="user-images-title">
+      <header class="border-b border-neutral-200/50 p-4 dark:border-neutral-700/50 md:p-8 sm:p-6">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 id="user-images-title" class="m-0 text-lg text-neutral-900 font-bold md:text-2xl sm:text-xl dark:text-white">
+              Foto Anda
+            </h1>
+            <p class="mb-0 mt-1 text-xs text-neutral-500 sm:text-sm dark:text-neutral-400">
+              {{ images.length }} foto telah dimuat
+            </p>
           </div>
 
-          <div class="rounded-xl bg-white shadow-xl backdrop-blur-sm sm:rounded-2xl dark:bg-neutral-800/50">
-            <div class="border-b border-neutral-200/50 p-4 dark:border-neutral-700/50 md:p-8 sm:p-6">
-              <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-0">
-                <div>
-                  <h2 class="text-lg text-neutral-900 font-bold md:text-2xl sm:text-xl dark:text-white">
-                    Foto Anda
-                  </h2>
-                  <p class="mt-1 text-xs text-neutral-500 sm:text-sm dark:text-neutral-400">
-                    {{ images.length }} foto tersimpan
-                  </p>
-                </div>
-                <div class="flex flex-col gap-2 sm:flex-row-reverse sm:items-center sm:gap-3">
-                  <div class="flex items-center space-x-1 sm:space-x-2">
-                    <AtomsButton
-                      :variant="viewMode === 'list' ? 'secondary' : 'ghost'"
-                      size="icon"
-                      class="bg-blue-100 text-blue-600 dark:bg-blue-900/30 !p-2 dark:text-blue-400"
-                      title="Tampilan List"
-                      @click="viewMode = 'list'"
-                    >
-                      <div class="i-mingcute:list-check-line text-base sm:text-lg" />
-                    </AtomsButton>
-                    <AtomsButton
-                      :variant="viewMode === 'card' ? 'secondary' : 'ghost'"
-                      size="icon"
-                      class="bg-blue-100 text-blue-600 dark:bg-blue-900/30 !p-2 dark:text-blue-400"
-                      title="Tampilan Card"
-                      @click="viewMode = 'card'"
-                    >
-                      <div class="i-mingcute:grid-line text-base sm:text-lg" />
-                    </AtomsButton>
-                  </div>
-
-                  <div
-                    class="rounded-lg px-2 py-1 text-xs text-neutral-600 sm:text-sm dark:text-neutral-200"
-                    flex
-                    items-center
-                    gap-2
-                    border="~ neutral-200"
-                    bg="neutral-100"
-                    dark:border="~ neutral-600"
-                    dark:bg="neutral-800/70"
-                  >
-                    <div class="i-mingcute:sort-descending-line text-base sm:text-lg" />
-                    <div class="flex items-center gap-1">
-                      <AtomsButton
-                        :variant="sortOrder === 'desc' ? 'primary' : 'ghost'"
-                        size="sm"
-                        @click="sortOrder = 'desc'"
-                      >
-                        Terbaru
-                      </AtomsButton>
-                      <AtomsButton
-                        :variant="sortOrder === 'asc' ? 'primary' : 'ghost'"
-                        size="sm"
-                        @click="sortOrder = 'asc'"
-                      >
-                        Terlama
-                      </AtomsButton>
-                    </div>
-                  </div>
-                </div>
-              </div>
+          <div class="flex flex-col gap-2 sm:flex-row-reverse sm:items-center sm:gap-3">
+            <div class="flex items-center gap-1 sm:gap-2" role="group" aria-label="Mode tampilan">
+              <AtomsButton
+                :variant="viewMode === 'list' ? 'secondary' : 'ghost'"
+                size="icon"
+                class="!p-2"
+                title="Tampilan daftar"
+                :aria-pressed="viewMode === 'list'"
+                @click="viewMode = 'list'"
+              >
+                <span class="i-mingcute:list-check-line text-base sm:text-lg" aria-hidden="true" />
+              </AtomsButton>
+              <AtomsButton
+                :variant="viewMode === 'card' ? 'secondary' : 'ghost'"
+                size="icon"
+                class="!p-2"
+                title="Tampilan kartu"
+                :aria-pressed="viewMode === 'card'"
+                @click="viewMode = 'card'"
+              >
+                <span class="i-mingcute:grid-line text-base sm:text-lg" aria-hidden="true" />
+              </AtomsButton>
             </div>
 
-            <div v-if="images.length === 0" class="p-8 text-center md:p-16 sm:p-12">
-              <div class="relative mb-6 inline-block sm:mb-8">
-                <div class="i-mingcute:pic-line text-6xl text-neutral-300 md:text-8xl sm:text-7xl dark:text-neutral-600" />
-                <div class="absolute h-4 w-4 animate-pulse rounded-full bg-blue-500 -right-1 -top-1 md:h-6 md:w-6 sm:h-5 sm:w-5 sm:-right-2 sm:-top-2" />
-              </div>
-              <h3 class="mb-3 text-xl text-neutral-900 font-bold sm:mb-4 sm:text-2xl dark:text-white">
-                Belum ada foto
-              </h3>
-              <p class="mx-auto mb-6 max-w-sm text-sm text-neutral-600 md:mb-8 sm:max-w-md sm:text-base dark:text-neutral-400">
-                Anda belum mengupload foto apapun. Mulai upload foto pertama Anda dan buat koleksi yang menakjubkan!
-              </p>
-              <NuxtLink to="/" class="inline-flex items-center rounded-xl from-blue-600 to-purple-600 bg-gradient-to-r px-6 py-3 text-sm text-white font-semibold shadow-lg transition-all duration-200 sm:rounded-2xl sm:px-8 sm:py-4 sm:text-base hover:shadow-xl">
-                <div class="i-mingcute:upload-line mr-2 text-base sm:(mr-3 text-lg)" />
-                Upload Foto Sekarang
-              </NuxtLink>
-            </div>
-
-            <div
-              v-else-if="viewMode === 'card'"
-              class="grid grid-cols-1 gap-3 p-4 lg:grid-cols-4 md:(grid-cols-3 gap-6 p-8) sm:(grid-cols-2 gap-4 p-6) xl:grid-cols-5"
-            >
-              <div v-for="image in sortedImages" :key="image.url" class="group relative overflow-hidden rounded-lg bg-white shadow-lg transition-all duration-300 md:rounded-2xl sm:rounded-xl dark:bg-neutral-700/50 hover:shadow-2xl">
+            <div class="flex items-center gap-2 border border-neutral-200 rounded-lg bg-neutral-100 px-2 py-1 text-xs text-neutral-600 dark:border-neutral-700 dark:bg-neutral-900/60 sm:text-sm dark:text-neutral-200">
+              <span class="i-mingcute:sort-descending-line text-base sm:text-lg" aria-hidden="true" />
+              <div class="flex items-center gap-1" role="group" aria-label="Urutkan foto">
                 <AtomsButton
-                  variant="danger"
-                  size="icon"
-                  class="absolute right-1 top-1 z-20 hidden opacity-0 transition-opacity sm:right-2 sm:top-2 sm:block md:p-3 sm:p-2 focus:opacity-100 group-hover:opacity-100"
-                  title="Hapus foto"
-                  :disabled="isDeleting === image.url"
-                  @click="showDeleteConfirm = image.url"
+                  :variant="sortOrder === 'desc' ? 'primary' : 'ghost'"
+                  size="sm"
+                  @click="sortOrder = 'desc'"
                 >
-                  <div class="i-mingcute:delete-line text-xs sm:text-sm" />
+                  Terbaru
                 </AtomsButton>
-
-                <div class="aspect-square overflow-hidden rounded-t-lg md:rounded-t-2xl sm:rounded-t-xl">
-                  <img
-                    :src="image.url"
-                    :alt="image.pathname"
-                    class="h-full w-full object-cover transition-all duration-500 group-hover:scale-110"
-                    loading="lazy"
-                  >
-                </div>
-
-                <div class="absolute inset-0 from-black/20 to-transparent bg-gradient-to-t opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-
-                <div class="bg-white p-3 dark:bg-neutral-800 md:p-6 sm:p-4">
-                  <div class="flex items-start justify-between gap-2">
-                    <div class="min-w-0 flex-1">
-                      <p class="mb-1 truncate text-xs text-neutral-900 font-semibold sm:mb-2 sm:text-sm dark:text-white">
-                        {{ image.pathname.split('-').slice(2).join('-') }}
-                      </p>
-                      <div class="flex flex-col gap-1 text-xs text-neutral-500 sm:flex-row sm:items-center sm:justify-between sm:gap-0 dark:text-neutral-400">
-                        <span class="flex items-center">
-                          <div class="i-mingcute:file-line mr-1" />
-                          {{ formatFileSize(image.size) }}
-                        </span>
-                        <span class="flex items-center truncate">
-                          <div class="i-mingcute:time-line mr-1" />
-                          <span class="truncate">{{ formatDate(image.uploadedAt).split(' ')[0] }}</span>
-                        </span>
-                      </div>
-                    </div>
-
-                    <AtomsButton
-                      variant="danger"
-                      size="icon"
-                      class="sm:hidden !p-1.5"
-                      title="Hapus foto"
-                      :disabled="isDeleting === image.url"
-                      @click="showDeleteConfirm = image.url"
-                    >
-                      <div class="i-mingcute:delete-line text-xs" />
-                    </AtomsButton>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div v-else class="p-4 md:p-8 sm:p-6">
-              <div class="space-y-3 sm:space-y-4">
-                <div v-for="image in sortedImages" :key="image.url" class="group flex items-center rounded-lg bg-white p-3 shadow-sm transition-all duration-200 sm:rounded-xl dark:bg-neutral-800/50 sm:p-4 hover:shadow-md">
-                  <div class="h-12 w-12 flex-shrink-0 overflow-hidden rounded-md md:h-16 md:w-16 sm:h-14 sm:w-14 sm:rounded-lg">
-                    <img
-                      :src="image.url"
-                      :alt="image.pathname"
-                      class="h-full w-full object-cover"
-                      loading="lazy"
-                    >
-                  </div>
-
-                  <div class="ml-3 min-w-0 flex-1 sm:ml-4">
-                    <h3 class="truncate text-xs text-neutral-900 font-semibold sm:text-sm dark:text-white">
-                      {{ image.pathname.split('-').slice(2).join('-') }}
-                    </h3>
-                    <div class="mt-1 flex flex-col gap-1 text-xs text-neutral-500 sm:flex-row sm:items-center sm:gap-0 dark:text-neutral-400 sm:space-x-4">
-                      <span class="flex items-center">
-                        <div class="i-mingcute:file-line mr-1" />
-                        {{ formatFileSize(image.size) }}
-                      </span>
-                      <span class="flex items-center">
-                        <div class="i-mingcute:time-line mr-1" />
-                        <span class="hidden sm:inline">{{ formatDate(image.uploadedAt) }}</span>
-                        <span class="sm:hidden">{{ formatDate(image.uploadedAt).split(' ')[0] }}</span>
-                      </span>
-                    </div>
-                  </div>
-
-                  <div class="flex items-center">
-                    <AtomsButton
-                      variant="ghost"
-                      size="icon"
-                      class="hover:bg-red-100 !text-red-500 dark:hover:bg-red-900/30"
-                      title="Hapus foto"
-                      :disabled="isDeleting === image.url"
-                      @click="showDeleteConfirm = image.url"
-                    >
-                      <div class="i-mingcute:delete-line text-base sm:text-lg" />
-                    </AtomsButton>
-                  </div>
-                </div>
+                <AtomsButton
+                  :variant="sortOrder === 'asc' ? 'primary' : 'ghost'"
+                  size="sm"
+                  @click="sortOrder = 'asc'"
+                >
+                  Terlama
+                </AtomsButton>
               </div>
             </div>
           </div>
         </div>
-      </main>
-      <OrganismMobileBottomNav />
-    </template>
+      </header>
 
-    <div v-if="showDeleteConfirm" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-3 sm:p-4">
-      <div class="max-w-sm w-full rounded-lg bg-white p-4 shadow-xl sm:max-w-md sm:rounded-xl dark:bg-neutral-800 sm:p-6">
-        <h3 class="mb-3 text-base text-neutral-900 font-semibold sm:mb-4 sm:text-lg dark:text-white">
-          Konfirmasi Hapus
-        </h3>
-        <p class="mb-4 text-sm text-neutral-600 sm:mb-6 sm:text-base dark:text-neutral-400">
-          Apakah Anda yakin ingin menghapus foto ini? Tindakan ini tidak dapat dibatalkan.
+      <div v-if="status === 'pending' && images.length === 0" class="p-4 space-y-3 md:p-8 sm:p-6" aria-label="Memuat foto">
+        <div v-for="index in 6" :key="index" class="h-20 animate-pulse rounded-xl bg-neutral-100 dark:bg-neutral-800" />
+      </div>
+
+      <div v-else-if="error && images.length === 0" class="p-10 text-center">
+        <span class="i-mingcute:warning-line text-5xl text-red-400" aria-hidden="true" />
+        <h2 class="mb-2 mt-4 text-lg text-neutral-900 font-semibold dark:text-white">
+          Foto gagal dimuat
+        </h2>
+        <p class="mb-5 mt-0 text-sm text-neutral-500 dark:text-neutral-400">
+          Periksa koneksi lalu coba kembali.
         </p>
-        <div class="flex flex-col gap-2 sm:flex-row sm:justify-end sm:gap-3">
-          <AtomsButton
-            variant="outline"
-            :disabled="isDeleting === showDeleteConfirm"
-            @click="showDeleteConfirm = null"
+        <AtomsButton variant="outline" size="sm" @click="reloadImages">
+          Muat ulang
+        </AtomsButton>
+      </div>
+
+      <div v-else-if="images.length === 0" class="p-8 text-center md:p-16 sm:p-12">
+        <div class="relative mb-6 inline-block sm:mb-8">
+          <span class="i-mingcute:pic-line block text-6xl text-neutral-300 md:text-8xl sm:text-7xl dark:text-neutral-600" aria-hidden="true" />
+          <span class="absolute h-4 w-4 animate-pulse rounded-full bg-blue-500 -right-1 -top-1 md:h-6 md:w-6 sm:h-5 sm:w-5 sm:-right-2 sm:-top-2" aria-hidden="true" />
+        </div>
+        <h2 class="mb-3 text-xl text-neutral-900 font-bold sm:mb-4 sm:text-2xl dark:text-white">
+          Belum ada foto
+        </h2>
+        <p class="mx-auto mb-0 max-w-md text-sm text-neutral-600 sm:text-base dark:text-neutral-400">
+          Gunakan tombol tambah di sidebar untuk mengunggah foto pertama Anda.
+        </p>
+      </div>
+
+      <div
+        v-else-if="viewMode === 'card'"
+        class="grid grid-cols-1 gap-3 p-4 lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 xl:grid-cols-5 md:gap-6 sm:gap-4 md:p-8 sm:p-6"
+      >
+        <article
+          v-for="image in sortedImages"
+          :key="image.id"
+          v-memo="[image.id, deletingImageId === image.id]"
+          class="relative overflow-hidden rounded-lg bg-white shadow-lg md:rounded-2xl sm:rounded-xl dark:bg-neutral-700/50"
+        >
+          <div class="absolute right-2 top-2 z-2 flex items-center gap-1">
+            <a
+              :href="getDownloadUrl(image.id)"
+              download
+              class="h-8 w-8 flex items-center justify-center rounded-md bg-neutral-900/75 text-white shadow-md transition-colors hover:bg-neutral-900"
+              title="Download foto"
+              aria-label="Download foto"
+            >
+              <span class="i-mingcute:download-2-line text-sm" aria-hidden="true" />
+            </a>
+            <AtomsButton
+              variant="danger"
+              size="icon"
+              class="shadow-md !h-8 !w-8 !p-2"
+              title="Hapus foto"
+              :disabled="deletingImageId === image.id"
+              @click="deleteCandidate = image"
+            >
+              <span class="i-mingcute:delete-line text-sm" aria-hidden="true" />
+            </AtomsButton>
+          </div>
+
+          <div class="aspect-square overflow-hidden bg-neutral-100 dark:bg-neutral-800">
+            <NuxtImg
+              provider="ensik"
+              :src="image.id"
+              alt=""
+              width="480"
+              height="480"
+              sizes="xs:50vw md:33vw lg:25vw xl:20vw"
+              format="webp"
+              quality="72"
+              fit="cover"
+              loading="lazy"
+              decoding="async"
+              class="h-full w-full object-cover"
+            />
+          </div>
+
+          <div class="bg-white p-3 dark:bg-neutral-800 md:p-5 sm:p-4">
+            <div class="flex flex-col gap-1 text-xs text-neutral-500 sm:flex-row sm:items-center sm:justify-between dark:text-neutral-400">
+              <span class="flex items-center">
+                <span class="i-mingcute:file-line mr-1" aria-hidden="true" />
+                {{ formatFileSize(image.size) }}
+              </span>
+              <span class="min-w-0 flex items-center">
+                <span class="i-mingcute:time-line mr-1 shrink-0" aria-hidden="true" />
+                <span class="truncate">{{ formatDate(image.uploadedAt) }}</span>
+              </span>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <div v-else class="p-4 md:p-8 sm:p-6">
+        <ul class="m-0 list-none p-0 space-y-3 sm:space-y-4">
+          <li
+            v-for="image in sortedImages"
+            :key="image.id"
+            v-memo="[image.id, deletingImageId === image.id]"
+            class="flex items-center rounded-lg bg-white p-3 shadow-sm sm:rounded-xl dark:bg-neutral-800/50 sm:p-4"
           >
-            Batal
-          </AtomsButton>
-          <AtomsButton
-            variant="danger"
-            :loading="isDeleting === showDeleteConfirm"
-            @click="deleteImage(showDeleteConfirm!)"
-          >
-            Hasus
-          </AtomsButton>
+            <div class="h-12 w-12 shrink-0 overflow-hidden rounded-md bg-neutral-100 md:h-16 md:w-16 sm:h-14 sm:w-14 sm:rounded-lg dark:bg-neutral-700">
+              <NuxtImg
+                provider="ensik"
+                :src="image.id"
+                alt=""
+                width="64"
+                height="64"
+                densities="1x 2x"
+                format="webp"
+                quality="70"
+                fit="cover"
+                loading="lazy"
+                decoding="async"
+                class="h-full w-full object-cover"
+              />
+            </div>
+
+            <div class="ml-3 min-w-0 flex-1 sm:ml-4">
+              <div class="flex flex-col gap-1 text-xs text-neutral-500 sm:flex-row sm:items-center sm:gap-4 dark:text-neutral-400">
+                <span class="flex items-center">
+                  <span class="i-mingcute:file-line mr-1" aria-hidden="true" />
+                  {{ formatFileSize(image.size) }}
+                </span>
+                <span class="min-w-0 flex items-center">
+                  <span class="i-mingcute:time-line mr-1 shrink-0" aria-hidden="true" />
+                  <span class="truncate">{{ formatDate(image.uploadedAt) }}</span>
+                </span>
+              </div>
+            </div>
+
+            <div class="ml-2 flex shrink-0 items-center gap-1">
+              <a
+                :href="getDownloadUrl(image.id)"
+                download
+                class="h-9 w-9 flex items-center justify-center rounded-md text-neutral-500 transition-colors hover:bg-neutral-100 dark:text-neutral-400 hover:text-neutral-900 dark:hover:bg-neutral-700 dark:hover:text-white"
+                title="Download foto"
+                aria-label="Download foto"
+              >
+                <span class="i-mingcute:download-2-line text-base sm:text-lg" aria-hidden="true" />
+              </a>
+              <AtomsButton
+                variant="ghost"
+                size="icon"
+                class="shrink-0 !text-red-500"
+                title="Hapus foto"
+                :disabled="deletingImageId === image.id"
+                @click="deleteCandidate = image"
+              >
+                <span class="i-mingcute:delete-line text-base sm:text-lg" aria-hidden="true" />
+              </AtomsButton>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <div
+        v-if="hasMore || paginationError"
+        ref="paginationSentinel"
+        class="min-h-20 flex flex-col items-center justify-center gap-2 border-t border-neutral-200/50 p-4 dark:border-neutral-700/50"
+        aria-live="polite"
+      >
+        <p v-if="paginationError" class="m-0 text-sm text-red-600 dark:text-red-400">
+          {{ paginationError }}
+        </p>
+        <span v-else-if="loadingMore" class="i-mingcute:loading-fill animate-spin text-2xl text-neutral-400" aria-label="Memuat gambar berikutnya" />
+        <AtomsButton v-if="paginationError" variant="secondary" size="sm" @click="loadMore">
+          Coba lagi
+        </AtomsButton>
+      </div>
+    </section>
+  </div>
+
+  <Teleport to="body">
+    <Transition
+      enter-active-class="transition-opacity duration-150"
+      enter-from-class="opacity-0"
+      leave-active-class="transition-opacity duration-150"
+      leave-to-class="opacity-0"
+    >
+      <div
+        v-if="deleteCandidate"
+        class="fixed inset-0 z-[110] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="delete-title"
+        @click.self="deleteCandidate = undefined"
+      >
+        <div class="max-w-md w-full rounded-xl bg-white p-5 shadow-2xl dark:bg-neutral-900 sm:p-6">
+          <div class="mb-4 h-11 w-11 flex items-center justify-center rounded-full bg-red-100 dark:bg-red-950/50">
+            <span class="i-mingcute:delete-line text-xl text-red-600 dark:text-red-400" aria-hidden="true" />
+          </div>
+          <h2 id="delete-title" class="m-0 text-lg text-neutral-900 font-semibold dark:text-white">
+            Konfirmasi hapus
+          </h2>
+          <p class="mb-6 mt-2 text-sm text-neutral-600 dark:text-neutral-400">
+            Foto ini akan dihapus permanen dan tidak dapat dipulihkan.
+          </p>
+          <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end sm:gap-3">
+            <AtomsButton variant="outline" :disabled="Boolean(deletingImageId)" @click="deleteCandidate = undefined">
+              Batal
+            </AtomsButton>
+            <AtomsButton variant="danger" :loading="deletingImageId === deleteCandidate.id" @click="deleteImage">
+              Hapus
+            </AtomsButton>
+          </div>
         </div>
       </div>
-    </div>
-  </div>
+    </Transition>
+  </Teleport>
 </template>
