@@ -1,6 +1,6 @@
 export default defineEventHandler(async (event) => {
   await requireSiteAccess(event);
-  const { cursor, limit } = getImagePagination(event);
+  const { cursor, limit, seed } = getImagePagination(event);
   setResponseHeader(event, 'Cache-Control', 'private, no-store');
-  return listArchiveImages(event, { cursor, limit });
+  return listArchiveImages(event, { cursor, limit, seed });
 });

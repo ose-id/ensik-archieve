@@ -16,5 +16,10 @@ export function getImagePagination(event: H3Event) {
     ? 'asc'
     : 'desc';
 
-  return { cursor, limit, order };
+  const requestedSeed = Number(query.seed);
+  const seed = Number.isInteger(requestedSeed) && requestedSeed >= 0 && requestedSeed <= 0xFFFFFFFF
+    ? requestedSeed
+    : undefined;
+
+  return { cursor, limit, order, seed };
 }

@@ -1,19 +1,25 @@
 import type { ArchiveImage } from '~~/shared/types/images';
 
+/** One rendered tile. The same image can appear several times in an endless gallery, so tiles have their own key. */
+export interface MasonryItem {
+  image: ArchiveImage;
+  key: string;
+}
+
 /** Assumed height/width ratio for legacy uploads until the image reports its real size. */
 const FALLBACK_RATIO = 1;
 /** Vertical gap between items, as a fraction of the column width. */
 const ITEM_GAP_RATIO = 0.05;
 
 /**
- * Append-only masonry: each new image goes to the currently shortest column,
- * so images that are already on screen never move between columns.
+ * Append-only masonry: each new tile goes to the currently shortest column,
+ * so tiles that are already on screen never move between columns.
  * A full re-layout only happens when the column count changes.
  */
 export function useArchiveMasonry(columnCount: Readonly<Ref<number>>) {
-  /** Images in reading order, used by the viewer for previous/next. */
-  const images = shallowRef<ArchiveImage[]>([]);
-  const columns = shallowRef<ArchiveImage[][]>([]);
+  /** Tiles in reading order, used by the viewer for previous/next. */
+  const items = shallowRef<MasonryItem[]>([]);
+  const columns = shallowRef<MasonryItem[][]>([]);
   const measuredRatios = shallowReactive(new Map<string, number>());
   let heights: number[] = [];
 
@@ -32,68 +38,72 @@ export function useArchiveMasonry(columnCount: Readonly<Ref<number>>) {
     return shortest;
   }
 
-  function place(next: ArchiveImage[][], image: ArchiveImage, position: 'end' | 'start') {
+  function place(next: MasonryItem[][], item: MasonryItem, position: 'end' | 'start') {
     const column = shortestColumn();
     if (position === 'end')
-      next[column]!.push(image);
+      next[column]!.push(item);
     else
-      next[column]!.unshift(image);
-    heights[column]! += ratioOf(image) + ITEM_GAP_RATIO;
+      next[column]!.unshift(item);
+    heights[column]! += ratioOf(item.image) + ITEM_GAP_RATIO;
   }
 
   function layout() {
     const count = Math.max(1, columnCount.value);
-    const next = Array.from({ length: count }, () => [] as ArchiveImage[]);
+    const next = Array.from({ length: count }, () => [] as MasonryItem[]);
     heights = Array.from<number>({ length: count }).fill(0);
-    for (const image of images.value)
-      place(next, image, 'end');
+    for (const item of items.value)
+      place(next, item, 'end');
     columns.value = next;
   }
 
-  function reset(items: ArchiveImage[]) {
-    const seen = new Set<string>();
-    images.value = items.filter(image => !seen.has(image.id) && seen.add(image.id));
+  function withoutDuplicateKeys(list: MasonryItem[], known = new Set<string>()) {
+    return list.filter(item => !known.has(item.key) && known.add(item.key));
+  }
+
+  function reset(list: MasonryItem[]) {
+    items.value = withoutDuplicateKeys(list);
     layout();
   }
 
-  function append(items: ArchiveImage[]) {
-    const known = new Set(images.value.map(image => image.id));
-    const fresh = items.filter(image => !known.has(image.id) && known.add(image.id));
+  function append(list: MasonryItem[]) {
+    const fresh = withoutDuplicateKeys(list, new Set(items.value.map(item => item.key)));
     if (!fresh.length)
       return;
 
-    images.value = [
-      ...images.value,
+    items.value = [
+      ...items.value,
       ...fresh,
     ];
     const next = columns.value.map(column => [...column]);
-    for (const image of fresh)
-      place(next, image, 'end');
+    for (const item of fresh)
+      place(next, item, 'end');
     columns.value = next;
   }
 
-  function prepend(image: ArchiveImage) {
-    if (images.value.some(item => item.id === image.id))
+  function prepend(item: MasonryItem) {
+    if (items.value.some(existing => existing.key === item.key))
       return;
 
-    images.value = [image, ...images.value];
+    items.value = [item, ...items.value];
     const next = columns.value.map(column => [...column]);
-    place(next, image, 'start');
+    place(next, item, 'start');
     columns.value = next;
   }
 
-  function remove(id: string) {
-    const image = images.value.find(item => item.id === id);
-    if (!image)
+  /** Removes every tile showing this image. */
+  function removeImage(id: string) {
+    if (!items.value.some(item => item.image.id === id))
       return;
 
-    images.value = images.value.filter(item => item.id !== id);
+    items.value = items.value.filter(item => item.image.id !== id);
     columns.value = columns.value.map((column, index) => {
-      if (!column.includes(image))
+      const removed = column.filter(item => item.image.id === id);
+      if (!removed.length)
         return column;
 
-      heights[index]! -= ratioOf(image) + ITEM_GAP_RATIO;
-      return column.filter(item => item.id !== id);
+      for (const item of removed)
+        heights[index]! -= ratioOf(item.image) + ITEM_GAP_RATIO;
+      return column.filter(item => item.image.id !== id);
     });
     measuredRatios.delete(id);
   }
@@ -108,9 +118,12 @@ export function useArchiveMasonry(columnCount: Readonly<Ref<number>>) {
     if (Math.abs(previous - ratio) < 0.01)
       return;
 
-    const column = columns.value.findIndex(items => items.includes(image));
-    if (column !== -1)
-      heights[column]! += ratio - previous;
+    columns.value.forEach((column, index) => {
+      for (const item of column) {
+        if (item.image.id === image.id)
+          heights[index]! += ratio - previous;
+      }
+    });
     measuredRatios.set(image.id, ratio);
   }
 
@@ -119,10 +132,10 @@ export function useArchiveMasonry(columnCount: Readonly<Ref<number>>) {
   return {
     append,
     columns: computed(() => columns.value),
-    images: computed(() => images.value),
+    items: computed(() => items.value),
     prepend,
     ratioOf,
-    remove,
+    removeImage,
     reset,
     setMeasuredRatio,
   };

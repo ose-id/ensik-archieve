@@ -12,6 +12,14 @@ useSeoMeta({
 const PAGE_SIZE = 30;
 const PRELOAD_MARGIN = 600;
 const FILE_SIZE_UNITS = ['B', 'KB', 'MB', 'GB'];
+const SORT_OPTIONS: { label: string; value: ArchiveSortOrder }[] = [
+  { label: 'Terbaru', value: 'desc' },
+  { label: 'Terlama', value: 'asc' },
+];
+const VIEW_OPTIONS: { icon: string; label: string; value: 'card' | 'list' }[] = [
+  { icon: 'i-mingcute:list-check-line', label: 'Tampilan daftar', value: 'list' },
+  { icon: 'i-mingcute:grid-line', label: 'Tampilan kartu', value: 'card' },
+];
 const dateFormatter = new Intl.DateTimeFormat('id-ID', {
   dateStyle: 'medium',
   timeStyle: 'short',
@@ -37,8 +45,13 @@ const hasMore = ref(false);
 const total = ref(0);
 const totalSize = ref(0);
 
+const isMounted = shallowRef(false);
+
 // Sorting happens on the server across every upload, so changing the order
 // refetches the first page instead of re-sorting only what is loaded.
+// Private, per-user data is fetched on the client only: Vapor components can't
+// make SSR wait for it, and rendering a different branch on the server than on
+// the client breaks hydration of the v-if chain below.
 const {
   data,
   error,
@@ -47,11 +60,31 @@ const {
 } = useFetch<ArchiveImagePage>('/api/user-images', {
   key: 'user-archive-images',
   deep: false,
-  lazy: true,
+  server: false,
   query: computed(() => ({ limit: PAGE_SIZE, order: sortOrder.value })),
 });
 
+/** Nothing usable to show yet: before mount (matches SSR) or while the first page loads. */
+const isInitialLoading = computed(() => !isMounted.value
+  || (!images.value.length && (status.value === 'idle' || status.value === 'pending')));
+
+const summary = computed(() => {
+  if (isInitialLoading.value)
+    return 'Memuat foto…';
+  if (!images.value.length && error.value)
+    return 'Foto tidak dapat dimuat';
+  if (!total.value)
+    return 'Belum ada foto';
+  if (images.value.length < total.value)
+    return `${images.value.length} dari ${total.value} foto dimuat`;
+  return `${total.value} foto`;
+});
+
 watch(data, applyFirstPage, { immediate: true });
+
+onMounted(() => {
+  isMounted.value = true;
+});
 
 watch(sentinelVisible, (visible) => {
   if (visible && sentinelNearViewport())
@@ -189,104 +222,94 @@ function reloadImages() {
 
 <template>
   <div class="mx-auto max-w-[1600px] py-4 md:py-8">
-    <section class="grid grid-cols-1 mb-8 gap-4 md:grid-cols-2 md:mb-12 md:gap-8 sm:gap-6" aria-label="Ringkasan arsip">
-      <article class="relative overflow-hidden rounded-xl from-neutral-50 to-neutral-100 bg-gradient-to-br p-4 shadow-lg sm:rounded-2xl dark:from-neutral-900/20 dark:to-neutral-800/30 md:p-8 sm:p-6">
-        <div class="relative z-1 flex items-center justify-between">
-          <div class="flex-1">
-            <p class="m-0 text-xs text-neutral-600 font-semibold tracking-wide uppercase sm:text-sm dark:text-neutral-400">
+    <section class="grid grid-cols-2 mb-6 gap-3 lg:mb-10 lg:gap-8 sm:gap-6" aria-label="Ringkasan arsip">
+      <article class="relative overflow-hidden rounded-xl from-neutral-50 to-neutral-100 bg-gradient-to-br p-4 shadow-lg sm:rounded-2xl dark:from-neutral-900/20 dark:to-neutral-800/30 lg:p-8 sm:p-6">
+        <div class="relative z-1 flex items-center justify-between gap-2">
+          <div class="min-w-0 flex-1">
+            <p class="m-0 truncate text-[11px] text-neutral-600 font-semibold tracking-wide uppercase sm:text-sm dark:text-neutral-400">
               Total foto
             </p>
-            <p class="mb-0 mt-1 text-2xl text-neutral-900 font-bold sm:mt-2 md:text-4xl sm:text-3xl dark:text-neutral-100">
+            <p class="mb-0 mt-1 text-2xl text-neutral-900 font-bold sm:mt-2 lg:text-4xl sm:text-3xl dark:text-neutral-100">
               {{ total }}
             </p>
           </div>
-          <div class="rounded-xl bg-neutral-600 p-2 shadow-lg sm:rounded-2xl dark:bg-neutral-700 md:p-4 sm:p-3">
-            <span class="i-mingcute:pic-line block text-xl text-white md:text-3xl sm:text-2xl" aria-hidden="true" />
+          <div class="hidden shrink-0 rounded-xl bg-neutral-600 p-2 shadow-lg sm:block sm:rounded-2xl dark:bg-neutral-700 lg:p-4 sm:p-3">
+            <span class="i-mingcute:pic-line block text-xl text-white lg:text-3xl sm:text-2xl" aria-hidden="true" />
           </div>
         </div>
-        <span class="absolute h-12 w-12 rounded-full bg-neutral-200/50 -bottom-2 -right-2 md:h-20 md:w-20 sm:h-16 sm:w-16 dark:bg-neutral-700/30" aria-hidden="true" />
+        <span class="absolute h-12 w-12 rounded-full bg-neutral-200/50 -bottom-2 -right-2 lg:h-20 lg:w-20 sm:h-16 sm:w-16 dark:bg-neutral-700/30" aria-hidden="true" />
       </article>
 
-      <article class="relative overflow-hidden rounded-xl from-neutral-50 to-neutral-100 bg-gradient-to-br p-4 shadow-lg sm:rounded-2xl dark:from-neutral-900/20 dark:to-neutral-800/30 md:p-8 sm:p-6">
-        <div class="relative z-1 flex items-center justify-between">
+      <article class="relative overflow-hidden rounded-xl from-neutral-50 to-neutral-100 bg-gradient-to-br p-4 shadow-lg sm:rounded-2xl dark:from-neutral-900/20 dark:to-neutral-800/30 lg:p-8 sm:p-6">
+        <div class="relative z-1 flex items-center justify-between gap-2">
           <div class="min-w-0 flex-1">
-            <p class="m-0 text-xs text-neutral-600 font-semibold tracking-wide uppercase sm:text-sm dark:text-neutral-400">
+            <p class="m-0 truncate text-[11px] text-neutral-600 font-semibold tracking-wide uppercase sm:text-sm dark:text-neutral-400">
               Total ukuran
             </p>
-            <p class="mb-0 mt-1 truncate text-2xl text-neutral-900 font-bold sm:mt-2 md:text-4xl sm:text-3xl dark:text-neutral-100">
+            <p class="mb-0 mt-1 truncate text-2xl text-neutral-900 font-bold sm:mt-2 lg:text-4xl sm:text-3xl dark:text-neutral-100">
               {{ formatFileSize(totalSize) }}
             </p>
           </div>
-          <div class="rounded-xl bg-neutral-600 p-2 shadow-lg sm:rounded-2xl dark:bg-neutral-700 md:p-4 sm:p-3">
-            <span class="i-mingcute:storage-line block text-xl text-white md:text-3xl sm:text-2xl" aria-hidden="true" />
+          <div class="hidden shrink-0 rounded-xl bg-neutral-600 p-2 shadow-lg sm:block sm:rounded-2xl dark:bg-neutral-700 lg:p-4 sm:p-3">
+            <span class="i-mingcute:storage-line block text-xl text-white lg:text-3xl sm:text-2xl" aria-hidden="true" />
           </div>
         </div>
-        <span class="absolute h-12 w-12 rounded-full bg-neutral-200/50 -bottom-2 -right-2 md:h-20 md:w-20 sm:h-16 sm:w-16 dark:bg-neutral-700/30" aria-hidden="true" />
+        <span class="absolute h-12 w-12 rounded-full bg-neutral-200/50 -bottom-2 -right-2 lg:h-20 lg:w-20 sm:h-16 sm:w-16 dark:bg-neutral-700/30" aria-hidden="true" />
       </article>
     </section>
 
     <section class="overflow-hidden rounded-xl bg-white shadow-xl sm:rounded-2xl dark:bg-neutral-800/50" aria-labelledby="user-images-title">
-      <header class="border-b border-neutral-200/50 p-4 dark:border-neutral-700/50 md:p-8 sm:p-6">
-        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 id="user-images-title" class="m-0 text-lg text-neutral-900 font-bold md:text-2xl sm:text-xl dark:text-white">
+      <header class="border-b border-neutral-200/60 border-b-solid p-4 dark:border-neutral-700/50 lg:p-8 sm:p-6">
+        <div class="flex flex-wrap items-end justify-between gap-x-4 gap-y-3">
+          <div class="min-w-0">
+            <h1 id="user-images-title" class="m-0 text-lg text-neutral-900 font-bold lg:text-2xl sm:text-xl dark:text-white">
               Foto Anda
             </h1>
             <p class="mb-0 mt-1 text-xs text-neutral-500 sm:text-sm dark:text-neutral-400">
-              {{ images.length }} dari {{ total }} foto dimuat
+              {{ summary }}
             </p>
           </div>
 
-          <div class="flex flex-col gap-2 sm:flex-row-reverse sm:items-center sm:gap-3">
-            <div class="flex items-center gap-1 sm:gap-2" role="group" aria-label="Mode tampilan">
-              <AtomsButton
-                :variant="viewMode === 'list' ? 'secondary' : 'ghost'"
-                size="icon"
-                class="!p-2"
-                title="Tampilan daftar"
-                :aria-pressed="viewMode === 'list'"
-                @click="viewMode = 'list'"
+          <!-- One row on every width: sort on the left, view mode on the right. -->
+          <div class="w-full flex items-center justify-between gap-2 sm:w-auto sm:justify-end sm:gap-3">
+            <div class="inline-flex rounded-lg bg-neutral-100 p-1 dark:bg-neutral-900" role="group" aria-label="Urutkan foto">
+              <button
+                v-for="option in SORT_OPTIONS"
+                :key="option.value"
+                type="button"
+                class="h-8 cursor-pointer border-0 rounded-md px-3 text-xs font-medium transition-[background-color,color,box-shadow] duration-150 sm:text-sm"
+                :class="sortOrder === option.value
+                  ? 'bg-white text-neutral-900 shadow-sm dark:bg-neutral-700 dark:text-white'
+                  : 'bg-transparent text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white'"
+                :aria-pressed="sortOrder === option.value"
+                @click="sortOrder = option.value"
               >
-                <span class="i-mingcute:list-check-line text-base sm:text-lg" aria-hidden="true" />
-              </AtomsButton>
-              <AtomsButton
-                :variant="viewMode === 'card' ? 'secondary' : 'ghost'"
-                size="icon"
-                class="!p-2"
-                title="Tampilan kartu"
-                :aria-pressed="viewMode === 'card'"
-                @click="viewMode = 'card'"
-              >
-                <span class="i-mingcute:grid-line text-base sm:text-lg" aria-hidden="true" />
-              </AtomsButton>
+                {{ option.label }}
+              </button>
             </div>
 
-            <div class="flex items-center gap-2 border border-neutral-200 rounded-lg bg-neutral-100 px-2 py-1 text-xs text-neutral-600 dark:border-neutral-700 dark:bg-neutral-900/60 sm:text-sm dark:text-neutral-200">
-              <span class="i-mingcute:sort-descending-line text-base sm:text-lg" aria-hidden="true" />
-              <div class="flex items-center gap-1" role="group" aria-label="Urutkan foto">
-                <AtomsButton
-                  :variant="sortOrder === 'desc' ? 'primary' : 'ghost'"
-                  size="sm"
-                  :aria-pressed="sortOrder === 'desc'"
-                  @click="sortOrder = 'desc'"
-                >
-                  Terbaru
-                </AtomsButton>
-                <AtomsButton
-                  :variant="sortOrder === 'asc' ? 'primary' : 'ghost'"
-                  size="sm"
-                  :aria-pressed="sortOrder === 'asc'"
-                  @click="sortOrder = 'asc'"
-                >
-                  Terlama
-                </AtomsButton>
-              </div>
+            <div class="inline-flex rounded-lg bg-neutral-100 p-1 dark:bg-neutral-900" role="group" aria-label="Mode tampilan">
+              <button
+                v-for="option in VIEW_OPTIONS"
+                :key="option.value"
+                type="button"
+                class="h-8 w-9 flex cursor-pointer items-center justify-center border-0 rounded-md transition-[background-color,color,box-shadow] duration-150"
+                :class="viewMode === option.value
+                  ? 'bg-white text-neutral-900 shadow-sm dark:bg-neutral-700 dark:text-white'
+                  : 'bg-transparent text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white'"
+                :title="option.label"
+                :aria-label="option.label"
+                :aria-pressed="viewMode === option.value"
+                @click="viewMode = option.value"
+              >
+                <span class="text-lg" :class="option.icon" aria-hidden="true" />
+              </button>
             </div>
           </div>
         </div>
       </header>
 
-      <div v-if="status === 'pending' && images.length === 0" class="p-4 space-y-3 md:p-8 sm:p-6" aria-label="Memuat foto">
+      <div v-if="isInitialLoading" class="p-4 space-y-3 lg:p-8 sm:p-6" aria-label="Memuat foto">
         <div v-for="index in 6" :key="index" class="h-20 animate-pulse rounded-xl bg-neutral-100 dark:bg-neutral-800" />
       </div>
 
@@ -321,7 +344,7 @@ function reloadImages() {
 
       <div
         v-else-if="viewMode === 'card'"
-        class="grid grid-cols-1 gap-3 p-4 lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 xl:grid-cols-5 md:gap-6 sm:gap-4 md:p-8 sm:p-6"
+        class="grid grid-cols-2 gap-3 p-3 lg:grid-cols-4 sm:grid-cols-3 xl:grid-cols-5 lg:gap-6 sm:gap-4 lg:p-8 sm:p-6"
       >
         <article
           v-for="image in images"
@@ -367,8 +390,8 @@ function reloadImages() {
             />
           </div>
 
-          <div class="bg-white p-3 dark:bg-neutral-800 md:p-5 sm:p-4">
-            <div class="flex flex-col gap-1 text-xs text-neutral-500 sm:flex-row sm:items-center sm:justify-between dark:text-neutral-400">
+          <div class="bg-white p-3 dark:bg-neutral-800 lg:p-5 sm:p-4">
+            <div class="flex flex-col gap-1 text-xs text-neutral-500 dark:text-neutral-400">
               <span class="flex items-center">
                 <span class="i-mingcute:file-line mr-1" aria-hidden="true" />
                 {{ formatFileSize(image.size) }}
@@ -382,7 +405,7 @@ function reloadImages() {
         </article>
       </div>
 
-      <div v-else class="p-4 md:p-8 sm:p-6">
+      <div v-else class="p-4 lg:p-8 sm:p-6">
         <ul class="m-0 list-none p-0 space-y-3 sm:space-y-4">
           <li
             v-for="image in images"
@@ -447,7 +470,7 @@ function reloadImages() {
       <div
         v-if="images.length > 0"
         ref="paginationSentinel"
-        class="min-h-20 flex flex-col items-center justify-center gap-2 border-t border-neutral-200/50 p-4 dark:border-neutral-700/50"
+        class="min-h-20 flex flex-col items-center justify-center gap-2 border-t border-neutral-200/60 border-t-solid p-4 dark:border-neutral-700/50"
         aria-live="polite"
       >
         <template v-if="paginationError">

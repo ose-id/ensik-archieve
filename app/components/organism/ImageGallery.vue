@@ -1,5 +1,5 @@
 <script setup vapor lang="ts">
-import type { ArchiveImagePage } from '~~/shared/types/images';
+import type { ArchiveImage, ArchiveImagePage } from '~~/shared/types/images';
 import { breakpointsTailwind } from '@vueuse/core';
 
 const PAGE_SIZE = 30;
@@ -9,6 +9,9 @@ const HIGH_QUALITY_WIDTHS = [320, 480, 640, 960, 1280, 1920];
 // Vapor components can lose the Nuxt context after an `await`, so every
 // composable is registered before the first page request is awaited below.
 const { onArchiveChanged } = useArchiveEvents();
+// A new random order on every page load. `useState` carries the seed from SSR
+// to hydration so both render the same first page.
+const baseSeed = useState('archive-gallery-seed', () => Math.floor(Math.random() * 0x1_0000_0000));
 const breakpoints = useBreakpoints(breakpointsTailwind);
 const { width: viewportWidth } = useWindowSize();
 const columnCount = computed(() => {
@@ -23,22 +26,23 @@ const columnCount = computed(() => {
 const {
   append,
   columns,
-  images,
+  items,
   prepend,
   ratioOf,
-  remove,
+  removeImage,
   reset,
   setMeasuredRatio,
 } = useArchiveMasonry(columnCount);
 
 const isMounted = shallowRef(false);
 const isActive = shallowRef(true);
-const selectedId = ref<string>();
+const selectedKey = ref<string>();
 const isLoadingMore = ref(false);
 const paginationError = ref('');
 const paginationSentinel = ref<HTMLElement>();
 const cursor = ref<string | null>(null);
-const hasMore = ref(false);
+/** Each pass through the whole archive is one cycle with its own shuffle. */
+let cycle = 0;
 const sentinelVisible = useElementVisibility(paginationSentinel, {
   rootMargin: `${PRELOAD_MARGIN}px 0px`,
 });
@@ -46,13 +50,13 @@ const sentinelVisible = useElementVisibility(paginationSentinel, {
 const pageRequest = useFetch<ArchiveImagePage>('/api/images', {
   key: 'archive-images',
   deep: false,
-  query: { limit: PAGE_SIZE },
+  query: { limit: PAGE_SIZE, seed: baseSeed.value },
   watch: false,
 });
 const { data, error, refresh, status } = pageRequest;
 
-const selectedIndex = computed(() => images.value.findIndex(image => image.id === selectedId.value));
-const selectedImage = computed(() => images.value[selectedIndex.value]);
+const selectedIndex = computed(() => items.value.findIndex(item => item.key === selectedKey.value));
+const selectedImage = computed(() => items.value[selectedIndex.value]?.image);
 /** Grid images only need to be as wide as one column, not the 1920px viewer size. */
 const highWidth = computed(() => {
   const pixelRatio = import.meta.client
@@ -78,9 +82,9 @@ watch(selectedImage, (image) => {
 
 onArchiveChanged((change) => {
   if (change.type === 'added')
-    prepend(change.image);
+    prepend({ image: change.image, key: `added:${change.image.id}` });
   else
-    remove(change.id);
+    removeImage(change.id);
 });
 
 onMounted(() => {
@@ -100,7 +104,7 @@ onActivated(() => {
 onDeactivated(() => {
   isActive.value = false;
   setArchiveImagePreloadingPaused(true);
-  selectedId.value = undefined;
+  selectedKey.value = undefined;
   if (import.meta.client)
     document.body.style.overflow = '';
 });
@@ -111,12 +115,20 @@ onKeyStroke('ArrowLeft', previousImage);
 
 await pageRequest;
 
+function seedForCycle(value: number) {
+  return (baseSeed.value + Math.imul(value, 0x9E3779B9)) >>> 0;
+}
+
+function toItems(images: ArchiveImage[]) {
+  return images.map(image => ({ image, key: `${cycle}:${image.id}` }));
+}
+
 function applyFirstPage(page: ArchiveImagePage | null | undefined) {
-  reset(page?.items || []);
+  cycle = 0;
+  reset(toItems(page?.items || []));
   cursor.value = page?.cursor || null;
-  hasMore.value = page?.hasMore || false;
   paginationError.value = '';
-  selectedId.value = undefined;
+  selectedKey.value = undefined;
 }
 
 function sentinelNearViewport() {
@@ -126,21 +138,36 @@ function sentinelNearViewport() {
   return sentinel.getBoundingClientRect().top < window.innerHeight + PRELOAD_MARGIN;
 }
 
+/**
+ * Loads the next page of the current shuffle. When a cycle runs out, the next
+ * one starts from the top with a different seed, so the gallery never ends.
+ */
 async function loadMore() {
-  if (isLoadingMore.value || paginationError.value || !hasMore.value || !cursor.value)
+  if (isLoadingMore.value || paginationError.value || !items.value.length)
     return;
 
   isLoadingMore.value = true;
   try {
+    const nextCycle = cursor.value
+      ? cycle
+      : cycle + 1;
     const page = await $fetch<ArchiveImagePage>('/api/images', {
       query: {
-        cursor: cursor.value,
+        cursor: cursor.value ?? undefined,
         limit: PAGE_SIZE,
+        seed: seedForCycle(nextCycle),
       },
     });
-    append(page.items);
+
+    const pageImages = [...page.items];
+    // Don't let a new cycle start with the image the previous one ended on.
+    const lastImageId = items.value.at(-1)?.image.id;
+    if (nextCycle !== cycle && pageImages.length > 1 && pageImages[0]?.id === lastImageId)
+      pageImages.push(pageImages.shift()!);
+
+    cycle = nextCycle;
+    append(toItems(pageImages));
     cursor.value = page.cursor;
-    hasMore.value = page.hasMore;
   }
   catch {
     paginationError.value = 'Gagal memuat gambar berikutnya.';
@@ -161,45 +188,41 @@ function retryLoadMore() {
   void loadMore();
 }
 
-function openViewer(id: string) {
-  selectedId.value = id;
+function openViewer(key: string) {
+  selectedKey.value = key;
 }
 
 function closeViewer() {
-  selectedId.value = undefined;
+  selectedKey.value = undefined;
 }
 
 async function nextImage() {
   const index = selectedIndex.value;
-  if (index === -1 || images.value.length < 2)
+  if (index === -1 || items.value.length < 2)
     return;
 
-  if (index === images.value.length - 1 && hasMore.value)
+  if (index === items.value.length - 1)
     await loadMore();
-  selectedId.value = images.value[(index + 1) % images.value.length]?.id;
+  selectedKey.value = items.value[(index + 1) % items.value.length]?.key;
 }
 
 function previousImage() {
   const index = selectedIndex.value;
-  if (index === -1 || images.value.length < 2)
+  if (index === -1 || items.value.length < 2)
     return;
 
-  selectedId.value = images.value[(index - 1 + images.value.length) % images.value.length]?.id;
+  selectedKey.value = items.value[(index - 1 + items.value.length) % items.value.length]?.key;
 }
 
 function reloadImages() {
   void refresh();
-}
-
-function scrollToTop() {
-  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 </script>
 
 <template>
   <section aria-label="Galeri Ensik Archive">
     <div
-      v-if="!isMounted || (status === 'pending' && images.length === 0)"
+      v-if="!isMounted || (status === 'pending' && items.length === 0)"
       class="flex items-start gap-3"
       aria-label="Memuat galeri"
     >
@@ -228,7 +251,7 @@ function scrollToTop() {
     </div>
 
     <div
-      v-else-if="error && images.length === 0"
+      v-else-if="error && items.length === 0"
       class="mx-auto max-w-md flex flex-col items-center border border-neutral-200 rounded-2xl border-solid bg-white px-6 py-10 text-center dark:border-neutral-800 dark:bg-neutral-900"
       role="alert"
     >
@@ -247,7 +270,7 @@ function scrollToTop() {
       </AtomsButton>
     </div>
 
-    <div v-else-if="images.length === 0" class="rounded-lg bg-neutral-100 p-8 text-center text-neutral-500 dark:bg-neutral-900">
+    <div v-else-if="items.length === 0" class="rounded-lg bg-neutral-100 p-8 text-center text-neutral-500 dark:bg-neutral-900">
       Belum ada gambar di arsip.
     </div>
 
@@ -258,30 +281,30 @@ function scrollToTop() {
         class="min-w-0 flex flex-1 flex-col gap-3"
       >
         <button
-          v-for="(image, row) in column"
-          :key="image.id"
+          v-for="(item, row) in column"
+          :key="item.key"
           type="button"
           class="[content-visibility:auto] relative block w-full cursor-pointer overflow-hidden border-0 rounded-lg bg-neutral-100 p-0 shadow-md dark:bg-neutral-900 focus-visible:outline-2 focus-visible:outline-blue-500"
-          :style="{ aspectRatio: `1 / ${ratioOf(image)}` }"
-          :aria-label="`Buka ${image.name}`"
-          @click="openViewer(image.id)"
+          :style="{ aspectRatio: `1 / ${ratioOf(item.image)}` }"
+          :aria-label="`Buka ${item.image.name}`"
+          @click="openViewer(item.key)"
         >
           <MoleculesProgressiveArchiveImage
-            :src="image.id"
+            :src="item.image.id"
             sizes="xs:50vw md:33vw lg:25vw xl:20vw"
             :loading="row < 2 ? 'eager' : 'lazy'"
             :high-width="highWidth"
             :high-quality="80"
             image-class="block h-full w-full object-cover"
             class="h-full w-full"
-            @dimensions="setMeasuredRatio(image, $event)"
+            @dimensions="setMeasuredRatio(item.image, $event)"
           />
         </button>
       </div>
     </div>
 
     <div
-      v-if="isMounted && images.length > 0"
+      v-if="isMounted && items.length > 0"
       ref="paginationSentinel"
       class="min-h-20 flex flex-col items-center justify-center gap-2 py-6"
       aria-live="polite"
@@ -294,16 +317,7 @@ function scrollToTop() {
           Coba lagi
         </AtomsButton>
       </template>
-      <span v-else-if="isLoadingMore || hasMore" class="i-mingcute:loading-fill animate-spin text-2xl text-neutral-400" aria-label="Memuat gambar berikutnya" />
-      <template v-else>
-        <p class="m-0 text-sm text-neutral-500 dark:text-neutral-400">
-          Kamu sudah melihat seluruh arsip · {{ images.length }} gambar
-        </p>
-        <AtomsButton variant="ghost" size="sm" @click="scrollToTop">
-          <span class="i-mingcute:arrow-up-line mr-1" aria-hidden="true" />
-          Kembali ke atas
-        </AtomsButton>
-      </template>
+      <span v-else class="i-mingcute:loading-fill animate-spin text-2xl text-neutral-400" aria-label="Memuat gambar berikutnya" />
     </div>
   </section>
 
@@ -321,7 +335,7 @@ function scrollToTop() {
         @click="closeViewer"
       />
       <AtomsArrowButton
-        v-if="images.length > 1"
+        v-if="items.length > 1"
         direction="left"
         class="absolute left-2 z-20 md:left-6 !text-white"
         @click="previousImage"
@@ -332,7 +346,7 @@ function scrollToTop() {
         :alt="`Pratinjau ${selectedImage.name}`"
       />
       <AtomsArrowButton
-        v-if="images.length > 1"
+        v-if="items.length > 1"
         direction="right"
         class="absolute right-2 z-20 md:right-6 !text-white"
         @click="nextImage"

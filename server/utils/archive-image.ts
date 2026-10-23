@@ -18,8 +18,14 @@ interface ArchiveOwner {
   username: string;
 }
 
+interface RankedEntry {
+  entry: ArchiveIndexEntry;
+  key: number;
+  pathname: string;
+}
+
 type ArchiveBlob = Pick<ListBlobResultBlob, 'etag' | 'pathname' | 'size' | 'uploadedAt'>;
-type IndexCursor = [uploadedAt: number, pathname: string];
+type IndexCursor = [key: number, pathname: string];
 
 const INDEX_TTL_MS = 60_000;
 const LIST_PAGE_SIZE = 1_000;
@@ -32,8 +38,31 @@ function compareNewestFirst(left: ArchiveIndexEntry, right: ArchiveIndexEntry) {
   return right.uploadedAt - left.uploadedAt || right.pathname.localeCompare(left.pathname);
 }
 
-function encodeCursor(entry: ArchiveIndexEntry) {
-  const cursor: IndexCursor = [entry.uploadedAt, entry.pathname];
+function compareRanked(left: Pick<RankedEntry, 'key' | 'pathname'>, right: Pick<RankedEntry, 'key' | 'pathname'>) {
+  return left.key - right.key || left.pathname.localeCompare(right.pathname);
+}
+
+/**
+ * Pseudo-random but stable rank (FNV-1a + murmur finaliser): a seed always
+ * yields the same order, and adding or removing an image never moves the others,
+ * so seeded pages can still use keyset cursors.
+ */
+function seededRank(seed: number, pathname: string) {
+  let hash = (2166136261 ^ seed) >>> 0;
+  for (let index = 0; index < pathname.length; index += 1) {
+    hash ^= pathname.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  hash ^= hash >>> 16;
+  hash = Math.imul(hash, 0x85EBCA6B);
+  hash ^= hash >>> 13;
+  hash = Math.imul(hash, 0xC2B2AE35);
+  hash ^= hash >>> 16;
+  return hash >>> 0;
+}
+
+function encodeCursor(item: RankedEntry) {
+  const cursor: IndexCursor = [item.key, item.pathname];
   return Buffer.from(JSON.stringify(cursor), 'utf8').toString('base64url');
 }
 
@@ -42,11 +71,11 @@ function decodeCursor(cursor: string | undefined) {
     return undefined;
 
   try {
-    const [uploadedAt, pathname] = JSON.parse(
+    const [key, pathname] = JSON.parse(
       Buffer.from(cursor, 'base64url').toString('utf8'),
     ) as IndexCursor;
-    if (Number.isFinite(uploadedAt) && typeof pathname === 'string')
-      return { uploadedAt, pathname };
+    if (Number.isFinite(key) && typeof pathname === 'string')
+      return { key, pathname };
   }
   catch {}
 
@@ -176,33 +205,43 @@ export async function listArchiveImages(
     limit: number;
     order?: ArchiveSortOrder;
     owner?: ArchiveOwner;
+    /** Shuffles the archive in a stable order for this seed instead of sorting by upload time. */
+    seed?: number;
   },
 ): Promise<ArchiveImagePage> {
-  const { cursor, limit, order = 'desc', owner } = options;
+  const { cursor, limit, order = 'desc', owner, seed } = options;
   const after = decodeCursor(cursor);
   let entries = await getArchiveIndex();
   if (owner)
     entries = entries.filter(entry => isOwnedBy(entry.pathname, owner));
-  if (order === 'asc')
-    entries = entries.toReversed();
 
-  const direction = order === 'asc'
+  const ranked: RankedEntry[] = entries.map(entry => ({
+    entry,
+    key: seed === undefined
+      ? entry.uploadedAt
+      : seededRank(seed, entry.pathname),
+    pathname: entry.pathname,
+  }));
+  // Chronological "desc" means newest first; every other ordering ascends by key.
+  const direction = seed === undefined && order === 'desc'
     ? -1
     : 1;
+  ranked.sort((left, right) => compareRanked(left, right) * direction);
+
   const start = after
-    ? entries.findIndex(entry => compareNewestFirst(entry, after as ArchiveIndexEntry) * direction > 0)
+    ? ranked.findIndex(item => compareRanked(item, after) * direction > 0)
     : 0;
   const page = start === -1
     ? []
-    : entries.slice(start, start + limit);
-  const hasMore = start !== -1 && start + limit < entries.length;
+    : ranked.slice(start, start + limit);
+  const hasMore = start !== -1 && start + limit < ranked.length;
 
   return {
     cursor: hasMore
       ? encodeCursor(page.at(-1)!)
       : null,
     hasMore,
-    items: page.map(entry => toArchiveImageFromEntry(event, entry)),
+    items: page.map(item => toArchiveImageFromEntry(event, item.entry)),
     total: entries.length,
     totalSize: entries.reduce((total, entry) => total + entry.size, 0),
   };
