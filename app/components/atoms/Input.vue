@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script setup vapor lang="ts">
 withDefaults(defineProps<{
   id?: string;
   type?: string;

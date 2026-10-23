@@ -13,11 +13,7 @@ const ALLOWED_FITS = new Set<ImageFit>([
 ]);
 
 function getDownloadFilename(pathname: string, extension: 'jpg' | 'png') {
-  const filename = pathname.split('/').pop() || 'archive-image';
-  const stem = filename
-    .replace(/^[0-9a-f-]{36}-/i, '')
-    .replace(/\.[^.]+$/, '');
-  const safeStem = stem
+  const safeStem = archiveFileStem(pathname)
     .replace(/[\r\n"\\]/g, '_')
     .slice(0, 110) || 'archive-image';
   return `${safeStem}.${extension}`;

@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script setup vapor lang="ts">
 import type { UploadedArchiveImage } from '~~/shared/types/images';
 
 const MAX_IMAGE_SIZE = 3 * 1024 * 1024;
@@ -180,8 +180,8 @@ async function upload() {
   body.append('file', selectedFile.value);
 
   try {
-    await uploadWithProgress(body);
-    notifyArchiveChanged();
+    const { item } = await uploadWithProgress(body);
+    notifyArchiveChanged({ type: 'added', image: item });
     addToast('Gambar berhasil ditambahkan ke arsip.', 'success');
     await new Promise<void>(resolve => window.setTimeout(resolve, 300));
     reset();

@@ -1,4 +1,5 @@
 import type { H3Event } from 'h3';
+import type { ArchiveSortOrder } from '~~/shared/types/images';
 
 export function getImagePagination(event: H3Event) {
   const query = getQuery(event);
@@ -11,5 +12,9 @@ export function getImagePagination(event: H3Event) {
     ? query.cursor
     : undefined;
 
-  return { cursor, limit };
+  const order: ArchiveSortOrder = query.order === 'asc'
+    ? 'asc'
+    : 'desc';
+
+  return { cursor, limit, order };
 }

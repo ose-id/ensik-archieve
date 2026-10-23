@@ -9,7 +9,8 @@
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
+    "lint:fix": "eslint . --fix",
+    "typecheck": "nuxt typecheck"
   },
   "dependencies": {
     "@nuxt/fonts": "^1.1.0",
@@ -28,7 +29,20 @@
     "eslint": "^10.13.0",
     "nuxt": "^4.6.2",
     "nuxt-auth-utils": "0.5.32",
-    "vue": "^3.5.44",
-    "vue-router": "^5.4.0"
+    "vue": "3.6.0-rc.13",
+    "vue-router": "^5.4.0",
+    "vue-tsc": "^3.3.13"
+  },
+  "overrides": {
+    "@vue/compiler-core": "3.6.0-rc.13",
+    "@vue/compiler-dom": "3.6.0-rc.13",
+    "@vue/compiler-sfc": "3.6.0-rc.13",
+    "@vue/compiler-ssr": "3.6.0-rc.13",
+    "@vue/reactivity": "3.6.0-rc.13",
+    "@vue/runtime-core": "3.6.0-rc.13",
+    "@vue/runtime-dom": "3.6.0-rc.13",
+    "@vue/server-renderer": "3.6.0-rc.13",
+    "@vue/shared": "3.6.0-rc.13",
+    "vue": "3.6.0-rc.13"
   }
 }

@@ -1,154 +1,215 @@
 import type { ListBlobResultBlob } from '@vercel/blob';
 import type { H3Event } from 'h3';
-import type { ArchiveImage, ArchiveImagePage } from '~~/shared/types/images';
+import type { ArchiveImage, ArchiveImagePage, ArchiveSortOrder } from '~~/shared/types/images';
 import { Buffer } from 'node:buffer';
 import { BlobAccessError, get, list } from '@vercel/blob';
 
-interface UserCursor {
-  legacyCursor?: string;
-  legacyDone?: boolean;
-  modernCursor?: string;
-  modernDone?: boolean;
+interface ArchiveIndexEntry {
+  etag: string;
+  height: number | null;
+  pathname: string;
+  size: number;
+  uploadedAt: number;
+  width: number | null;
 }
 
-interface BlobPageCacheEntry {
-  expiresAt: number;
-  value: Awaited<ReturnType<typeof list>>;
+interface ArchiveOwner {
+  discordId: string;
+  username: string;
 }
 
-const blobPageCache = new Map<string, BlobPageCacheEntry>();
-const LIST_CACHE_TTL_MS = 20_000;
+type ArchiveBlob = Pick<ListBlobResultBlob, 'etag' | 'pathname' | 'size' | 'uploadedAt'>;
+type IndexCursor = [uploadedAt: number, pathname: string];
 
-function encodeCursor(cursor: UserCursor) {
+const INDEX_TTL_MS = 60_000;
+const LIST_PAGE_SIZE = 1_000;
+const MODERN_PREFIX_PATTERN = /^[0-9a-f-]{36}-(?:(\d{1,5})x(\d{1,5})-)?/i;
+
+let archiveIndex: { entries: ArchiveIndexEntry[]; expiresAt: number } | undefined;
+let pendingIndex: Promise<ArchiveIndexEntry[]> | undefined;
+
+function compareNewestFirst(left: ArchiveIndexEntry, right: ArchiveIndexEntry) {
+  return right.uploadedAt - left.uploadedAt || right.pathname.localeCompare(left.pathname);
+}
+
+function encodeCursor(entry: ArchiveIndexEntry) {
+  const cursor: IndexCursor = [entry.uploadedAt, entry.pathname];
   return Buffer.from(JSON.stringify(cursor), 'utf8').toString('base64url');
 }
 
-function decodeCursor(cursor: string | undefined): UserCursor {
+function decodeCursor(cursor: string | undefined) {
   if (!cursor)
-    return {};
+    return undefined;
 
   try {
-    return JSON.parse(Buffer.from(cursor, 'base64url').toString('utf8')) as UserCursor;
+    const [uploadedAt, pathname] = JSON.parse(
+      Buffer.from(cursor, 'base64url').toString('utf8'),
+    ) as IndexCursor;
+    if (Number.isFinite(uploadedAt) && typeof pathname === 'string')
+      return { uploadedAt, pathname };
   }
-  catch {
-    throw createError({ statusCode: 400, statusMessage: 'Invalid pagination cursor.' });
-  }
+  catch {}
+
+  throw createError({ statusCode: 400, statusMessage: 'Invalid pagination cursor.' });
+}
+
+function filename(pathname: string) {
+  return pathname.split('/').pop() || 'archive-image';
+}
+
+function parseDimensions(pathname: string) {
+  const match = filename(pathname).match(MODERN_PREFIX_PATTERN);
+  const width = Number(match?.[1]);
+  const height = Number(match?.[2]);
+  return width > 0 && height > 0
+    ? { width, height }
+    : { width: null, height: null };
+}
+
+/** Filename without the UUID/dimension prefix and extension added on upload. */
+export function archiveFileStem(pathname: string) {
+  return filename(pathname)
+    .replace(MODERN_PREFIX_PATTERN, '')
+    .replace(/\.[^.]+$/, '');
 }
 
 function displayName(pathname: string) {
-  const filename = pathname.split('/').pop() || 'archive-image';
-  const modernName = filename.replace(/^[0-9a-f-]{36}-/i, '').replace(/\.[^.]+$/, '');
+  const name = filename(pathname);
+  if (MODERN_PREFIX_PATTERN.test(name))
+    return archiveFileStem(pathname).replace(/[-_]+/g, ' ');
 
-  if (modernName !== filename.replace(/\.[^.]+$/, ''))
-    return modernName.replace(/[-_]+/g, ' ');
-
-  const legacyDate = filename.match(/-img-(\d{2})-(\d{2})-(\d{4})-/);
+  const legacyDate = name.match(/-img-(\d{2})-(\d{2})-(\d{4})-/);
   if (legacyDate)
     return `Arsip ${legacyDate[1]}-${legacyDate[2]}-${legacyDate[3]}`;
 
   if (!pathname.startsWith('users/'))
     return 'Arsip gambar';
 
-  return modernName.replace(/[-_]+/g, ' ');
+  return archiveFileStem(pathname).replace(/[-_]+/g, ' ');
 }
 
-export function toArchiveImage(event: H3Event, blob: ListBlobResultBlob): ArchiveImage {
+function toIndexEntry(blob: ArchiveBlob): ArchiveIndexEntry {
   return {
     etag: blob.etag,
-    id: toArchiveReference(event, blob.pathname),
-    name: displayName(blob.pathname),
+    pathname: blob.pathname,
     size: blob.size,
-    uploadedAt: blob.uploadedAt.toISOString(),
+    uploadedAt: blob.uploadedAt.getTime(),
+    ...parseDimensions(blob.pathname),
   };
 }
 
-async function listCached(options: Parameters<typeof list>[0]) {
-  const key = JSON.stringify(options || {});
-  const cached = blobPageCache.get(key);
-  if (cached && cached.expiresAt > Date.now())
-    return cached.value;
-
-  const value = await list(options);
-  blobPageCache.set(key, {
-    expiresAt: Date.now() + LIST_CACHE_TTL_MS,
-    value,
-  });
-  return value;
+function toArchiveImageFromEntry(event: H3Event, entry: ArchiveIndexEntry): ArchiveImage {
+  return {
+    etag: entry.etag,
+    height: entry.height,
+    id: toArchiveReference(event, entry.pathname),
+    name: displayName(entry.pathname),
+    size: entry.size,
+    uploadedAt: new Date(entry.uploadedAt).toISOString(),
+    width: entry.width,
+  };
 }
 
-export function invalidateArchiveImageCache() {
-  blobPageCache.clear();
+export function toArchiveImage(event: H3Event, blob: ArchiveBlob): ArchiveImage {
+  return toArchiveImageFromEntry(event, toIndexEntry(blob));
+}
+
+async function loadArchiveIndex() {
+  const entries: ArchiveIndexEntry[] = [];
+  let cursor: string | undefined;
+  do {
+    const page = await list({ cursor, limit: LIST_PAGE_SIZE });
+    entries.push(...page.blobs.map(toIndexEntry));
+    cursor = page.hasMore ? page.cursor : undefined;
+  } while (cursor);
+
+  return entries.sort(compareNewestFirst);
+}
+
+/**
+ * Every archived image, newest first. Vercel Blob can only list by pathname,
+ * so the whole store is listed once per TTL and sorted by upload time here.
+ */
+async function getArchiveIndex() {
+  if (archiveIndex && archiveIndex.expiresAt > Date.now())
+    return archiveIndex.entries;
+
+  pendingIndex ??= loadArchiveIndex()
+    .then((entries) => {
+      archiveIndex = { entries, expiresAt: Date.now() + INDEX_TTL_MS };
+      return entries;
+    })
+    .finally(() => {
+      pendingIndex = undefined;
+    });
+
+  return pendingIndex;
+}
+
+export function rememberArchiveImage(blob: ArchiveBlob) {
+  if (!archiveIndex)
+    return;
+
+  const entry = toIndexEntry(blob);
+  const entries = archiveIndex.entries.filter(item => item.pathname !== entry.pathname);
+  const position = entries.findIndex(item => compareNewestFirst(entry, item) < 0);
+  entries.splice(position === -1
+    ? entries.length
+    : position, 0, entry);
+  archiveIndex.entries = entries;
+}
+
+export function forgetArchiveImage(pathname: string) {
+  if (archiveIndex)
+    archiveIndex.entries = archiveIndex.entries.filter(item => item.pathname !== pathname);
+}
+
+function isOwnedBy(pathname: string, owner: ArchiveOwner) {
+  return pathname.startsWith(`users/${owner.discordId}/`)
+    || pathname.startsWith(`${owner.username.replace(/\s+/g, '_')}-`);
 }
 
 export async function listArchiveImages(
   event: H3Event,
-  limit: number,
-  cursor?: string,
+  options: {
+    cursor?: string;
+    limit: number;
+    order?: ArchiveSortOrder;
+    owner?: ArchiveOwner;
+  },
 ): Promise<ArchiveImagePage> {
-  const result = await listCached({ limit, cursor });
+  const { cursor, limit, order = 'desc', owner } = options;
+  const after = decodeCursor(cursor);
+  let entries = await getArchiveIndex();
+  if (owner)
+    entries = entries.filter(entry => isOwnedBy(entry.pathname, owner));
+  if (order === 'asc')
+    entries = entries.toReversed();
+
+  const direction = order === 'asc'
+    ? -1
+    : 1;
+  const start = after
+    ? entries.findIndex(entry => compareNewestFirst(entry, after as ArchiveIndexEntry) * direction > 0)
+    : 0;
+  const page = start === -1
+    ? []
+    : entries.slice(start, start + limit);
+  const hasMore = start !== -1 && start + limit < entries.length;
 
   return {
-    items: result.blobs.map(blob => toArchiveImage(event, blob)),
-    cursor: result.cursor || null,
-    hasMore: result.hasMore,
-  };
-}
-
-export async function listUserArchiveImages(
-  event: H3Event,
-  user: { discordId: string; username: string },
-  limit: number,
-  cursor?: string,
-): Promise<ArchiveImagePage> {
-  const state = decodeCursor(cursor);
-  const modernPrefix = `users/${user.discordId}/`;
-  const legacyPrefix = `${user.username.replace(/\s+/g, '_')}-`;
-
-  const modernLimit = state.legacyDone
-    ? limit
-    : Math.ceil(limit / 2);
-  const legacyLimit = state.modernDone
-    ? limit
-    : Math.floor(limit / 2);
-
-  const [modern, legacy] = await Promise.all([
-    state.modernDone
-      ? null
-      : listCached({ prefix: modernPrefix, limit: modernLimit, cursor: state.modernCursor }),
-    state.legacyDone || legacyLimit === 0
-      ? null
-      : listCached({ prefix: legacyPrefix, limit: legacyLimit, cursor: state.legacyCursor }),
-  ]);
-
-  const nextState: UserCursor = {
-    modernCursor: modern?.cursor,
-    modernDone: state.modernDone || !modern?.hasMore,
-    legacyCursor: legacy?.cursor,
-    legacyDone: state.legacyDone || !legacy?.hasMore,
-  };
-
-  const blobs = [
-    ...(modern?.blobs || []),
-    ...(legacy?.blobs || []),
-  ].sort((a, b) => b.uploadedAt.getTime() - a.uploadedAt.getTime());
-
-  const hasMore = !(nextState.modernDone && nextState.legacyDone);
-  return {
-    items: blobs.map(blob => toArchiveImage(event, blob)),
     cursor: hasMore
-      ? encodeCursor(nextState)
+      ? encodeCursor(page.at(-1)!)
       : null,
     hasMore,
+    items: page.map(entry => toArchiveImageFromEntry(event, entry)),
+    total: entries.length,
+    totalSize: entries.reduce((total, entry) => total + entry.size, 0),
   };
 }
 
-export function assertImageOwnership(
-  pathname: string,
-  user: { discordId: string; username: string },
-) {
-  const ownsModernImage = pathname.startsWith(`users/${user.discordId}/`);
-  const ownsLegacyImage = pathname.startsWith(`${user.username.replace(/\s+/g, '_')}-`);
-  if (!ownsModernImage && !ownsLegacyImage) {
+export function assertImageOwnership(pathname: string, owner: ArchiveOwner) {
+  if (!isOwnedBy(pathname, owner)) {
     throw createError({
       statusCode: 403,
       statusMessage: 'You can only modify your own images.',

@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script setup vapor lang="ts">
 type ButtonSize = 'icon' | 'lg' | 'md' | 'sm';
 type ButtonVariant = 'danger' | 'ghost' | 'outline' | 'primary' | 'secondary';
 

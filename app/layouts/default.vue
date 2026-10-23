@@ -1,4 +1,4 @@
-<template>
+<template vapor>
   <div class="min-h-screen bg-white dark:bg-black">
     <OrganismTheSide />
     <OrganismTheNav />

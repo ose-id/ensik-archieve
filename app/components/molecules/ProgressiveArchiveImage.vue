@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script setup vapor lang="ts">
 import type { ImageOptions } from '@nuxt/image';
 
 type EnsikImage = (
@@ -7,15 +7,8 @@ type EnsikImage = (
   options?: ImageOptions<'ensik'>,
 ) => string;
 
-interface NuxtImageInstance {
-  imgEl?: HTMLImageElement | { readonly value: HTMLImageElement | null } | null;
-}
-
-defineOptions({
-  inheritAttrs: false,
-});
-
 const props = withDefaults(defineProps<{
+  highQuality?: number;
   highWidth?: number;
   imageClass?: string;
   loading?: 'eager' | 'lazy';
@@ -24,6 +17,7 @@ const props = withDefaults(defineProps<{
   sizes?: string;
   src: string;
 }>(), {
+  highQuality: 100,
   highWidth: 1920,
   imageClass: 'block h-auto w-full',
   loading: 'lazy',
@@ -32,9 +26,12 @@ const props = withDefaults(defineProps<{
   sizes: undefined,
 });
 
+const emit = defineEmits<{
+  dimensions: [size: { height: number; width: number }];
+}>();
+
 const ensikImage = useImage() as unknown as EnsikImage;
 const highQualityReady = ref(false);
-const lowQualityImage = ref<NuxtImageInstance>();
 const lowQualityLoaded = ref(false);
 let activeSource = props.src;
 
@@ -54,7 +51,7 @@ const highQualitySrc = computed(() => ensikImage(
   {
     fit: 'inside',
     format: 'webp',
-    quality: 100,
+    quality: props.highQuality,
     width: props.highWidth,
   },
   { provider: 'ensik' },
@@ -82,17 +79,17 @@ async function loadHighQuality() {
     highQualityReady.value = true;
 }
 
+function reportDimensions(image: HTMLImageElement | undefined) {
+  if (image?.naturalWidth && image.naturalHeight)
+    emit('dimensions', { height: image.naturalHeight, width: image.naturalWidth });
+}
+
 function onLowQualityLoaded(event?: Event) {
-  const target = event?.target instanceof HTMLImageElement
+  const image = event?.target instanceof HTMLImageElement
     ? event.target
     : undefined;
-  const exposed = lowQualityImage.value?.imgEl;
-  const image = target
-    || (exposed instanceof HTMLImageElement
-      ? exposed
-      : exposed?.value)
-    || undefined;
   markArchiveImagePreview(props.src, image?.currentSrc || image?.src || lowQualitySrc.value);
+  reportDimensions(image);
 
   if (lowQualityLoaded.value)
     return;
@@ -100,16 +97,18 @@ function onLowQualityLoaded(event?: Event) {
   lowQualityLoaded.value = true;
   void loadHighQuality();
 }
+
+function onHighQualityLoaded(event: Event) {
+  reportDimensions(event.target instanceof HTMLImageElement
+    ? event.target
+    : undefined);
+}
 </script>
 
 <template>
-  <div
-    v-bind="$attrs"
-    class="relative overflow-hidden bg-neutral-100 dark:bg-neutral-900"
-  >
+  <div class="relative overflow-hidden bg-neutral-100 dark:bg-neutral-900">
     <NuxtImg
       v-if="!highQualityReady"
-      ref="lowQualityImage"
       provider="ensik"
       :src="src"
       alt=""
@@ -131,6 +130,7 @@ function onLowQualityLoaded(event?: Event) {
       :width="highWidth"
       decoding="async"
       :class="imageClass"
+      @load="onHighQualityLoaded"
     >
   </div>
 </template>

@@ -12,6 +12,10 @@ export default defineNuxtConfig({
     enabled: false,
   },
 
+  vue: {
+    vapor: true,
+  },
+
   app: {
     head: {
       charset: 'utf-8',

@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script setup vapor lang="ts">
 import type { ToastType } from '~/composables/useToast';
 
 const props = defineProps<{

@@ -2,6 +2,7 @@ import type { PutBlobResult } from '@vercel/blob';
 import type { UploadedArchiveImage } from '~~/shared/types/images';
 import { randomUUID } from 'node:crypto';
 import { head, put } from '@vercel/blob';
+import sharp from 'sharp';
 
 export default defineEventHandler(async (event) => {
   assertSameOrigin(event);
@@ -44,16 +45,33 @@ export default defineEventHandler(async (event) => {
     });
   }
 
+  let dimensions: { width: number; height: number };
+  try {
+    const metadata = await sharp(file.data, {
+      failOn: 'warning',
+      limitInputPixels: 40_000_000,
+    }).metadata();
+    dimensions = metadata.autoOrient;
+  }
+  catch {
+    throw createError({
+      statusCode: 415,
+      statusMessage: 'Only valid PNG and JPEG images are supported.',
+    });
+  }
+
   const now = new Date();
   const year = now.getUTCFullYear();
   const month = String(now.getUTCMonth() + 1).padStart(2, '0');
   const originalName = file.filename || file.name;
+  // Dimensions live in the pathname because Vercel Blob has no custom metadata;
+  // the gallery uses them to reserve space before the image loads.
   const pathname = [
     'users',
     user.discordId,
     String(year),
     month,
-    `${randomUUID()}-${sanitizeImageName(originalName)}.${detected.extension}`,
+    `${randomUUID()}-${dimensions.width}x${dimensions.height}-${sanitizeImageName(originalName)}.${detected.extension}`,
   ].join('/');
 
   let blob: PutBlobResult;
@@ -98,7 +116,7 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  invalidateArchiveImageCache();
+  rememberArchiveImage(metadata);
 
   return {
     item: toArchiveImage(event, metadata),

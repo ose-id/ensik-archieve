@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script setup vapor lang="ts">
 const { loggedIn, menuItems } = useArchiveNavigation();
 const { requestUpload } = useArchiveEvents();
 </script>

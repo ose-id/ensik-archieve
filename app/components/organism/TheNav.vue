@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script setup vapor lang="ts">
 const { clear, loggedIn, user } = useUserSession();
 const showDropdown = ref(false);
 const dropdown = ref<HTMLElement>();

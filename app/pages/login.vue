@@ -1,17 +1,20 @@
-<script setup lang="ts">
+<script setup vapor lang="ts">
 definePageMeta({
   layout: false,
+  // Redirect in middleware rather than with a top-level `await` in setup,
+  // which would cost this Vapor page its Nuxt context.
+  middleware: () => {
+    const { loggedIn, session } = useUserSession();
+    if (loggedIn.value || session.value?.siteAuthenticated)
+      return navigateTo('/');
+  },
 });
 
 useSeoMeta({
   title: 'Login - Ensik Archive',
 });
 
-const { loggedIn, session, fetch: fetchSession } = useUserSession();
-
-if (loggedIn.value || session.value?.siteAuthenticated) {
-  await navigateTo('/');
-}
+const { fetch: fetchSession } = useUserSession();
 
 const password = ref('');
 const showPassword = ref(false);

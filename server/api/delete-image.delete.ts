@@ -21,7 +21,7 @@ export default defineEventHandler(async (event) => {
   const pathname = validateArchivePathname(fromArchiveReference(event, body.id));
   assertImageOwnership(pathname, user);
   await del(pathname, { ifMatch: body.etag });
-  invalidateArchiveImageCache();
+  forgetArchiveImage(pathname);
 
   return { success: true };
 });

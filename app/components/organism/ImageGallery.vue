@@ -1,57 +1,74 @@
-<script setup lang="ts">
-import type { ArchiveImage, ArchiveImagePage } from '~~/shared/types/images';
+<script setup vapor lang="ts">
+import type { ArchiveImagePage } from '~~/shared/types/images';
+import { breakpointsTailwind } from '@vueuse/core';
 
-interface GalleryItem {
-  image: ArchiveImage;
-  renderKey: string;
-}
-
-const LOOP_BATCH_SIZE = 24;
 const PAGE_SIZE = 30;
-const { revision } = useArchiveEvents();
-const selectedIndex = ref<number>();
+const PRELOAD_MARGIN = 1_000;
+const HIGH_QUALITY_WIDTHS = [320, 480, 640, 960, 1280, 1920];
+
+// Vapor components can lose the Nuxt context after an `await`, so every
+// composable is registered before the first page request is awaited below.
+const { onArchiveChanged } = useArchiveEvents();
+const breakpoints = useBreakpoints(breakpointsTailwind);
+const { width: viewportWidth } = useWindowSize();
+const columnCount = computed(() => {
+  if (breakpoints.xl.value)
+    return 5;
+  if (breakpoints.lg.value)
+    return 4;
+  if (breakpoints.md.value)
+    return 3;
+  return 2;
+});
+const {
+  append,
+  columns,
+  images,
+  prepend,
+  ratioOf,
+  remove,
+  reset,
+  setMeasuredRatio,
+} = useArchiveMasonry(columnCount);
+
+const isMounted = shallowRef(false);
+const isActive = shallowRef(true);
+const selectedId = ref<string>();
 const isLoadingMore = ref(false);
 const paginationError = ref('');
 const paginationSentinel = ref<HTMLElement>();
-const sentinelVisible = ref(false);
-let continuationFrame = 0;
-let isExtendingLoop = false;
-let loopCycle = 0;
-let loopQueue: GalleryItem[] = [];
-let previousCycleIds: string[] = [];
+const cursor = ref<string | null>(null);
+const hasMore = ref(false);
+const sentinelVisible = useElementVisibility(paginationSentinel, {
+  rootMargin: `${PRELOAD_MARGIN}px 0px`,
+});
 
-const {
-  data,
-  error,
-  refresh,
-  status,
-} = await useFetch<ArchiveImagePage>('/api/images', {
+const pageRequest = useFetch<ArchiveImagePage>('/api/images', {
   key: 'archive-images',
   deep: false,
   query: { limit: PAGE_SIZE },
   watch: false,
 });
+const { data, error, refresh, status } = pageRequest;
 
-const initialImages = data.value?.items || [];
-const archiveImages = shallowRef<ArchiveImage[]>(initialImages);
-const galleryItems = shallowRef<GalleryItem[]>(initialImages.map(image => ({
-  image,
-  renderKey: `source-${image.id}`,
-})));
-const cursor = ref<string | null>(data.value?.cursor || null);
-const hasMore = ref(data.value?.hasMore || false);
-const selectedImage = computed(() => (
-  selectedIndex.value === undefined
-    ? undefined
-    : galleryItems.value[selectedIndex.value]?.image
-));
-
-watch(data, (page) => {
-  resetGallery(page);
+const selectedIndex = computed(() => images.value.findIndex(image => image.id === selectedId.value));
+const selectedImage = computed(() => images.value[selectedIndex.value]);
+/** Grid images only need to be as wide as one column, not the 1920px viewer size. */
+const highWidth = computed(() => {
+  const pixelRatio = import.meta.client
+    ? window.devicePixelRatio
+    : 1;
+  const target = (viewportWidth.value / columnCount.value) * pixelRatio;
+  return HIGH_QUALITY_WIDTHS.find(width => width >= target) ?? 1920;
 });
 
-watch(revision, () => {
-  void refresh();
+watch(data, applyFirstPage, { immediate: true });
+
+watch(sentinelVisible, (visible) => {
+  // The observer can report a stale intersection while KeepAlive re-inserts
+  // the page, so confirm against the real layout before loading.
+  if (visible && sentinelNearViewport())
+    void loadMore();
 });
 
 watch(selectedImage, (image) => {
@@ -59,72 +76,61 @@ watch(selectedImage, (image) => {
     document.body.style.overflow = image ? 'hidden' : '';
 });
 
+onArchiveChanged((change) => {
+  if (change.type === 'added')
+    prepend(change.image);
+  else
+    remove(change.id);
+});
+
+onMounted(() => {
+  isMounted.value = true;
+});
+
 onBeforeUnmount(() => {
-  if (continuationFrame)
-    cancelAnimationFrame(continuationFrame);
   if (import.meta.client)
     document.body.style.overflow = '';
 });
 
 onActivated(() => {
+  isActive.value = true;
   setArchiveImagePreloadingPaused(false);
 });
 
 onDeactivated(() => {
+  isActive.value = false;
   setArchiveImagePreloadingPaused(true);
-  sentinelVisible.value = false;
-  selectedIndex.value = undefined;
+  selectedId.value = undefined;
   if (import.meta.client)
     document.body.style.overflow = '';
 });
 
 onKeyStroke('Escape', closeViewer);
-onKeyStroke('ArrowRight', nextImage);
+onKeyStroke('ArrowRight', () => void nextImage());
 onKeyStroke('ArrowLeft', previousImage);
 
-useIntersectionObserver(
-  paginationSentinel,
-  ([entry]) => {
-    sentinelVisible.value = Boolean(entry?.isIntersecting);
-    if (sentinelVisible.value)
-      void loadMore();
-  },
-  { rootMargin: '800px 0px' },
-);
+await pageRequest;
 
-function openViewer(index: number) {
-  selectedIndex.value = index;
+function applyFirstPage(page: ArchiveImagePage | null | undefined) {
+  reset(page?.items || []);
+  cursor.value = page?.cursor || null;
+  hasMore.value = page?.hasMore || false;
+  paginationError.value = '';
+  selectedId.value = undefined;
 }
 
-function closeViewer() {
-  selectedIndex.value = undefined;
-}
-
-function nextImage() {
-  if (selectedIndex.value === undefined || galleryItems.value.length < 2)
-    return;
-  selectedIndex.value = (selectedIndex.value + 1) % galleryItems.value.length;
-}
-
-function previousImage() {
-  if (selectedIndex.value === undefined || galleryItems.value.length < 2)
-    return;
-  selectedIndex.value = (
-    selectedIndex.value - 1 + galleryItems.value.length
-  ) % galleryItems.value.length;
+function sentinelNearViewport() {
+  const sentinel = paginationSentinel.value;
+  if (!isActive.value || !sentinel?.isConnected)
+    return false;
+  return sentinel.getBoundingClientRect().top < window.innerHeight + PRELOAD_MARGIN;
 }
 
 async function loadMore() {
-  if (isLoadingMore.value || isExtendingLoop)
+  if (isLoadingMore.value || paginationError.value || !hasMore.value || !cursor.value)
     return;
-
-  if (!cursor.value || !hasMore.value) {
-    await extendLoop();
-    return;
-  }
 
   isLoadingMore.value = true;
-  paginationError.value = '';
   try {
     const page = await $fetch<ArchiveImagePage>('/api/images', {
       query: {
@@ -132,7 +138,7 @@ async function loadMore() {
         limit: PAGE_SIZE,
       },
     });
-    appendArchiveImages(page.items);
+    append(page.items);
     cursor.value = page.cursor;
     hasMore.value = page.hasMore;
   }
@@ -141,176 +147,150 @@ async function loadMore() {
   }
   finally {
     isLoadingMore.value = false;
-    await nextTick();
-    scheduleContinuation();
-  }
-}
-
-function appendArchiveImages(items: ArchiveImage[]) {
-  const knownIds = new Set(archiveImages.value.map(image => image.id));
-  const uniqueItems = items.filter(image => !knownIds.has(image.id));
-  if (!uniqueItems.length)
-    return;
-
-  archiveImages.value = [
-    ...archiveImages.value,
-    ...uniqueItems,
-  ];
-  galleryItems.value = [
-    ...galleryItems.value,
-    ...uniqueItems.map(image => ({
-      image,
-      renderKey: `source-${image.id}`,
-    })),
-  ];
-  loopQueue = [];
-  previousCycleIds = [];
-}
-
-function resetGallery(page: ArchiveImagePage | null | undefined) {
-  const items = page?.items || [];
-  archiveImages.value = items;
-  galleryItems.value = items.map(image => ({
-    image,
-    renderKey: `source-${image.id}`,
-  }));
-  cursor.value = page?.cursor || null;
-  hasMore.value = page?.hasMore || false;
-  paginationError.value = '';
-  selectedIndex.value = undefined;
-  loopCycle = 0;
-  loopQueue = [];
-  previousCycleIds = [];
-}
-
-function shuffleImages(items: ArchiveImage[]) {
-  const shuffled = [...items];
-  for (let index = shuffled.length - 1; index > 0; index -= 1) {
-    const swapIndex = Math.floor(Math.random() * (index + 1));
-    [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex]!, shuffled[index]!];
   }
 
-  const ids = shuffled.map(image => image.id);
-  const repeatsPreviousOrder = ids.length > 1
-    && ids.every((id, index) => id === previousCycleIds[index]);
-  if (repeatsPreviousOrder)
-    shuffled.push(shuffled.shift()!);
-
-  const lastImageId = galleryItems.value.at(-1)?.image.id;
-  if (shuffled.length > 1 && shuffled[0]?.id === lastImageId) {
-    const swapIndex = shuffled.findIndex(image => image.id !== lastImageId);
-    [shuffled[0], shuffled[swapIndex]] = [shuffled[swapIndex]!, shuffled[0]!];
-  }
-
-  previousCycleIds = shuffled.map(image => image.id);
-  return shuffled;
-}
-
-function refillLoopQueue() {
-  loopCycle += 1;
-  loopQueue = shuffleImages(archiveImages.value).map((image, index) => ({
-    image,
-    renderKey: `loop-${loopCycle}-${index}-${image.id}`,
-  }));
-}
-
-async function extendLoop() {
-  if (!archiveImages.value.length || paginationError.value)
-    return;
-
-  isExtendingLoop = true;
-  if (!loopQueue.length)
-    refillLoopQueue();
-
-  const batchSize = Math.min(LOOP_BATCH_SIZE, loopQueue.length);
-  galleryItems.value = [
-    ...galleryItems.value,
-    ...loopQueue.splice(0, batchSize),
-  ];
+  // Every image reserves its space up front, so this only continues while the
+  // viewport is genuinely not filled yet instead of chaining page after page.
   await nextTick();
-  isExtendingLoop = false;
-  scheduleContinuation();
+  if (sentinelNearViewport())
+    void loadMore();
 }
 
-function scheduleContinuation() {
-  if (
-    continuationFrame
-    || !sentinelVisible.value
-    || paginationError.value
-  ) {
-    return;
-  }
+function retryLoadMore() {
+  paginationError.value = '';
+  void loadMore();
+}
 
-  continuationFrame = requestAnimationFrame(() => {
-    continuationFrame = 0;
-    if (sentinelVisible.value)
-      void loadMore();
-  });
+function openViewer(id: string) {
+  selectedId.value = id;
+}
+
+function closeViewer() {
+  selectedId.value = undefined;
+}
+
+async function nextImage() {
+  const index = selectedIndex.value;
+  if (index === -1 || images.value.length < 2)
+    return;
+
+  if (index === images.value.length - 1 && hasMore.value)
+    await loadMore();
+  selectedId.value = images.value[(index + 1) % images.value.length]?.id;
+}
+
+function previousImage() {
+  const index = selectedIndex.value;
+  if (index === -1 || images.value.length < 2)
+    return;
+
+  selectedId.value = images.value[(index - 1 + images.value.length) % images.value.length]?.id;
 }
 
 function reloadImages() {
   void refresh();
+}
+
+function scrollToTop() {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 </script>
 
 <template>
   <section aria-label="Galeri Ensik Archive">
     <div
-      v-if="status === 'pending' && archiveImages.length === 0"
-      class="columns-2 gap-3 lg:columns-4 md:columns-3 xl:columns-5"
+      v-if="!isMounted || (status === 'pending' && images.length === 0)"
+      class="flex items-start gap-3"
       aria-label="Memuat galeri"
     >
       <div
-        v-for="index in 10"
-        :key="index"
-        class="mb-3 animate-pulse break-inside-avoid rounded-lg bg-neutral-200 dark:bg-neutral-800"
-        :class="index % 3 === 0 ? 'h-72' : index % 2 === 0 ? 'h-48' : 'h-60'"
-      />
+        v-for="column in 5"
+        :key="column"
+        class="min-w-0 flex-1 flex-col gap-3"
+        :class="[
+          column > 2 ? 'hidden' : 'flex',
+          column === 3 ? 'md:flex' : '',
+          column === 4 ? 'lg:flex' : '',
+          column === 5 ? 'xl:flex' : '',
+        ]"
+      >
+        <div
+          v-for="row in 3"
+          :key="row"
+          class="animate-pulse rounded-lg bg-neutral-200 dark:bg-neutral-800"
+          :class="(row + column) % 3 === 0
+            ? 'h-72'
+            : (row + column) % 2 === 0
+              ? 'h-48'
+              : 'h-60'"
+        />
+      </div>
     </div>
 
-    <div v-else-if="error && archiveImages.length === 0" class="rounded-lg bg-red-50 p-5 text-center text-red-700 dark:bg-red-950/40 dark:text-red-300">
+    <div v-else-if="error && images.length === 0" class="rounded-lg bg-red-50 p-5 text-center text-red-700 dark:bg-red-950/40 dark:text-red-300">
       Galeri gagal dimuat. Silakan coba lagi.
       <AtomsButton variant="outline" size="sm" class="ml-2" @click="reloadImages">
         Muat ulang
       </AtomsButton>
     </div>
 
-    <div v-else-if="archiveImages.length === 0" class="rounded-lg bg-neutral-100 p-8 text-center text-neutral-500 dark:bg-neutral-900">
+    <div v-else-if="images.length === 0" class="rounded-lg bg-neutral-100 p-8 text-center text-neutral-500 dark:bg-neutral-900">
       Belum ada gambar di arsip.
     </div>
 
-    <div v-else class="columns-2 gap-3 lg:columns-4 md:columns-3 xl:columns-5">
-      <button
-        v-for="(item, index) in galleryItems"
-        :key="item.renderKey"
-        v-memo="[item.renderKey]"
-        type="button"
-        class="relative mb-3 block w-full cursor-pointer break-inside-avoid overflow-hidden border-0 rounded-lg bg-neutral-100 p-0 shadow-md dark:bg-neutral-900 focus-visible:outline-2 focus-visible:outline-blue-500"
-        :aria-label="`Buka ${item.image.name}`"
-        @click="openViewer(index)"
+    <div v-else class="flex items-start gap-3">
+      <div
+        v-for="(column, columnIndex) in columns"
+        :key="columnIndex"
+        class="min-w-0 flex flex-1 flex-col gap-3"
       >
-        <MoleculesProgressiveArchiveImage
-          :src="item.image.id"
-          sizes="xs:50vw md:33vw lg:25vw xl:20vw"
-          :loading="index < 6 ? 'eager' : 'lazy'"
-          class="w-full"
-        />
-      </button>
+        <button
+          v-for="(image, row) in column"
+          :key="image.id"
+          type="button"
+          class="[content-visibility:auto] relative block w-full cursor-pointer overflow-hidden border-0 rounded-lg bg-neutral-100 p-0 shadow-md dark:bg-neutral-900 focus-visible:outline-2 focus-visible:outline-blue-500"
+          :style="{ aspectRatio: `1 / ${ratioOf(image)}` }"
+          :aria-label="`Buka ${image.name}`"
+          @click="openViewer(image.id)"
+        >
+          <MoleculesProgressiveArchiveImage
+            :src="image.id"
+            sizes="xs:50vw md:33vw lg:25vw xl:20vw"
+            :loading="row < 2 ? 'eager' : 'lazy'"
+            :high-width="highWidth"
+            :high-quality="80"
+            image-class="block h-full w-full object-cover"
+            class="h-full w-full"
+            @dimensions="setMeasuredRatio(image, $event)"
+          />
+        </button>
+      </div>
     </div>
 
     <div
-      v-if="galleryItems.length > 0"
+      v-if="isMounted && images.length > 0"
       ref="paginationSentinel"
-      class="min-h-20 flex flex-col items-center justify-center gap-2"
+      class="min-h-20 flex flex-col items-center justify-center gap-2 py-6"
       aria-live="polite"
     >
-      <p v-if="paginationError" class="m-0 text-sm text-red-600 dark:text-red-400">
-        {{ paginationError }}
-      </p>
-      <span v-else-if="isLoadingMore" class="i-mingcute:loading-fill animate-spin text-2xl text-neutral-400" aria-label="Memuat gambar berikutnya" />
-      <AtomsButton v-if="paginationError" variant="secondary" @click="loadMore">
-        Coba lagi
-      </AtomsButton>
+      <template v-if="paginationError">
+        <p class="m-0 text-sm text-red-600 dark:text-red-400">
+          {{ paginationError }}
+        </p>
+        <AtomsButton variant="secondary" @click="retryLoadMore">
+          Coba lagi
+        </AtomsButton>
+      </template>
+      <span v-else-if="isLoadingMore || hasMore" class="i-mingcute:loading-fill animate-spin text-2xl text-neutral-400" aria-label="Memuat gambar berikutnya" />
+      <template v-else>
+        <p class="m-0 text-sm text-neutral-500 dark:text-neutral-400">
+          Kamu sudah melihat seluruh arsip · {{ images.length }} gambar
+        </p>
+        <AtomsButton variant="ghost" size="sm" @click="scrollToTop">
+          <span class="i-mingcute:arrow-up-line mr-1" aria-hidden="true" />
+          Kembali ke atas
+        </AtomsButton>
+      </template>
     </div>
   </section>
 
@@ -328,10 +308,10 @@ function reloadImages() {
         @click="closeViewer"
       />
       <AtomsArrowButton
-        v-if="galleryItems.length > 1"
+        v-if="images.length > 1"
         direction="left"
         class="absolute left-2 z-20 md:left-6 !text-white"
-        @click.stop="previousImage"
+        @click="previousImage"
       />
       <MoleculesZoomLens
         :key="selectedImage.id"
@@ -339,10 +319,10 @@ function reloadImages() {
         :alt="`Pratinjau ${selectedImage.name}`"
       />
       <AtomsArrowButton
-        v-if="galleryItems.length > 1"
+        v-if="images.length > 1"
         direction="right"
         class="absolute right-2 z-20 md:right-6 !text-white"
-        @click.stop="nextImage"
+        @click="nextImage"
       />
     </div>
   </Teleport>

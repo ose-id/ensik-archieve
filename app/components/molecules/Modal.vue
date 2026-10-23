@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script setup vapor lang="ts">
 const props = withDefaults(defineProps<{
   closeDisabled?: boolean;
   description?: string;
@@ -22,6 +22,7 @@ const SIZE_CLASSES = {
   xl: 'max-w-5xl',
 } as const;
 
+const slots = useSlots();
 const dialog = ref<HTMLElement>();
 const titleId = useId();
 let previouslyFocused: HTMLElement | null = null;
@@ -105,7 +106,7 @@ function requestClose() {
           </div>
 
           <footer
-            v-if="$slots.footer"
+            v-if="slots.footer"
             class="border-t border-neutral-200 bg-neutral-50 px-4 py-3 dark:border-neutral-800 dark:bg-neutral-950/60 sm:px-6 sm:py-4"
           >
             <slot name="footer" />

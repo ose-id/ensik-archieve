@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script setup vapor lang="ts">
 useSeoMeta({
   description: 'Koleksi gambar komunitas yang telah diarsipkan.',
   twitterCard: 'summary_large_image',

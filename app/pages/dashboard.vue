@@ -1,5 +1,5 @@
-<script setup lang="ts">
-import type { ArchiveImage, ArchiveImagePage } from '~~/shared/types/images';
+<script setup vapor lang="ts">
+import type { ArchiveImage, ArchiveImagePage, ArchiveSortOrder } from '~~/shared/types/images';
 
 definePageMeta({
   middleware: 'auth',
@@ -10,15 +10,16 @@ useSeoMeta({
 });
 
 const PAGE_SIZE = 30;
+const PRELOAD_MARGIN = 600;
 const FILE_SIZE_UNITS = ['B', 'KB', 'MB', 'GB'];
 const dateFormatter = new Intl.DateTimeFormat('id-ID', {
   dateStyle: 'medium',
   timeStyle: 'short',
 });
 const { addToast } = useToast();
-const { notifyArchiveChanged, revision } = useArchiveEvents();
+const { notifyArchiveChanged, onArchiveChanged } = useArchiveEvents();
 const viewMode = ref<'card' | 'list'>('list');
-const sortOrder = useCookie<'asc' | 'desc'>('ensik-dashboard-sort', {
+const sortOrder = useCookie<ArchiveSortOrder>('ensik-dashboard-sort', {
   default: () => 'desc',
   sameSite: 'lax',
 });
@@ -27,71 +28,92 @@ const deletingImageId = ref('');
 const loadingMore = ref(false);
 const paginationError = ref('');
 const paginationSentinel = ref<HTMLElement>();
-const sentinelVisible = ref(false);
+const sentinelVisible = useElementVisibility(paginationSentinel, {
+  rootMargin: `${PRELOAD_MARGIN}px 0px`,
+});
+const images = shallowRef<ArchiveImage[]>([]);
+const cursor = ref<string | null>(null);
+const hasMore = ref(false);
+const total = ref(0);
+const totalSize = ref(0);
 
+// Sorting happens on the server across every upload, so changing the order
+// refetches the first page instead of re-sorting only what is loaded.
 const {
   data,
   error,
   refresh,
   status,
-} = await useFetch<ArchiveImagePage>('/api/user-images', {
+} = useFetch<ArchiveImagePage>('/api/user-images', {
   key: 'user-archive-images',
   deep: false,
   lazy: true,
-  query: { limit: PAGE_SIZE },
-  watch: false,
+  query: computed(() => ({ limit: PAGE_SIZE, order: sortOrder.value })),
 });
 
-const images = shallowRef<ArchiveImage[]>(data.value?.items || []);
-const cursor = ref<string | null>(data.value?.cursor || null);
-const hasMore = ref(data.value?.hasMore || false);
+watch(data, applyFirstPage, { immediate: true });
 
-watch(data, (page) => {
+watch(sentinelVisible, (visible) => {
+  if (visible && sentinelNearViewport())
+    void loadMore();
+});
+
+onArchiveChanged((change) => {
+  if (change.type === 'added') {
+    total.value += 1;
+    totalSize.value += change.image.size;
+    if (sortOrder.value === 'desc')
+      images.value = [change.image, ...images.value];
+    else if (!hasMore.value)
+      images.value = [...images.value, change.image];
+    return;
+  }
+
+  const removed = images.value.find(image => image.id === change.id);
+  if (!removed)
+    return;
+
+  images.value = images.value.filter(image => image.id !== change.id);
+  total.value = Math.max(0, total.value - 1);
+  totalSize.value = Math.max(0, totalSize.value - removed.size);
+});
+
+function applyFirstPage(page: ArchiveImagePage | null | undefined) {
   images.value = page?.items || [];
   cursor.value = page?.cursor || null;
   hasMore.value = page?.hasMore || false;
-});
+  total.value = page?.total || 0;
+  totalSize.value = page?.totalSize || 0;
+  paginationError.value = '';
+}
 
-watch(revision, () => {
-  void refresh();
-});
-
-const sortedImages = computed(() => [...images.value].sort((left, right) => {
-  const leftDate = new Date(left.uploadedAt).getTime();
-  const rightDate = new Date(right.uploadedAt).getTime();
-  return sortOrder.value === 'desc'
-    ? rightDate - leftDate
-    : leftDate - rightDate;
-}));
-
-const loadedSize = computed(() => images.value.reduce((total, image) => total + image.size, 0));
-
-useIntersectionObserver(
-  paginationSentinel,
-  ([entry]) => {
-    sentinelVisible.value = Boolean(entry?.isIntersecting);
-    if (sentinelVisible.value)
-      void loadMore();
-  },
-  { rootMargin: '600px 0px' },
-);
+function sentinelNearViewport() {
+  const top = paginationSentinel.value?.getBoundingClientRect().top;
+  return top !== undefined && top < window.innerHeight + PRELOAD_MARGIN;
+}
 
 async function loadMore() {
-  if (!cursor.value || !hasMore.value || loadingMore.value)
+  if (loadingMore.value || paginationError.value || !hasMore.value || !cursor.value)
     return;
 
+  const order = sortOrder.value;
   loadingMore.value = true;
-  paginationError.value = '';
   try {
     const page = await $fetch<ArchiveImagePage>('/api/user-images', {
       query: {
         cursor: cursor.value,
         limit: PAGE_SIZE,
+        order,
       },
     });
+    // Ignore a page that belongs to the previous sort order.
+    if (order !== sortOrder.value)
+      return;
+
+    const known = new Set(images.value.map(image => image.id));
     images.value = [
       ...images.value,
-      ...page.items,
+      ...page.items.filter(image => !known.has(image.id)),
     ];
     cursor.value = page.cursor;
     hasMore.value = page.hasMore;
@@ -101,10 +123,16 @@ async function loadMore() {
   }
   finally {
     loadingMore.value = false;
-    await nextTick();
-    if (sentinelVisible.value && hasMore.value && !paginationError.value)
-      requestAnimationFrame(() => void loadMore());
   }
+
+  await nextTick();
+  if (sentinelNearViewport())
+    void loadMore();
+}
+
+function retryLoadMore() {
+  paginationError.value = '';
+  void loadMore();
 }
 
 async function deleteImage() {
@@ -121,9 +149,8 @@ async function deleteImage() {
         id: image.id,
       },
     });
-    images.value = images.value.filter(item => item.id !== image.id);
     deleteCandidate.value = undefined;
-    notifyArchiveChanged();
+    notifyArchiveChanged({ type: 'removed', id: image.id });
     addToast('Gambar berhasil dihapus.', 'success');
   }
   catch {
@@ -167,10 +194,10 @@ function reloadImages() {
         <div class="relative z-1 flex items-center justify-between">
           <div class="flex-1">
             <p class="m-0 text-xs text-neutral-600 font-semibold tracking-wide uppercase sm:text-sm dark:text-neutral-400">
-              Foto dimuat
+              Total foto
             </p>
             <p class="mb-0 mt-1 text-2xl text-neutral-900 font-bold sm:mt-2 md:text-4xl sm:text-3xl dark:text-neutral-100">
-              {{ images.length }}
+              {{ total }}
             </p>
           </div>
           <div class="rounded-xl bg-neutral-600 p-2 shadow-lg sm:rounded-2xl dark:bg-neutral-700 md:p-4 sm:p-3">
@@ -184,10 +211,10 @@ function reloadImages() {
         <div class="relative z-1 flex items-center justify-between">
           <div class="min-w-0 flex-1">
             <p class="m-0 text-xs text-neutral-600 font-semibold tracking-wide uppercase sm:text-sm dark:text-neutral-400">
-              Ukuran dimuat
+              Total ukuran
             </p>
             <p class="mb-0 mt-1 truncate text-2xl text-neutral-900 font-bold sm:mt-2 md:text-4xl sm:text-3xl dark:text-neutral-100">
-              {{ formatFileSize(loadedSize) }}
+              {{ formatFileSize(totalSize) }}
             </p>
           </div>
           <div class="rounded-xl bg-neutral-600 p-2 shadow-lg sm:rounded-2xl dark:bg-neutral-700 md:p-4 sm:p-3">
@@ -206,7 +233,7 @@ function reloadImages() {
               Foto Anda
             </h1>
             <p class="mb-0 mt-1 text-xs text-neutral-500 sm:text-sm dark:text-neutral-400">
-              {{ images.length }} foto telah dimuat
+              {{ images.length }} dari {{ total }} foto dimuat
             </p>
           </div>
 
@@ -240,6 +267,7 @@ function reloadImages() {
                 <AtomsButton
                   :variant="sortOrder === 'desc' ? 'primary' : 'ghost'"
                   size="sm"
+                  :aria-pressed="sortOrder === 'desc'"
                   @click="sortOrder = 'desc'"
                 >
                   Terbaru
@@ -247,6 +275,7 @@ function reloadImages() {
                 <AtomsButton
                   :variant="sortOrder === 'asc' ? 'primary' : 'ghost'"
                   size="sm"
+                  :aria-pressed="sortOrder === 'asc'"
                   @click="sortOrder = 'asc'"
                 >
                   Terlama
@@ -292,10 +321,9 @@ function reloadImages() {
         class="grid grid-cols-1 gap-3 p-4 lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 xl:grid-cols-5 md:gap-6 sm:gap-4 md:p-8 sm:p-6"
       >
         <article
-          v-for="image in sortedImages"
+          v-for="image in images"
           :key="image.id"
-          v-memo="[image.id, deletingImageId === image.id]"
-          class="relative overflow-hidden rounded-lg bg-white shadow-lg md:rounded-2xl sm:rounded-xl dark:bg-neutral-700/50"
+          class="[content-visibility:auto] relative overflow-hidden rounded-lg bg-white shadow-lg md:rounded-2xl sm:rounded-xl dark:bg-neutral-700/50"
         >
           <div class="absolute right-2 top-2 z-2 flex items-center gap-1">
             <a
@@ -354,10 +382,9 @@ function reloadImages() {
       <div v-else class="p-4 md:p-8 sm:p-6">
         <ul class="m-0 list-none p-0 space-y-3 sm:space-y-4">
           <li
-            v-for="image in sortedImages"
+            v-for="image in images"
             :key="image.id"
-            v-memo="[image.id, deletingImageId === image.id]"
-            class="flex items-center rounded-lg bg-white p-3 shadow-sm sm:rounded-xl dark:bg-neutral-800/50 sm:p-4"
+            class="[content-visibility:auto] flex items-center rounded-lg bg-white p-3 shadow-sm sm:rounded-xl dark:bg-neutral-800/50 sm:p-4"
           >
             <div class="h-12 w-12 shrink-0 overflow-hidden rounded-md bg-neutral-100 md:h-16 md:w-16 sm:h-14 sm:w-14 sm:rounded-lg dark:bg-neutral-700">
               <NuxtImg
@@ -415,18 +442,23 @@ function reloadImages() {
       </div>
 
       <div
-        v-if="hasMore || paginationError"
+        v-if="images.length > 0"
         ref="paginationSentinel"
         class="min-h-20 flex flex-col items-center justify-center gap-2 border-t border-neutral-200/50 p-4 dark:border-neutral-700/50"
         aria-live="polite"
       >
-        <p v-if="paginationError" class="m-0 text-sm text-red-600 dark:text-red-400">
-          {{ paginationError }}
+        <template v-if="paginationError">
+          <p class="m-0 text-sm text-red-600 dark:text-red-400">
+            {{ paginationError }}
+          </p>
+          <AtomsButton variant="secondary" size="sm" @click="retryLoadMore">
+            Coba lagi
+          </AtomsButton>
+        </template>
+        <span v-else-if="loadingMore || hasMore" class="i-mingcute:loading-fill animate-spin text-2xl text-neutral-400" aria-label="Memuat gambar berikutnya" />
+        <p v-else class="m-0 text-sm text-neutral-500 dark:text-neutral-400">
+          Semua foto Anda sudah ditampilkan.
         </p>
-        <span v-else-if="loadingMore" class="i-mingcute:loading-fill animate-spin text-2xl text-neutral-400" aria-label="Memuat gambar berikutnya" />
-        <AtomsButton v-if="paginationError" variant="secondary" size="sm" @click="loadMore">
-          Coba lagi
-        </AtomsButton>
       </div>
     </section>
   </div>

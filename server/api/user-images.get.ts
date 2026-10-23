@@ -1,6 +1,6 @@
 export default defineEventHandler(async (event) => {
   const user = await requireOAuthUser(event);
-  const { cursor, limit } = getImagePagination(event);
+  const { cursor, limit, order } = getImagePagination(event);
   setResponseHeader(event, 'Cache-Control', 'private, no-store');
-  return listUserArchiveImages(event, user, limit, cursor);
+  return listArchiveImages(event, { cursor, limit, order, owner: user });
 });
