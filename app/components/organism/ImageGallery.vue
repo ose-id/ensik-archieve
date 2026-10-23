@@ -227,9 +227,22 @@ function scrollToTop() {
       </div>
     </div>
 
-    <div v-else-if="error && images.length === 0" class="rounded-lg bg-red-50 p-5 text-center text-red-700 dark:bg-red-950/40 dark:text-red-300">
-      Galeri gagal dimuat. Silakan coba lagi.
-      <AtomsButton variant="outline" size="sm" class="ml-2" @click="reloadImages">
+    <div
+      v-else-if="error && images.length === 0"
+      class="mx-auto max-w-md flex flex-col items-center border border-neutral-200 rounded-2xl border-solid bg-white px-6 py-10 text-center dark:border-neutral-800 dark:bg-neutral-900"
+      role="alert"
+    >
+      <span class="h-12 w-12 flex items-center justify-center rounded-full bg-red-100 dark:bg-red-950/50" aria-hidden="true">
+        <span class="i-mingcute:wifi-off-line text-2xl text-red-600 dark:text-red-400" />
+      </span>
+      <h2 class="mb-1 mt-4 text-base text-neutral-900 font-semibold dark:text-white">
+        Galeri gagal dimuat
+      </h2>
+      <p class="mb-5 mt-0 text-sm text-neutral-500 dark:text-neutral-400">
+        Periksa koneksi lalu coba lagi.
+      </p>
+      <AtomsButton variant="primary" :loading="status === 'pending'" @click="reloadImages">
+        <span v-if="status !== 'pending'" class="i-mingcute:refresh-2-line mr-2 text-base" aria-hidden="true" />
         Muat ulang
       </AtomsButton>
     </div>

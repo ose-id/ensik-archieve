@@ -24,11 +24,13 @@
     "@nuxtjs/color-mode": "^4.0.1",
     "@unocss/eslint-config": "^66.11.0",
     "@unocss/nuxt": "^66.11.0",
+    "@unocss/transformer-directives": "^66.11.0",
     "@vueuse/core": "^15.0.0",
     "@vueuse/nuxt": "^15.0.0",
     "eslint": "^10.13.0",
     "nuxt": "^4.6.2",
     "nuxt-auth-utils": "0.5.32",
+    "unocss": "^66.11.0",
     "vue": "3.6.0-rc.13",
     "vue-router": "^5.4.0",
     "vue-tsc": "^3.3.13"

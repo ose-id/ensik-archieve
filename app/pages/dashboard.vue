@@ -290,15 +290,18 @@ function reloadImages() {
         <div v-for="index in 6" :key="index" class="h-20 animate-pulse rounded-xl bg-neutral-100 dark:bg-neutral-800" />
       </div>
 
-      <div v-else-if="error && images.length === 0" class="p-10 text-center">
-        <span class="i-mingcute:warning-line text-5xl text-red-400" aria-hidden="true" />
-        <h2 class="mb-2 mt-4 text-lg text-neutral-900 font-semibold dark:text-white">
+      <div v-else-if="error && images.length === 0" class="flex flex-col items-center px-6 py-10 text-center" role="alert">
+        <span class="h-12 w-12 flex items-center justify-center rounded-full bg-red-100 dark:bg-red-950/50" aria-hidden="true">
+          <span class="i-mingcute:wifi-off-line text-2xl text-red-600 dark:text-red-400" />
+        </span>
+        <h2 class="mb-1 mt-4 text-base text-neutral-900 font-semibold dark:text-white">
           Foto gagal dimuat
         </h2>
         <p class="mb-5 mt-0 text-sm text-neutral-500 dark:text-neutral-400">
-          Periksa koneksi lalu coba kembali.
+          Periksa koneksi lalu coba lagi.
         </p>
-        <AtomsButton variant="outline" size="sm" @click="reloadImages">
+        <AtomsButton variant="primary" :loading="status === 'pending'" @click="reloadImages">
+          <span v-if="status !== 'pending'" class="i-mingcute:refresh-2-line mr-2 text-base" aria-hidden="true" />
           Muat ulang
         </AtomsButton>
       </div>

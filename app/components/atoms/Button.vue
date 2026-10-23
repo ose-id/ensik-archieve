@@ -25,7 +25,7 @@ const emit = defineEmits<{
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
   danger: 'bg-red-500 text-white hover:bg-red-600 shadow-sm border-none',
   ghost: 'bg-transparent text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-neutral-100 dark:hover:bg-neutral-800 border-none',
-  outline: 'bg-transparent border border-neutral-300 text-neutral-700 hover:bg-neutral-50 dark:border-neutral-600 dark:text-neutral-300 dark:hover:bg-neutral-700',
+  outline: 'bg-transparent border border-solid border-neutral-300 text-neutral-700 hover:bg-neutral-50 dark:border-neutral-600 dark:text-neutral-300 dark:hover:bg-neutral-700',
   primary: 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm hover:shadow-md border-none',
   secondary: 'bg-neutral-100 text-neutral-900 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-100 dark:hover:bg-neutral-700 border-none',
 };
