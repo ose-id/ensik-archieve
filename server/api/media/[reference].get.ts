@@ -4,7 +4,13 @@ import sharp from 'sharp';
 
 const ALLOWED_FORMATS = new Set(['avif', 'jpeg', 'png', 'webp']);
 type ImageFit = 'contain' | 'cover' | 'fill' | 'inside' | 'outside';
-const ALLOWED_FITS = new Set<ImageFit>(['contain', 'cover', 'fill', 'inside', 'outside']);
+const ALLOWED_FITS = new Set<ImageFit>([
+  'contain',
+  'cover',
+  'fill',
+  'inside',
+  'outside',
+]);
 
 function getDownloadFilename(pathname: string, extension: 'jpg' | 'png') {
   const filename = pathname.split('/').pop() || 'archive-image';
@@ -94,9 +100,15 @@ export default defineEventHandler(async (event) => {
   const width = integerModifier(query.w, 16, 1_920);
   const height = integerModifier(query.h, 16, 1_920);
   const quality = integerModifier(query.q, 20, 100, 76)!;
-  const requestedFormat = typeof query.f === 'string' ? query.f.toLowerCase() : 'webp';
-  const format = ALLOWED_FORMATS.has(requestedFormat) ? requestedFormat : 'webp';
-  const requestedFit = typeof query.fit === 'string' ? query.fit.toLowerCase() : 'cover';
+  const requestedFormat = typeof query.f === 'string'
+    ? query.f.toLowerCase()
+    : 'webp';
+  const format = ALLOWED_FORMATS.has(requestedFormat)
+    ? requestedFormat
+    : 'webp';
+  const requestedFit = typeof query.fit === 'string'
+    ? query.fit.toLowerCase()
+    : 'cover';
   const fit: ImageFit = ALLOWED_FITS.has(requestedFit as ImageFit)
     ? requestedFit as ImageFit
     : 'cover';

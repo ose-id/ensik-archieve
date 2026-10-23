@@ -187,7 +187,9 @@ async function upload() {
     reset();
   }
   catch (error) {
-    const message = error instanceof Error ? error.message : 'Upload gagal.';
+    const message = error instanceof Error
+      ? error.message
+      : 'Upload gagal.';
     uploadError.value = message;
     uploadPhase.value = 'idle';
     uploadProgress.value = 0;

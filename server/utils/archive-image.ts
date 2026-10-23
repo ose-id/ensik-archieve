@@ -104,8 +104,12 @@ export async function listUserArchiveImages(
   const modernPrefix = `users/${user.discordId}/`;
   const legacyPrefix = `${user.username.replace(/\s+/g, '_')}-`;
 
-  const modernLimit = state.legacyDone ? limit : Math.ceil(limit / 2);
-  const legacyLimit = state.modernDone ? limit : Math.floor(limit / 2);
+  const modernLimit = state.legacyDone
+    ? limit
+    : Math.ceil(limit / 2);
+  const legacyLimit = state.modernDone
+    ? limit
+    : Math.floor(limit / 2);
 
   const [modern, legacy] = await Promise.all([
     state.modernDone
@@ -131,7 +135,9 @@ export async function listUserArchiveImages(
   const hasMore = !(nextState.modernDone && nextState.legacyDone);
   return {
     items: blobs.map(blob => toArchiveImage(event, blob)),
-    cursor: hasMore ? encodeCursor(nextState) : null,
+    cursor: hasMore
+      ? encodeCursor(nextState)
+      : null,
     hasMore,
   };
 }

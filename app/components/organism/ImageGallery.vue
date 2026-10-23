@@ -152,7 +152,10 @@ function appendArchiveImages(items: ArchiveImage[]) {
   if (!uniqueItems.length)
     return;
 
-  archiveImages.value = [...archiveImages.value, ...uniqueItems];
+  archiveImages.value = [
+    ...archiveImages.value,
+    ...uniqueItems,
+  ];
   galleryItems.value = [
     ...galleryItems.value,
     ...uniqueItems.map(image => ({

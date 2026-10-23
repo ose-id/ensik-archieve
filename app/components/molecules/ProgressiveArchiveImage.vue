@@ -83,10 +83,14 @@ async function loadHighQuality() {
 }
 
 function onLowQualityLoaded(event?: Event) {
-  const target = event?.target instanceof HTMLImageElement ? event.target : undefined;
+  const target = event?.target instanceof HTMLImageElement
+    ? event.target
+    : undefined;
   const exposed = lowQualityImage.value?.imgEl;
   const image = target
-    || (exposed instanceof HTMLImageElement ? exposed : exposed?.value)
+    || (exposed instanceof HTMLImageElement
+      ? exposed
+      : exposed?.value)
     || undefined;
   markArchiveImagePreview(props.src, image?.currentSrc || image?.src || lowQualitySrc.value);
 

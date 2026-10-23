@@ -59,7 +59,9 @@ watch(revision, () => {
 const sortedImages = computed(() => [...images.value].sort((left, right) => {
   const leftDate = new Date(left.uploadedAt).getTime();
   const rightDate = new Date(right.uploadedAt).getTime();
-  return sortOrder.value === 'desc' ? rightDate - leftDate : leftDate - rightDate;
+  return sortOrder.value === 'desc'
+    ? rightDate - leftDate
+    : leftDate - rightDate;
 }));
 
 const loadedSize = computed(() => images.value.reduce((total, image) => total + image.size, 0));
@@ -87,7 +89,10 @@ async function loadMore() {
         limit: PAGE_SIZE,
       },
     });
-    images.value = [...images.value, ...page.items];
+    images.value = [
+      ...images.value,
+      ...page.items,
+    ];
     cursor.value = page.cursor;
     hasMore.value = page.hasMore;
   }
@@ -137,7 +142,9 @@ function formatFileSize(bytes: number) {
     Math.floor(Math.log(bytes) / Math.log(1024)),
     FILE_SIZE_UNITS.length - 1,
   );
-  return `${(bytes / 1024 ** unit).toFixed(unit === 0 ? 0 : 1)} ${FILE_SIZE_UNITS[unit]}`;
+  return `${(bytes / 1024 ** unit).toFixed(unit === 0
+    ? 0
+    : 1)} ${FILE_SIZE_UNITS[unit]}`;
 }
 
 function formatDate(value: string) {

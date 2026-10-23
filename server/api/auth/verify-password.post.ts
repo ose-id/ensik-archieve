@@ -3,7 +3,9 @@ export default defineEventHandler(async (event) => {
   assertRateLimit(event, 'site-password', 8, 15 * 60 * 1000);
 
   const body = await readBody<{ password?: unknown }>(event);
-  const password = typeof body?.password === 'string' ? body.password : '';
+  const password = typeof body?.password === 'string'
+    ? body.password
+    : '';
   if (!password || password.length > 256) {
     throw createError({
       statusCode: 400,

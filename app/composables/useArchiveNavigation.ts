@@ -18,12 +18,14 @@ export function useArchiveNavigation() {
         route: '/',
       },
       ...(loggedIn.value
-        ? [{
-            active: path === '/dashboard' || path.startsWith('/dashboard/'),
-            icon: 'i-mingcute:dashboard-line',
-            label: 'Dashboard',
-            route: '/dashboard',
-          }]
+        ? [
+            {
+              active: path === '/dashboard' || path.startsWith('/dashboard/'),
+              icon: 'i-mingcute:dashboard-line',
+              label: 'Dashboard',
+              route: '/dashboard',
+            },
+          ]
         : []),
     ];
   });

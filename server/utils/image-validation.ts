@@ -27,7 +27,9 @@ export function detectImage(data: Uint8Array): DetectedImage | null {
     && data[data.length - 2] === 0xFF
     && data[data.length - 1] === 0xD9;
 
-  return isJpeg ? { extension: 'jpg', mime: 'image/jpeg' } : null;
+  return isJpeg
+    ? { extension: 'jpg', mime: 'image/jpeg' }
+    : null;
 }
 
 export function sanitizeImageName(filename: string) {

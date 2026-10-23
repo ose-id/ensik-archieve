@@ -12,23 +12,23 @@
     "lint:fix": "eslint . --fix"
   },
   "dependencies": {
-    "@nuxt/fonts": "^0.14.0",
-    "@vercel/blob": "^2.8.0",
-    "sharp": "^0.35.4"
+    "@nuxt/fonts": "^1.1.0",
+    "@vercel/blob": "^2.8.2",
+    "sharp": "^0.35.5"
   },
   "devDependencies": {
-    "@antfu/eslint-config": "^9.5.1",
+    "@antfu/eslint-config": "^10.0.0",
     "@iconify-json/mingcute": "^1.2.8",
-    "@nuxt/image": "^2.1.0",
+    "@nuxt/image": "^2.2.0",
     "@nuxtjs/color-mode": "^4.0.1",
-    "@unocss/eslint-config": "^66.10.0",
-    "@unocss/nuxt": "^66.10.0",
-    "@vueuse/core": "^14.4.0",
-    "@vueuse/nuxt": "^14.4.0",
-    "eslint": "^10.10.0",
-    "nuxt": "^4.5.2",
-    "nuxt-auth-utils": "0.5.30",
-    "vue": "^3.5.42",
-    "vue-router": "^5.3.1"
+    "@unocss/eslint-config": "^66.11.0",
+    "@unocss/nuxt": "^66.11.0",
+    "@vueuse/core": "^15.0.0",
+    "@vueuse/nuxt": "^15.0.0",
+    "eslint": "^10.13.0",
+    "nuxt": "^4.6.2",
+    "nuxt-auth-utils": "0.5.32",
+    "vue": "^3.5.44",
+    "vue-router": "^5.4.0"
   }
 }

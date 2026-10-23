@@ -67,7 +67,9 @@ export default defineEventHandler(async (event) => {
     });
   }
   catch (error) {
-    const message = error instanceof Error ? error.message : '';
+    const message = error instanceof Error
+      ? error.message
+      : '';
     if (message.includes('Cannot use private access on a public store')) {
       blob = await put(pathname, file.data, {
         access: 'public',

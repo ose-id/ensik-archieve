@@ -26,7 +26,12 @@ export default defineNuxtConfig({
         { name: 'apple-mobile-web-app-title', content: 'Ensik Archive' },
       ],
       link: [
-        { rel: 'icon', type: 'image/png', href: '/favicon/favicon-96x96.png', sizes: '96x96' },
+        {
+          rel: 'icon',
+          type: 'image/png',
+          href: '/favicon/favicon-96x96.png',
+          sizes: '96x96',
+        },
         { rel: 'icon', type: 'image/svg+xml', href: '/favicon/favicon.svg' },
         { rel: 'shortcut icon', href: '/favicon.ico' },
         { rel: 'apple-touch-icon', sizes: '180x180', href: '/favicon/apple-touch-icon.png' },

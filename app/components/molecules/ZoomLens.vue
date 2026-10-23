@@ -41,10 +41,14 @@ const requestedHighQualitySrc = computed(() => ensikImage(
 ));
 
 const lensStyle = computed(() => ({
-  backgroundImage: highQualitySrc.value ? `url("${highQualitySrc.value}")` : undefined,
+  backgroundImage: highQualitySrc.value
+    ? `url("${highQualitySrc.value}")`
+    : undefined,
   backgroundRepeat: 'no-repeat',
   height: `${lensSize.value}px`,
-  opacity: lensVisible.value && highQualityReady.value ? 1 : 0,
+  opacity: lensVisible.value && highQualityReady.value
+    ? 1
+    : 0,
   transform: 'translate(-50%, -50%)',
   width: `${lensSize.value}px`,
 }));
@@ -72,7 +76,9 @@ function startHighQualityLoad() {
 }
 
 function finishHighQualityLoad(event?: Event) {
-  const image = event?.target instanceof HTMLImageElement ? event.target : undefined;
+  const image = event?.target instanceof HTMLImageElement
+    ? event.target
+    : undefined;
   highQualitySrc.value = image?.currentSrc || image?.src || requestedHighQualitySrc.value;
   markArchiveImagePreloaded(highQualitySrc.value);
   highQualityReady.value = true;
