@@ -3,7 +3,7 @@ const { toasts, removeToast } = useToast();
 </script>
 
 <template>
-  <div class="pointer-events-none fixed bottom-0 right-0 z-[9999] w-full flex flex-col justify-end p-4 sm:w-auto md:p-6">
+  <div class="pointer-events-none fixed bottom-0 right-0 z-[9999] w-full flex flex-col justify-end px-4 pb-[calc(6rem+env(safe-area-inset-bottom))] pt-4 sm:w-auto md:p-6">
     <TransitionGroup
       name="toast"
       tag="div"
