@@ -255,25 +255,25 @@ async function upload() {
   >
     <div
       v-if="isDirect && selectedFile"
-      class="fixed inset-x-3 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-[55] flex items-center gap-3 border border-neutral-200 rounded-2xl border-solid bg-white p-3 shadow-xl md:inset-x-auto md:bottom-6 md:right-6 md:w-80 dark:border-neutral-800 dark:bg-neutral-900"
+      class="p-3 border border-neutral-200 rounded-2xl bg-white flex gap-3 shadow-xl items-center inset-x-3 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] fixed z-[55] dark:border-neutral-800 dark:bg-neutral-900 md:w-80 md:inset-x-auto md:bottom-6 md:right-6"
       role="status"
       aria-live="polite"
     >
       <img
         :src="previewUrl"
         alt=""
-        class="h-12 w-12 shrink-0 rounded-lg object-cover"
+        class="rounded-lg shrink-0 h-12 w-12 object-cover"
       >
-      <div class="min-w-0 flex-1">
-        <p class="m-0 truncate text-sm text-neutral-900 font-medium dark:text-white">
+      <div class="flex-1 min-w-0">
+        <p class="text-sm text-strong font-medium truncate">
           {{ uploadError ? 'Upload gagal' : uploadStatus }}
         </p>
-        <p v-if="uploadError" class="mb-0 mt-0.5 truncate text-xs text-red-600 dark:text-red-400">
+        <p v-if="uploadError" class="text-xs text-red-600 mt-0.5 truncate dark:text-red-400">
           {{ uploadError }}
         </p>
         <div
           v-else
-          class="mt-2 h-1.5 overflow-hidden rounded-full bg-neutral-200 dark:bg-neutral-800"
+          class="mt-2 rounded-full bg-neutral-200 h-1.5 overflow-hidden dark:bg-neutral-800"
           role="progressbar"
           aria-label="Progress upload"
           aria-valuemin="0"
@@ -281,7 +281,7 @@ async function upload() {
           :aria-valuenow="uploadProgress"
         >
           <div
-            class="h-full rounded-full bg-blue-600 transition-[width] duration-200"
+            class="rounded-full bg-blue-600 h-full transition-[width] duration-200"
             :class="uploadPhase === 'processing' ? 'animate-pulse' : ''"
             :style="{ width: `${uploadProgress}%` }"
           />
@@ -290,7 +290,7 @@ async function upload() {
       <template v-if="uploadError">
         <button
           type="button"
-          class="h-9 w-9 flex shrink-0 cursor-pointer items-center justify-center border-0 rounded-full bg-blue-600 text-white active:scale-95"
+          class="text-white rounded-full bg-blue-600 flex shrink-0 h-9 w-9 cursor-pointer items-center justify-center active:scale-95"
           aria-label="Coba upload lagi"
           @click="upload"
         >
@@ -298,7 +298,7 @@ async function upload() {
         </button>
         <button
           type="button"
-          class="h-9 w-9 flex shrink-0 cursor-pointer items-center justify-center border-0 rounded-full bg-transparent text-neutral-500 active:bg-neutral-100 dark:text-neutral-400 dark:active:bg-neutral-800"
+          class="icon-btn"
           aria-label="Tutup"
           @click="reset"
         >
@@ -308,7 +308,7 @@ async function upload() {
       <button
         v-else-if="uploadPhase === 'uploading'"
         type="button"
-        class="h-9 w-9 flex shrink-0 cursor-pointer items-center justify-center border-0 rounded-full bg-transparent text-neutral-500 active:bg-neutral-100 dark:text-neutral-400 dark:active:bg-neutral-800"
+        class="icon-btn"
         aria-label="Batalkan upload"
         @click="cancelUpload"
       >
@@ -327,17 +327,17 @@ async function upload() {
   >
     <div
       v-if="!selectedFile"
-      class="min-h-80 flex flex-col items-center justify-center border-2 border-neutral-300 rounded-2xl border-dashed bg-neutral-50 p-8 text-center transition-colors dark:border-neutral-700 dark:bg-neutral-950/60"
+      class="p-8 text-center border-2 border-neutral-300 rounded-2xl border-dashed bg-neutral-50 flex flex-col min-h-80 transition-colors items-center justify-center dark:border-neutral-700 dark:bg-neutral-950/60"
       @dragover.prevent
       @drop.prevent="dropFile"
     >
-      <div class="h-16 w-16 flex items-center justify-center rounded-full bg-blue-100 dark:bg-blue-950/60">
+      <div class="rounded-full bg-blue-100 flex h-16 w-16 items-center justify-center dark:bg-blue-950/60">
         <span class="i-mingcute:upload-3-line text-3xl text-blue-600 dark:text-blue-400" aria-hidden="true" />
       </div>
-      <h3 class="mb-2 mt-5 text-lg text-neutral-900 font-semibold dark:text-white">
+      <h3 class="text-lg text-strong font-semibold mb-2 mt-5">
         Pilih foto untuk di-upload
       </h3>
-      <p class="mb-5 mt-0 max-w-md text-sm text-neutral-500 dark:text-neutral-400">
+      <p class="text-sm text-muted mb-5 max-w-md">
         Tarik foto ke area ini atau pilih dari perangkat Anda. Format PNG/JPEG, maksimal 3 MB.
       </p>
       <AtomsButton variant="primary" @click="openFilePicker">
@@ -346,15 +346,15 @@ async function upload() {
       </AtomsButton>
       <p
         v-if="uploadError"
-        class="mb-0 mt-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300"
+        class="text-sm text-red-700 mt-4 px-3 py-2 rounded-lg bg-red-50 dark:text-red-300 dark:bg-red-950/40"
         role="alert"
       >
         {{ uploadError }}
       </p>
     </div>
 
-    <div v-else class="grid gap-4 md:grid-cols-[minmax(0,1fr)_17rem]">
-      <div class="min-h-56 flex items-center justify-center overflow-hidden rounded-xl bg-neutral-100 dark:bg-neutral-950">
+    <div v-else class="gap-4 grid md:grid-cols-[minmax(0,1fr)_17rem]">
+      <div class="rounded-xl bg-neutral-100 flex min-h-56 items-center justify-center overflow-hidden dark:bg-neutral-950">
         <img
           :src="previewUrl"
           alt=""
@@ -363,12 +363,12 @@ async function upload() {
       </div>
 
       <div class="flex flex-col gap-4">
-        <dl class="m-0 rounded-xl bg-neutral-50 p-4 text-sm dark:bg-neutral-800/70">
+        <dl class="text-sm p-4 rounded-xl bg-neutral-50 dark:bg-neutral-800/70">
           <div class="min-w-0">
             <dt class="text-xs text-neutral-500 uppercase dark:text-neutral-400">
               Nama file
             </dt>
-            <dd class="mb-0 ml-0 mt-1 break-words text-neutral-900 font-medium dark:text-white">
+            <dd class="text-strong font-medium mt-1 break-words">
               {{ selectedFile.name }}
             </dd>
           </div>
@@ -376,7 +376,7 @@ async function upload() {
             <dt class="text-xs text-neutral-500 uppercase dark:text-neutral-400">
               Ukuran
             </dt>
-            <dd class="mb-0 ml-0 mt-1 text-neutral-900 font-medium dark:text-white">
+            <dd class="text-strong font-medium mt-1">
               {{ (selectedFile.size / 1024 / 1024).toFixed(2) }} MB
             </dd>
           </div>
@@ -384,7 +384,7 @@ async function upload() {
             <dt class="text-xs text-neutral-500 uppercase dark:text-neutral-400">
               Format
             </dt>
-            <dd class="mb-0 ml-0 mt-1 text-neutral-900 font-medium dark:text-white">
+            <dd class="text-strong font-medium mt-1">
               {{ selectedFile.type === 'image/png' ? 'PNG' : 'JPEG' }}
             </dd>
           </div>
@@ -402,20 +402,20 @@ async function upload() {
 
         <div
           v-if="isUploading"
-          class="rounded-xl bg-blue-50 p-4 dark:bg-blue-950/30"
+          class="p-4 rounded-xl bg-blue-50 dark:bg-blue-950/30"
           role="progressbar"
           aria-label="Progress upload"
           aria-valuemin="0"
           aria-valuemax="100"
           :aria-valuenow="uploadProgress"
         >
-          <div class="mb-2 flex items-center justify-between gap-3 text-sm">
+          <div class="text-sm mb-2 flex gap-3 items-center justify-between">
             <span class="text-blue-900 font-medium dark:text-blue-200">{{ uploadStatus }}</span>
             <span class="text-blue-700 tabular-nums dark:text-blue-300">{{ uploadProgress }}%</span>
           </div>
-          <div class="h-2 overflow-hidden rounded-full bg-blue-200 dark:bg-blue-900">
+          <div class="rounded-full bg-blue-200 h-2 overflow-hidden dark:bg-blue-900">
             <div
-              class="h-full rounded-full bg-blue-600 transition-[width] duration-200"
+              class="rounded-full bg-blue-600 h-full transition-[width] duration-200"
               :class="uploadPhase === 'processing' ? 'animate-pulse' : ''"
               :style="{ width: `${uploadProgress}%` }"
             />
@@ -424,13 +424,13 @@ async function upload() {
 
         <p
           v-if="uploadError"
-          class="m-0 rounded-xl bg-red-50 p-3 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300"
+          class="text-sm text-red-700 p-3 rounded-xl bg-red-50 dark:text-red-300 dark:bg-red-950/40"
           role="alert"
         >
           {{ uploadError }}
         </p>
 
-        <p v-if="!isUploading && !uploadError" class="m-0 text-xs text-neutral-500 dark:text-neutral-400">
+        <p v-if="!isUploading && !uploadError" class="text-xs text-muted">
           Gambar akan diverifikasi kembali di server. Batas ukuran maksimal 3 MB.
         </p>
       </div>

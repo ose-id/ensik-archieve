@@ -19,23 +19,21 @@ async function handleLogout() {
 
 <template>
   <nav
-    fixed right-0 top-0 z-40 h-16 w-full border-b
-    class="border-neutral-200/50 bg-white md:w-[calc(100%-80px)] dark:border-neutral-800/50 dark:bg-black"
+    class="border-b border-neutral-200/50 bg-white h-16 w-full right-0 top-0 fixed z-40 dark:(border-neutral-800/50 bg-black) md:w-[calc(100%-80px)]"
   >
-    <div h-full min-w-0 flex items-center justify-between gap-2 px-2 md:px-4>
-      <h1 class="min-w-0 truncate whitespace-nowrap" text-xl text-neutral-900 font-bold font-melody lg:text-3xl md:text-2xl xl:text-4xl dark:text-zinc-100>
+    <div class="px-2 flex gap-2 h-full min-w-0 items-center justify-between md:px-4">
+      <h1 class="text-xl text-neutral-900 font-bold font-melody min-w-0 whitespace-nowrap truncate lg:text-3xl md:text-2xl xl:text-4xl dark:text-zinc-100">
         Ensik Archive
       </h1>
 
       <!-- On mobile the account menu and sign-in live in the bottom nav's Profil sheet. -->
       <div
         v-if="loggedIn"
-        class="hidden shrink-0 items-center gap-4 md:flex"
+        class="shrink-0 gap-4 hidden items-center md:flex"
       >
-        <div ref="dropdown" relative>
+        <div ref="dropdown" class="relative">
           <button
-            flex cursor-pointer items-center gap-2 rounded-full border-none py-1 pl-1 pr-2 transition-colors
-            class="bg-neutral-100/50 dark:bg-neutral-800/50 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+            class="py-1 pl-1 pr-2 rounded-full bg-neutral-100/50 flex gap-2 cursor-pointer transition-colors items-center dark:(bg-neutral-800/50 hover:bg-neutral-800) hover:bg-neutral-100"
             type="button"
             aria-haspopup="menu"
             :aria-expanded="showDropdown"
@@ -49,36 +47,34 @@ async function handleLogout() {
               height="32"
               densities="1x 2x"
               format="webp"
-              rounded-full
-              object-cover
+              class="rounded-full h-8 w-8 object-cover"
             />
             <span
               v-else
-              class="h-8 w-8 flex items-center justify-center rounded-full bg-neutral-200 text-neutral-500 dark:bg-neutral-700 dark:text-neutral-300"
+              class="text-neutral-500 rounded-full bg-neutral-200 flex h-8 w-8 items-center justify-center dark:text-neutral-300 dark:bg-neutral-700"
               aria-hidden="true"
             >
               <span class="i-mingcute:user-3-line text-lg" />
             </span>
-            <div class="max-w-40 truncate" text-sm text-neutral-700 font-medium dark:text-neutral-200>
+            <div class="text-sm text-neutral-700 font-medium max-w-40 truncate dark:text-neutral-200">
               {{ username }}
             </div>
-            <span i-mingcute:down-line text-lg text-neutral-500 aria-hidden="true" />
+            <span class="i-mingcute:down-line text-lg text-neutral-500" aria-hidden="true" />
           </button>
 
           <div
             v-if="showDropdown"
-            class="absolute right-0 mt-2 max-w-[calc(100vw-1rem)] w-56 overflow-hidden border border-neutral-100 rounded-xl bg-white shadow-xl dark:border-neutral-800 dark:bg-neutral-900"
+            class="mt-2 border border-neutral-100 rounded-xl bg-white max-w-[calc(100vw-1rem)] w-56 shadow-xl right-0 absolute overflow-hidden dark:border-neutral-800 dark:bg-neutral-900"
             role="menu"
           >
-            <div p-1>
+            <div class="p-1">
               <button
-                w-full flex cursor-pointer items-center gap-2 rounded-lg border-none p-2 text-sm transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800
-                class="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
+                class="text-sm text-red-500 p-2 rounded-lg flex gap-2 w-full cursor-pointer transition-colors items-center hover:bg-red-50 dark:hover:bg-red-900/20"
                 type="button"
                 role="menuitem"
                 @click="handleLogout"
               >
-                <span i-mingcute:power-line text-lg aria-hidden="true" />
+                <span class="i-mingcute:power-line text-lg" aria-hidden="true" />
                 Log out
               </button>
             </div>
@@ -90,11 +86,10 @@ async function handleLogout() {
         v-else
         to="/auth/discord"
         external
-        items-center gap-2 rounded-full bg-indigo-600 px-5 py-2.5 text-white shadow-lg transition-[background-color,box-shadow] hover:bg-indigo-700
-        class="hidden shadow-indigo-500/20 md:flex hover:shadow-indigo-500/30"
+        class="text-white px-5 py-2.5 rounded-full bg-indigo-600 gap-2 hidden shadow-indigo-500/20 shadow-lg transition-[background-color,box-shadow] items-center hover:(bg-indigo-700 shadow-indigo-500/30) md:flex"
       >
-        <span i-mingcute:discord-line text-xl aria-hidden="true" />
-        <span text-sm font-medium>Sign In</span>
+        <span class="i-mingcute:discord-line text-xl" aria-hidden="true" />
+        <span class="text-sm font-medium">Sign In</span>
       </NuxtLink>
     </div>
   </nav>

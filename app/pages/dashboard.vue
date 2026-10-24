@@ -221,66 +221,66 @@ function reloadImages() {
 </script>
 
 <template>
-  <div class="mx-auto max-w-[1600px] py-4 md:py-8">
-    <section class="grid grid-cols-2 mb-6 gap-3 lg:mb-10 lg:gap-8 sm:gap-6" aria-label="Ringkasan arsip">
-      <article class="relative overflow-hidden rounded-xl from-neutral-50 to-neutral-100 bg-gradient-to-br p-4 shadow-lg sm:rounded-2xl dark:from-neutral-900/20 dark:to-neutral-800/30 lg:p-8 sm:p-6">
-        <div class="relative z-1 flex items-center justify-between gap-2">
-          <div class="min-w-0 flex-1">
-            <p class="m-0 truncate text-[11px] text-neutral-600 font-semibold tracking-wide uppercase sm:text-sm dark:text-neutral-400">
+  <div class="mx-auto py-4 max-w-[1600px] md:py-8">
+    <section class="mb-6 gap-3 grid grid-cols-2 lg:mb-10 lg:gap-8 sm:gap-6" aria-label="Ringkasan arsip">
+      <article class="p-4 rounded-xl shadow-lg relative overflow-hidden from-neutral-50 to-neutral-100 bg-gradient-to-br lg:p-8 sm:p-6 sm:rounded-2xl dark:from-neutral-900/20 dark:to-neutral-800/30">
+        <div class="flex gap-2 items-center justify-between relative z-1">
+          <div class="flex-1 min-w-0">
+            <p class="text-2xs text-neutral-600 tracking-wide font-semibold truncate uppercase sm:text-sm dark:text-neutral-400">
               Total foto
             </p>
-            <p class="mb-0 mt-1 text-2xl text-neutral-900 font-bold sm:mt-2 lg:text-4xl sm:text-3xl dark:text-neutral-100">
+            <p class="text-2xl text-neutral-900 font-bold mt-1 lg:text-4xl sm:text-3xl dark:text-neutral-100 sm:mt-2">
               {{ total }}
             </p>
           </div>
-          <div class="hidden shrink-0 rounded-xl bg-neutral-600 p-2 shadow-lg sm:block sm:rounded-2xl dark:bg-neutral-700 lg:p-4 sm:p-3">
-            <span class="i-mingcute:pic-line block text-xl text-white lg:text-3xl sm:text-2xl" aria-hidden="true" />
+          <div class="p-2 rounded-xl bg-neutral-600 shrink-0 hidden shadow-lg lg:p-4 sm:p-3 sm:rounded-2xl dark:bg-neutral-700 sm:block">
+            <span class="i-mingcute:pic-line text-xl text-white block lg:text-3xl sm:text-2xl" aria-hidden="true" />
           </div>
         </div>
-        <span class="absolute h-12 w-12 rounded-full bg-neutral-200/50 -bottom-2 -right-2 lg:h-20 lg:w-20 sm:h-16 sm:w-16 dark:bg-neutral-700/30" aria-hidden="true" />
+        <span class="rounded-full bg-neutral-200/50 h-12 w-12 absolute dark:bg-neutral-700/30 lg:h-20 lg:w-20 sm:h-16 sm:w-16 -bottom-2 -right-2" aria-hidden="true" />
       </article>
 
-      <article class="relative overflow-hidden rounded-xl from-neutral-50 to-neutral-100 bg-gradient-to-br p-4 shadow-lg sm:rounded-2xl dark:from-neutral-900/20 dark:to-neutral-800/30 lg:p-8 sm:p-6">
-        <div class="relative z-1 flex items-center justify-between gap-2">
-          <div class="min-w-0 flex-1">
-            <p class="m-0 truncate text-[11px] text-neutral-600 font-semibold tracking-wide uppercase sm:text-sm dark:text-neutral-400">
+      <article class="p-4 rounded-xl shadow-lg relative overflow-hidden from-neutral-50 to-neutral-100 bg-gradient-to-br lg:p-8 sm:p-6 sm:rounded-2xl dark:from-neutral-900/20 dark:to-neutral-800/30">
+        <div class="flex gap-2 items-center justify-between relative z-1">
+          <div class="flex-1 min-w-0">
+            <p class="text-2xs text-neutral-600 tracking-wide font-semibold truncate uppercase sm:text-sm dark:text-neutral-400">
               Total ukuran
             </p>
-            <p class="mb-0 mt-1 truncate text-2xl text-neutral-900 font-bold sm:mt-2 lg:text-4xl sm:text-3xl dark:text-neutral-100">
+            <p class="text-2xl text-neutral-900 font-bold mt-1 truncate lg:text-4xl sm:text-3xl dark:text-neutral-100 sm:mt-2">
               {{ formatFileSize(totalSize) }}
             </p>
           </div>
-          <div class="hidden shrink-0 rounded-xl bg-neutral-600 p-2 shadow-lg sm:block sm:rounded-2xl dark:bg-neutral-700 lg:p-4 sm:p-3">
-            <span class="i-mingcute:storage-line block text-xl text-white lg:text-3xl sm:text-2xl" aria-hidden="true" />
+          <div class="p-2 rounded-xl bg-neutral-600 shrink-0 hidden shadow-lg lg:p-4 sm:p-3 sm:rounded-2xl dark:bg-neutral-700 sm:block">
+            <span class="i-mingcute:storage-line text-xl text-white block lg:text-3xl sm:text-2xl" aria-hidden="true" />
           </div>
         </div>
-        <span class="absolute h-12 w-12 rounded-full bg-neutral-200/50 -bottom-2 -right-2 lg:h-20 lg:w-20 sm:h-16 sm:w-16 dark:bg-neutral-700/30" aria-hidden="true" />
+        <span class="rounded-full bg-neutral-200/50 h-12 w-12 absolute dark:bg-neutral-700/30 lg:h-20 lg:w-20 sm:h-16 sm:w-16 -bottom-2 -right-2" aria-hidden="true" />
       </article>
     </section>
 
-    <section class="overflow-hidden rounded-xl bg-white shadow-xl sm:rounded-2xl dark:bg-neutral-800/50" aria-labelledby="user-images-title">
-      <header class="border-b border-neutral-200/60 border-b-solid p-4 dark:border-neutral-700/50 lg:p-8 sm:p-6">
-        <div class="flex flex-wrap items-end justify-between gap-x-4 gap-y-3">
+    <section class="rounded-xl bg-white shadow-xl overflow-hidden sm:rounded-2xl dark:bg-neutral-800/50" aria-labelledby="user-images-title">
+      <header class="p-4 border-b border-neutral-200/60 lg:p-8 sm:p-6 dark:border-neutral-700/50">
+        <div class="flex flex-wrap gap-x-4 gap-y-3 items-end justify-between">
           <div class="min-w-0">
-            <h1 id="user-images-title" class="m-0 text-lg text-neutral-900 font-bold lg:text-2xl sm:text-xl dark:text-white">
+            <h1 id="user-images-title" class="text-lg text-neutral-900 font-bold lg:text-2xl sm:text-xl dark:text-white">
               Foto Anda
             </h1>
-            <p class="mb-0 mt-1 text-xs text-neutral-500 sm:text-sm dark:text-neutral-400">
+            <p class="text-xs text-neutral-500 mt-1 sm:text-sm dark:text-neutral-400">
               {{ summary }}
             </p>
           </div>
 
           <!-- One row on every width: sort on the left, view mode on the right. -->
-          <div class="w-full flex items-center justify-between gap-2 sm:w-auto sm:justify-end sm:gap-3">
-            <div class="inline-flex rounded-lg bg-neutral-100 p-1 dark:bg-neutral-900" role="group" aria-label="Urutkan foto">
+          <div class="flex gap-2 w-full items-center justify-between sm:gap-3 sm:w-auto sm:justify-end">
+            <div class="segmented" role="group" aria-label="Urutkan foto">
               <button
                 v-for="option in SORT_OPTIONS"
                 :key="option.value"
                 type="button"
-                class="h-8 cursor-pointer border-0 rounded-md px-3 text-xs font-medium transition-[background-color,color,box-shadow] duration-150 sm:text-sm"
+                class="text-xs font-medium px-3 segmented-item sm:text-sm"
                 :class="sortOrder === option.value
-                  ? 'bg-white text-neutral-900 shadow-sm dark:bg-neutral-700 dark:text-white'
-                  : 'bg-transparent text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white'"
+                  ? 'segmented-item-active'
+                  : 'segmented-item-idle'"
                 :aria-pressed="sortOrder === option.value"
                 @click="sortOrder = option.value"
               >
@@ -288,15 +288,15 @@ function reloadImages() {
               </button>
             </div>
 
-            <div class="inline-flex rounded-lg bg-neutral-100 p-1 dark:bg-neutral-900" role="group" aria-label="Mode tampilan">
+            <div class="segmented" role="group" aria-label="Mode tampilan">
               <button
                 v-for="option in VIEW_OPTIONS"
                 :key="option.value"
                 type="button"
-                class="h-8 w-9 flex cursor-pointer items-center justify-center border-0 rounded-md transition-[background-color,color,box-shadow] duration-150"
+                class="segmented-item flex w-9 items-center justify-center"
                 :class="viewMode === option.value
-                  ? 'bg-white text-neutral-900 shadow-sm dark:bg-neutral-700 dark:text-white'
-                  : 'bg-transparent text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white'"
+                  ? 'segmented-item-active'
+                  : 'segmented-item-idle'"
                 :title="option.label"
                 :aria-label="option.label"
                 :aria-pressed="viewMode === option.value"
@@ -310,52 +310,52 @@ function reloadImages() {
       </header>
 
       <div v-if="isInitialLoading" class="p-4 space-y-3 lg:p-8 sm:p-6" aria-label="Memuat foto">
-        <div v-for="index in 6" :key="index" class="h-20 animate-pulse rounded-xl bg-neutral-100 dark:bg-neutral-800" />
+        <div v-for="index in 6" :key="index" class="rounded-xl bg-neutral-100 h-20 animate-pulse dark:bg-neutral-800" />
       </div>
 
-      <div v-else-if="error && images.length === 0" class="flex flex-col items-center px-6 py-10 text-center" role="alert">
-        <span class="h-12 w-12 flex items-center justify-center rounded-full bg-red-100 dark:bg-red-950/50" aria-hidden="true">
+      <div v-else-if="error && images.length === 0" class="px-6 py-10 text-center flex flex-col items-center" role="alert">
+        <span class="rounded-full bg-red-100 flex h-12 w-12 items-center justify-center dark:bg-red-950/50" aria-hidden="true">
           <span class="i-mingcute:wifi-off-line text-2xl text-red-600 dark:text-red-400" />
         </span>
-        <h2 class="mb-1 mt-4 text-base text-neutral-900 font-semibold dark:text-white">
+        <h2 class="text-base text-strong font-semibold mb-1 mt-4">
           Foto gagal dimuat
         </h2>
-        <p class="mb-5 mt-0 text-sm text-neutral-500 dark:text-neutral-400">
+        <p class="text-sm text-muted mb-5">
           Periksa koneksi lalu coba lagi.
         </p>
         <AtomsButton variant="primary" :loading="status === 'pending'" @click="reloadImages">
-          <span v-if="status !== 'pending'" class="i-mingcute:refresh-2-line mr-2 text-base" aria-hidden="true" />
+          <span v-if="status !== 'pending'" class="i-mingcute:refresh-2-line text-base mr-2" aria-hidden="true" />
           Muat ulang
         </AtomsButton>
       </div>
 
       <div v-else-if="images.length === 0" class="p-8 text-center md:p-16 sm:p-12">
-        <div class="relative mb-6 inline-block sm:mb-8">
-          <span class="i-mingcute:pic-line block text-6xl text-neutral-300 md:text-8xl sm:text-7xl dark:text-neutral-600" aria-hidden="true" />
-          <span class="absolute h-4 w-4 animate-pulse rounded-full bg-blue-500 -right-1 -top-1 md:h-6 md:w-6 sm:h-5 sm:w-5 sm:-right-2 sm:-top-2" aria-hidden="true" />
+        <div class="mb-6 inline-block relative sm:mb-8">
+          <span class="i-mingcute:pic-line text-6xl text-neutral-300 block md:text-8xl sm:text-7xl dark:text-neutral-600" aria-hidden="true" />
+          <span class="rounded-full bg-blue-500 h-4 w-4 absolute animate-pulse md:h-6 md:w-6 sm:h-5 sm:w-5 -right-1 -top-1 sm:-right-2 sm:-top-2" aria-hidden="true" />
         </div>
-        <h2 class="mb-3 text-xl text-neutral-900 font-bold sm:mb-4 sm:text-2xl dark:text-white">
+        <h2 class="text-xl text-neutral-900 font-bold mb-3 sm:text-2xl dark:text-white sm:mb-4">
           Belum ada foto
         </h2>
-        <p class="mx-auto mb-0 max-w-md text-sm text-neutral-600 sm:text-base dark:text-neutral-400">
+        <p class="text-sm text-neutral-600 mx-auto max-w-md sm:text-base dark:text-neutral-400">
           Gunakan tombol + untuk mengunggah foto pertama Anda.
         </p>
       </div>
 
       <div
         v-else-if="viewMode === 'card'"
-        class="grid grid-cols-2 gap-3 p-3 lg:grid-cols-4 sm:grid-cols-3 xl:grid-cols-5 lg:gap-6 sm:gap-4 lg:p-8 sm:p-6"
+        class="p-3 gap-3 grid grid-cols-2 lg:p-8 sm:p-6 lg:gap-6 sm:gap-4 lg:grid-cols-4 sm:grid-cols-3 xl:grid-cols-5"
       >
         <article
           v-for="image in images"
           :key="image.id"
-          class="[content-visibility:auto] relative overflow-hidden rounded-lg bg-white shadow-lg md:rounded-2xl sm:rounded-xl dark:bg-neutral-700/50"
+          class="rounded-lg bg-white shadow-lg [contain-intrinsic-size:auto_260px] [content-visibility:auto] relative overflow-hidden md:rounded-2xl sm:rounded-xl dark:bg-neutral-700/50"
         >
-          <div class="absolute right-2 top-2 z-2 flex items-center gap-1">
+          <div class="flex gap-1 items-center right-2 top-2 absolute z-2">
             <a
               :href="getDownloadUrl(image.id)"
               download
-              class="h-8 w-8 flex items-center justify-center rounded-md bg-neutral-900/75 text-white shadow-md transition-colors hover:bg-neutral-900"
+              class="text-white rounded-md bg-neutral-900/75 flex h-8 w-8 shadow-md transition-colors items-center justify-center hover:bg-neutral-900"
               title="Download foto"
               aria-label="Download foto"
             >
@@ -364,7 +364,7 @@ function reloadImages() {
             <AtomsButton
               variant="danger"
               size="icon"
-              class="shadow-md !h-8 !w-8 !p-2"
+              class="shadow-md !p-2 !h-8 !w-8"
               title="Hapus foto"
               :disabled="deletingImageId === image.id"
               @click="deleteCandidate = image"
@@ -373,7 +373,7 @@ function reloadImages() {
             </AtomsButton>
           </div>
 
-          <div class="aspect-square overflow-hidden bg-neutral-100 dark:bg-neutral-800">
+          <div class="bg-neutral-100 aspect-square overflow-hidden dark:bg-neutral-800">
             <NuxtImg
               provider="ensik"
               :src="image.id"
@@ -390,13 +390,13 @@ function reloadImages() {
             />
           </div>
 
-          <div class="bg-white p-3 dark:bg-neutral-800 lg:p-5 sm:p-4">
-            <div class="flex flex-col gap-1 text-xs text-neutral-500 dark:text-neutral-400">
+          <div class="p-3 bg-white lg:p-5 sm:p-4 dark:bg-neutral-800">
+            <div class="text-xs text-muted flex flex-col gap-1">
               <span class="flex items-center">
                 <span class="i-mingcute:file-line mr-1" aria-hidden="true" />
                 {{ formatFileSize(image.size) }}
               </span>
-              <span class="min-w-0 flex items-center">
+              <span class="flex min-w-0 items-center">
                 <span class="i-mingcute:time-line mr-1 shrink-0" aria-hidden="true" />
                 <span class="truncate">{{ formatDate(image.uploadedAt) }}</span>
               </span>
@@ -406,13 +406,13 @@ function reloadImages() {
       </div>
 
       <div v-else class="p-4 lg:p-8 sm:p-6">
-        <ul class="m-0 list-none p-0 space-y-3 sm:space-y-4">
+        <ul class="space-y-3 sm:space-y-4">
           <li
             v-for="image in images"
             :key="image.id"
-            class="[content-visibility:auto] flex items-center rounded-lg bg-white p-3 shadow-sm sm:rounded-xl dark:bg-neutral-800/50 sm:p-4"
+            class="p-3 rounded-lg bg-white flex shadow-xs [contain-intrinsic-size:auto_48px] [content-visibility:auto] items-center sm:p-4 sm:rounded-xl dark:bg-neutral-800/50"
           >
-            <div class="h-12 w-12 shrink-0 overflow-hidden rounded-md bg-neutral-100 md:h-16 md:w-16 sm:h-14 sm:w-14 sm:rounded-lg dark:bg-neutral-700">
+            <div class="rounded-md bg-neutral-100 shrink-0 h-12 w-12 overflow-hidden sm:rounded-lg dark:bg-neutral-700 md:h-16 md:w-16 sm:h-14 sm:w-14">
               <NuxtImg
                 provider="ensik"
                 :src="image.id"
@@ -429,24 +429,24 @@ function reloadImages() {
               />
             </div>
 
-            <div class="ml-3 min-w-0 flex-1 sm:ml-4">
-              <div class="flex flex-col gap-1 text-xs text-neutral-500 sm:flex-row sm:items-center sm:gap-4 dark:text-neutral-400">
+            <div class="ml-3 flex-1 min-w-0 sm:ml-4">
+              <div class="text-xs text-neutral-500 flex flex-col gap-1 dark:text-neutral-400 sm:flex-row sm:gap-4 sm:items-center">
                 <span class="flex items-center">
                   <span class="i-mingcute:file-line mr-1" aria-hidden="true" />
                   {{ formatFileSize(image.size) }}
                 </span>
-                <span class="min-w-0 flex items-center">
+                <span class="flex min-w-0 items-center">
                   <span class="i-mingcute:time-line mr-1 shrink-0" aria-hidden="true" />
                   <span class="truncate">{{ formatDate(image.uploadedAt) }}</span>
                 </span>
               </div>
             </div>
 
-            <div class="ml-2 flex shrink-0 items-center gap-1">
+            <div class="ml-2 flex shrink-0 gap-1 items-center">
               <a
                 :href="getDownloadUrl(image.id)"
                 download
-                class="h-9 w-9 flex items-center justify-center rounded-md text-neutral-500 transition-colors hover:bg-neutral-100 dark:text-neutral-400 hover:text-neutral-900 dark:hover:bg-neutral-700 dark:hover:text-white"
+                class="text-neutral-500 rounded-md flex h-9 w-9 transition-colors items-center justify-center dark:(text-neutral-400 hover:text-white hover:bg-neutral-700) hover:text-neutral-900 hover:bg-neutral-100"
                 title="Download foto"
                 aria-label="Download foto"
               >
@@ -470,19 +470,19 @@ function reloadImages() {
       <div
         v-if="images.length > 0"
         ref="paginationSentinel"
-        class="min-h-20 flex flex-col items-center justify-center gap-2 border-t border-neutral-200/60 border-t-solid p-4 dark:border-neutral-700/50"
+        class="p-4 border-t border-neutral-200/60 flex flex-col gap-2 min-h-20 items-center justify-center dark:border-neutral-700/50"
         aria-live="polite"
       >
         <template v-if="paginationError">
-          <p class="m-0 text-sm text-red-600 dark:text-red-400">
+          <p class="text-sm text-red-600 dark:text-red-400">
             {{ paginationError }}
           </p>
           <AtomsButton variant="secondary" size="sm" @click="retryLoadMore">
             Coba lagi
           </AtomsButton>
         </template>
-        <span v-else-if="loadingMore || hasMore" class="i-mingcute:loading-fill animate-spin text-2xl text-neutral-400" aria-label="Memuat gambar berikutnya" />
-        <p v-else class="m-0 text-sm text-neutral-500 dark:text-neutral-400">
+        <span v-else-if="loadingMore || hasMore" class="i-mingcute:loading-fill text-2xl text-neutral-400 animate-spin" aria-label="Memuat gambar berikutnya" />
+        <p v-else class="text-sm text-muted">
           Semua foto Anda sudah ditampilkan.
         </p>
       </div>
@@ -498,23 +498,23 @@ function reloadImages() {
     >
       <div
         v-if="deleteCandidate"
-        class="fixed inset-0 z-[110] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+        class="p-4 bg-black/60 flex items-center inset-0 justify-center fixed z-[110] backdrop-blur-xs"
         role="alertdialog"
         aria-modal="true"
         aria-labelledby="delete-title"
         @click.self="deleteCandidate = undefined"
       >
-        <div class="max-w-md w-full rounded-xl bg-white p-5 shadow-2xl dark:bg-neutral-900 sm:p-6">
-          <div class="mb-4 h-11 w-11 flex items-center justify-center rounded-full bg-red-100 dark:bg-red-950/50">
+        <div class="p-5 rounded-xl bg-white max-w-md w-full shadow-2xl sm:p-6 dark:bg-neutral-900">
+          <div class="mb-4 rounded-full bg-red-100 flex h-11 w-11 items-center justify-center dark:bg-red-950/50">
             <span class="i-mingcute:delete-line text-xl text-red-600 dark:text-red-400" aria-hidden="true" />
           </div>
-          <h2 id="delete-title" class="m-0 text-lg text-neutral-900 font-semibold dark:text-white">
+          <h2 id="delete-title" class="text-lg text-strong font-semibold">
             Konfirmasi hapus
           </h2>
-          <p class="mb-6 mt-2 text-sm text-neutral-600 dark:text-neutral-400">
+          <p class="text-sm text-neutral-600 mb-6 mt-2 dark:text-neutral-400">
             Foto ini akan dihapus permanen dan tidak dapat dipulihkan.
           </p>
-          <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end sm:gap-3">
+          <div class="flex flex-col-reverse gap-2 sm:flex-row sm:gap-3 sm:justify-end">
             <AtomsButton variant="outline" :disabled="Boolean(deletingImageId)" @click="deleteCandidate = undefined">
               Batal
             </AtomsButton>

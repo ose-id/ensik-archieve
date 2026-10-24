@@ -1,3 +1,4 @@
+// @unocss-include -- the icon classes below are only referenced from this file.
 interface ArchiveNavigationItem {
   active: boolean;
   icon: string;

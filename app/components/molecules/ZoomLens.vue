@@ -126,10 +126,10 @@ function hideLens() {
 </script>
 
 <template>
-  <div class="max-w-full flex flex-col items-center justify-center">
+  <div class="flex flex-col max-w-full items-center justify-center">
     <div
       ref="stage"
-      class="relative inline-block max-w-full"
+      class="max-w-full inline-block relative"
       :class="highQualityReady ? 'cursor-zoom-in' : 'cursor-progress'"
       role="img"
       :aria-label="alt"
@@ -145,7 +145,7 @@ function hideLens() {
         loading="eager"
         decoding="async"
         fetchpriority="high"
-        class="block max-h-[82vh] max-w-[calc(100vw-3rem)] w-auto object-contain md:max-w-[calc(100vw-10rem)]"
+        class="max-h-[82vh] max-w-[calc(100vw-3rem)] w-auto block object-contain md:max-w-[calc(100vw-10rem)]"
         @load="finishHighQualityLoad"
       >
       <img
@@ -155,7 +155,7 @@ function hideLens() {
         loading="eager"
         decoding="async"
         fetchpriority="high"
-        class="block max-h-[82vh] max-w-[calc(100vw-3rem)] w-auto object-contain md:max-w-[calc(100vw-10rem)]"
+        class="max-h-[82vh] max-w-[calc(100vw-3rem)] w-auto block object-contain md:max-w-[calc(100vw-10rem)]"
       >
       <NuxtImg
         v-else
@@ -169,7 +169,7 @@ function hideLens() {
         loading="eager"
         decoding="async"
         fetchpriority="high"
-        class="block max-h-[82vh] max-w-[calc(100vw-3rem)] w-auto object-contain md:max-w-[calc(100vw-10rem)]"
+        class="max-h-[82vh] max-w-[calc(100vw-3rem)] w-auto block object-contain md:max-w-[calc(100vw-10rem)]"
         @load="startHighQualityLoad"
       />
       <NuxtImg
@@ -183,37 +183,37 @@ function hideLens() {
         fit="inside"
         loading="eager"
         decoding="async"
-        class="absolute inset-0 h-full w-full object-contain transition-opacity duration-200"
+        class="h-full w-full transition-opacity duration-200 inset-0 absolute object-contain"
         :class="highQualityReady ? 'opacity-100' : 'opacity-0'"
         @load="finishHighQualityLoad"
       />
       <span
         ref="lens"
-        class="pointer-events-none absolute z-2 border-2 border-white rounded-full border-solid shadow-2xl transition-opacity duration-150"
+        class="border-2 border-white rounded-full pointer-events-none shadow-2xl transition-opacity duration-150 absolute z-2"
         :style="lensStyle"
         aria-hidden="true"
       />
     </div>
 
-    <div class="mt-4 flex flex-wrap items-center justify-center gap-4 rounded-full bg-black/60 px-5 py-2.5 text-white backdrop-blur-sm">
-      <label class="flex items-center gap-2 text-xs font-medium sm:text-sm">
+    <div class="text-white mt-4 px-5 py-2.5 rounded-full bg-black/60 flex flex-wrap gap-4 items-center justify-center backdrop-blur-xs">
+      <label class="text-xs font-medium flex gap-2 items-center sm:text-sm">
         Zoom
         <input
           v-model.number="zoomScale"
           type="range"
-          class="w-24 cursor-pointer accent-white sm:w-32"
+          class="accent-white w-24 cursor-pointer sm:w-32"
           min="1.5"
           max="5"
           step="0.1"
         >
-        <span class="w-8 text-right tabular-nums">{{ zoomScale.toFixed(1) }}x</span>
+        <span class="text-right w-8 tabular-nums">{{ zoomScale.toFixed(1) }}x</span>
       </label>
-      <label class="flex items-center gap-2 text-xs font-medium sm:text-sm">
+      <label class="text-xs font-medium flex gap-2 items-center sm:text-sm">
         Lensa
         <input
           v-model.number="lensSize"
           type="range"
-          class="w-24 cursor-pointer accent-white sm:w-32"
+          class="accent-white w-24 cursor-pointer sm:w-32"
           min="80"
           max="220"
           step="10"
@@ -221,7 +221,7 @@ function hideLens() {
       </label>
     </div>
 
-    <p class="mb-0 mt-2 hidden text-xs text-white/70 md:block">
+    <p class="text-xs text-white/70 mt-2 hidden md:block">
       Arahkan kursor ke gambar untuk menggunakan lensa.
     </p>
   </div>

@@ -59,19 +59,19 @@ function handleClose() {
 
 <template>
   <div
-    class="relative w-full overflow-hidden border rounded-lg border-solid shadow-lg md:w-96 sm:w-80"
+    class="border rounded-lg w-full shadow-lg relative overflow-hidden md:w-96 sm:w-80"
     :class="typeClasses[props.type]"
     role="alert"
   >
-    <div class="flex items-center gap-3 p-4">
-      <span :class="iconClasses[props.type]" class="flex shrink-0 items-center text-2xl" aria-hidden="true" />
-      <p class="m-0 flex flex-1 items-center text-sm font-medium leading-normal">
+    <div class="p-4 flex gap-3 items-center">
+      <span :class="iconClasses[props.type]" class="text-2xl flex shrink-0 items-center" aria-hidden="true" />
+      <p class="text-sm leading-normal font-medium flex flex-1 items-center">
         {{ message }}
       </p>
 
       <button
         type="button"
-        class="m-0 ml-2 flex shrink-0 cursor-pointer items-center justify-center rounded-md border-none bg-transparent p-0 opacity-70 outline-none transition-[opacity,transform] active:scale-95 hover:scale-110 hover:opacity-100"
+        class="ml-2 outline-none rounded-md opacity-70 flex shrink-0 cursor-pointer transition-[opacity,transform] items-center justify-center hover:opacity-100 active:scale-95 hover:scale-110"
         :class="closeClasses[props.type]"
         aria-label="Tutup notifikasi"
         @click="handleClose"
@@ -80,7 +80,7 @@ function handleClose() {
       </button>
     </div>
 
-    <div v-if="duration > 0" class="absolute bottom-0 left-0 h-1 w-full bg-black/10 dark:bg-white/10">
+    <div v-if="duration > 0" class="bg-black/10 h-1 w-full bottom-0 left-0 absolute dark:bg-white/10">
       <div
         class="toast-progress h-full origin-left"
         :class="progressClasses[props.type]"

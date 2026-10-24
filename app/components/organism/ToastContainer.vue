@@ -3,13 +3,13 @@ const { toasts, removeToast } = useToast();
 </script>
 
 <template>
-  <div class="pointer-events-none fixed bottom-0 right-0 z-[9999] w-full flex flex-col justify-end px-4 pb-[calc(6rem+env(safe-area-inset-bottom))] pt-4 sm:w-auto md:p-6">
+  <div class="px-4 pb-[calc(6rem+env(safe-area-inset-bottom))] pt-4 flex flex-col w-full pointer-events-none bottom-0 right-0 justify-end fixed z-[9999] md:p-6 sm:w-auto">
     <TransitionGroup
       name="toast"
       tag="div"
-      class="w-full flex flex-col items-end gap-3"
+      class="flex flex-col gap-3 w-full items-end"
     >
-      <div v-for="toast in toasts" :key="toast.id" class="pointer-events-auto w-full rounded-xl shadow-2xl sm:w-auto">
+      <div v-for="toast in toasts" :key="toast.id" class="rounded-xl w-full pointer-events-auto shadow-2xl sm:w-auto">
         <MoleculesToast
           :id="toast.id"
           :message="toast.message"

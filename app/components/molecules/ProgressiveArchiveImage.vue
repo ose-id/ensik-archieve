@@ -106,7 +106,7 @@ function onHighQualityLoaded(event: Event) {
 </script>
 
 <template>
-  <div class="relative overflow-hidden bg-neutral-100 dark:bg-neutral-900">
+  <div class="bg-neutral-100 relative overflow-hidden dark:bg-neutral-900">
     <NuxtImg
       v-if="!highQualityReady"
       provider="ensik"

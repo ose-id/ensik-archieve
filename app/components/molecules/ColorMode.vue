@@ -15,9 +15,9 @@ const { isTransitioning, toggleColorMode } = useAnimatedColorMode();
     aria-label="Ganti mode terang/gelap"
     @click="toggleColorMode"
   >
-    <span class="relative h-5 w-5" aria-hidden="true">
-      <span class="i-mingcute:sun-line absolute inset-0 rotate-0 scale-100 text-xl opacity-100 transition-[opacity,transform] duration-700 dark:rotate-90 dark:scale-50 dark:opacity-0" />
-      <span class="i-mingcute:moon-stars-line absolute inset-0 scale-50 text-xl opacity-0 transition-[opacity,transform] duration-700 -rotate-90 dark:rotate-0 dark:scale-100 dark:opacity-100" />
+    <span class="h-5 w-5 relative" aria-hidden="true">
+      <span class="i-mingcute:sun-line text-xl opacity-100 rotate-0 scale-100 transition-[opacity,transform] duration-700 inset-0 absolute dark:(opacity-0 rotate-90 scale-50)" />
+      <span class="i-mingcute:moon-stars-line text-xl opacity-0 scale-50 transition-[opacity,transform] duration-700 inset-0 absolute dark:(opacity-100 rotate-0 scale-100) -rotate-90" />
     </span>
   </AtomsButton>
 </template>

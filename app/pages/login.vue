@@ -20,6 +20,15 @@ const password = ref('');
 const showPassword = ref(false);
 const error = ref('');
 const loading = ref(false);
+const capsLock = ref(false);
+
+watch(password, () => {
+  error.value = '';
+});
+
+function trackCapsLock(event: KeyboardEvent) {
+  capsLock.value = event.getModifierState?.('CapsLock') ?? false;
+}
 
 async function handleSubmit() {
   error.value = '';
@@ -44,76 +53,82 @@ async function handleSubmit() {
 </script>
 
 <template>
-  <div class="min-h-screen flex flex-col items-center justify-center bg-zinc-950 px-4">
-    <div class="pointer-events-none fixed inset-0 from-zinc-900 via-zinc-950 to-black bg-gradient-to-br" />
+  <div class="px-4 py-10 bg-zinc-950 flex flex-col items-center justify-center min-h-dvh">
+    <div class="pointer-events-none inset-0 fixed from-zinc-900 to-black via-zinc-950 bg-gradient-to-br" />
 
-    <div class="z-10 max-w-[360px] w-full">
+    <div class="max-w-[380px] w-full z-10">
       <div class="mb-8 text-center">
-        <div class="mx-auto mb-4 h-12 w-12 flex items-center justify-center rounded-xl bg-zinc-800 ring-1 ring-zinc-700/50">
-          <svg class="h-6 w-6 text-zinc-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-          </svg>
+        <div class="mx-auto mb-4 rounded-2xl bg-zinc-800/80 flex size-12 ring-1 ring-zinc-700/60 items-center justify-center">
+          <span class="i-mingcute:lock-line text-zinc-200 size-6" aria-hidden="true" />
         </div>
-        <h1 class="text-xl text-zinc-100 font-semibold tracking-tight">
+        <h1 class="text-2xl text-zinc-100 tracking-tight font-semibold">
           Ensik Archive
         </h1>
-        <p class="mt-1.5 text-sm text-zinc-500">
+        <p class="text-sm text-zinc-400 mt-1.5">
           Masukkan password untuk melanjutkan
         </p>
       </div>
 
-      <div class="border border-zinc-800 rounded-lg bg-zinc-900/50 p-6 shadow-xl backdrop-blur-sm">
-        <form class="space-y-4" @submit.prevent="handleSubmit">
+      <div class="p-5 border border-zinc-800/80 rounded-2xl bg-zinc-900/60 shadow-2xl backdrop-blur-xs sm:p-7">
+        <form class="space-y-5" novalidate @submit.prevent="handleSubmit">
           <div class="space-y-2">
-            <label for="password" class="block text-sm text-zinc-300 font-medium">
+            <label for="password" class="text-sm text-zinc-200 font-medium block">
               Password
             </label>
-            <div class="relative">
-              <AtomsInput
-                id="password"
-                v-model="password"
-                :type="showPassword ? 'text' : 'password'"
-                class="!pr-11"
-                placeholder="••••••••••••"
-                autocomplete="current-password"
-                required
-              />
-              <button
-                type="button"
-                class="absolute inset-y-0 right-0 w-11 flex cursor-pointer items-center justify-center border-0 bg-transparent text-zinc-500 transition-colors hover:text-zinc-200 focus-visible:outline-2 focus-visible:outline-zinc-500"
-                :aria-label="showPassword ? 'Sembunyikan password' : 'Tampilkan password'"
-                :aria-pressed="showPassword"
-                @click="showPassword = !showPassword"
-              >
-                <span
-                  :class="showPassword ? 'i-mingcute:eye-close-line' : 'i-mingcute:eye-2-line'"
-                  class="text-xl"
-                  aria-hidden="true"
-                />
-              </button>
-            </div>
+            <AtomsInput
+              id="password"
+              v-model="password"
+              icon="i-mingcute:key-2-line"
+              :type="showPassword ? 'text' : 'password'"
+              placeholder="Masukkan password"
+              autocomplete="current-password"
+              :invalid="Boolean(error)"
+              :describedby="error ? 'password-error' : capsLock ? 'password-capslock' : undefined"
+              required
+              @keydown="trackCapsLock"
+              @keyup="trackCapsLock"
+            >
+              <template #trailing>
+                <button
+                  type="button"
+                  class="text-zinc-400 rounded-lg flex size-9 cursor-pointer transition-colors items-center justify-center hover:(text-zinc-100 bg-zinc-800) focus-visible:outline-2 focus-visible:outline-zinc-400"
+                  :aria-label="showPassword ? 'Sembunyikan password' : 'Tampilkan password'"
+                  :aria-pressed="showPassword"
+                  @click="showPassword = !showPassword"
+                >
+                  <span
+                    class="size-5"
+                    :class="showPassword ? 'i-mingcute:eye-close-line' : 'i-mingcute:eye-2-line'"
+                    aria-hidden="true"
+                  />
+                </button>
+              </template>
+            </AtomsInput>
+
+            <p v-if="error" id="password-error" class="text-sm text-red-400 flex gap-1.5 items-center" role="alert">
+              <span class="i-mingcute:warning-line shrink-0 size-4" aria-hidden="true" />
+              {{ error }}
+            </p>
+            <p v-else-if="capsLock" id="password-capslock" class="text-sm text-amber-400 flex gap-1.5 items-center">
+              <span class="i-mingcute:arrow-up-circle-line shrink-0 size-4" aria-hidden="true" />
+              Caps Lock aktif
+            </p>
           </div>
 
-          <div v-if="error" class="flex items-center gap-2 border border-red-900/50 rounded-md bg-red-950/50 px-3 py-2 text-sm text-red-400">
-            <svg class="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
-            {{ error }}
-          </div>
-
-          <AtomsButton
+          <button
             type="submit"
-            variant="primary"
-            class="w-full bg-zinc-100 text-zinc-900 hover:bg-zinc-200"
-            :loading="loading"
+            class="text-base text-zinc-900 font-semibold rounded-xl bg-zinc-100 flex gap-2 h-12 w-full cursor-pointer transition-[background-color,opacity] items-center justify-center focus-visible:(outline-2 outline-zinc-400 outline-offset-2) hover:bg-white disabled:(opacity-50 cursor-not-allowed)"
+            :disabled="loading || !password"
           >
-            {{ loading ? 'Memverifikasi...' : 'Masuk' }}
-          </AtomsButton>
+            <span v-if="loading" class="i-mingcute:loading-fill size-5 animate-spin" aria-hidden="true" />
+            {{ loading ? 'Memverifikasi…' : 'Masuk' }}
+          </button>
         </form>
       </div>
 
-      <p class="mt-6 text-center text-xs text-zinc-600">
-        Protected access • Ensik Archive
+      <p class="text-xs text-zinc-500 mt-6 text-center flex gap-1.5 items-center justify-center">
+        <span class="i-mingcute:shield-line size-3.5" aria-hidden="true" />
+        Akses terbatas untuk anggota Ensik
       </p>
     </div>
   </div>

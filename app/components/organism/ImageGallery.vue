@@ -1,6 +1,5 @@
 <script setup vapor lang="ts">
 import type { ArchiveImage, ArchiveImagePage } from '~~/shared/types/images';
-import { breakpointsTailwind } from '@vueuse/core';
 
 const PAGE_SIZE = 30;
 const PRELOAD_MARGIN = 1_000;
@@ -12,7 +11,8 @@ const { onArchiveChanged } = useArchiveEvents();
 // A new random order on every page load. `useState` carries the seed from SSR
 // to hydration so both render the same first page.
 const baseSeed = useState('archive-gallery-seed', () => Math.floor(Math.random() * 0x1_0000_0000));
-const breakpoints = useBreakpoints(breakpointsTailwind);
+// Same breakpoints as the UnoCSS theme, so the masonry column count matches md:/lg:/xl:.
+const breakpoints = useBreakpoints(BREAKPOINTS);
 const { width: viewportWidth } = useWindowSize();
 const columnCount = computed(() => {
   if (breakpoints.xl.value)
@@ -223,13 +223,13 @@ function reloadImages() {
   <section aria-label="Galeri Ensik Archive">
     <div
       v-if="!isMounted || (status === 'pending' && items.length === 0)"
-      class="flex items-start gap-3"
+      class="flex gap-3 items-start"
       aria-label="Memuat galeri"
     >
       <div
         v-for="column in 5"
         :key="column"
-        class="min-w-0 flex-1 flex-col gap-3"
+        class="flex-1 flex-col gap-3 min-w-0"
         :class="[
           column > 2 ? 'hidden' : 'flex',
           column === 3 ? 'md:flex' : '',
@@ -240,7 +240,7 @@ function reloadImages() {
         <div
           v-for="row in 3"
           :key="row"
-          class="animate-pulse rounded-lg bg-neutral-200 dark:bg-neutral-800"
+          class="rounded-lg bg-neutral-200 animate-pulse dark:bg-neutral-800"
           :class="(row + column) % 3 === 0
             ? 'h-72'
             : (row + column) % 2 === 0
@@ -252,39 +252,39 @@ function reloadImages() {
 
     <div
       v-else-if="error && items.length === 0"
-      class="mx-auto max-w-md flex flex-col items-center border border-neutral-200 rounded-2xl border-solid bg-white px-6 py-10 text-center dark:border-neutral-800 dark:bg-neutral-900"
+      class="mx-auto px-6 py-10 text-center border border-neutral-200 rounded-2xl bg-white flex flex-col max-w-md items-center dark:border-neutral-800 dark:bg-neutral-900"
       role="alert"
     >
-      <span class="h-12 w-12 flex items-center justify-center rounded-full bg-red-100 dark:bg-red-950/50" aria-hidden="true">
+      <span class="rounded-full bg-red-100 flex h-12 w-12 items-center justify-center dark:bg-red-950/50" aria-hidden="true">
         <span class="i-mingcute:wifi-off-line text-2xl text-red-600 dark:text-red-400" />
       </span>
-      <h2 class="mb-1 mt-4 text-base text-neutral-900 font-semibold dark:text-white">
+      <h2 class="text-base text-strong font-semibold mb-1 mt-4">
         Galeri gagal dimuat
       </h2>
-      <p class="mb-5 mt-0 text-sm text-neutral-500 dark:text-neutral-400">
+      <p class="text-sm text-muted mb-5">
         Periksa koneksi lalu coba lagi.
       </p>
       <AtomsButton variant="primary" :loading="status === 'pending'" @click="reloadImages">
-        <span v-if="status !== 'pending'" class="i-mingcute:refresh-2-line mr-2 text-base" aria-hidden="true" />
+        <span v-if="status !== 'pending'" class="i-mingcute:refresh-2-line text-base mr-2" aria-hidden="true" />
         Muat ulang
       </AtomsButton>
     </div>
 
-    <div v-else-if="items.length === 0" class="rounded-lg bg-neutral-100 p-8 text-center text-neutral-500 dark:bg-neutral-900">
+    <div v-else-if="items.length === 0" class="text-neutral-500 p-8 text-center rounded-lg bg-neutral-100 dark:bg-neutral-900">
       Belum ada gambar di arsip.
     </div>
 
-    <div v-else class="flex items-start gap-3">
+    <div v-else class="flex gap-3 items-start">
       <div
         v-for="(column, columnIndex) in columns"
         :key="columnIndex"
-        class="min-w-0 flex flex-1 flex-col gap-3"
+        class="flex flex-1 flex-col gap-3 min-w-0"
       >
         <button
           v-for="(item, row) in column"
           :key="item.key"
           type="button"
-          class="[content-visibility:auto] relative block w-full cursor-pointer overflow-hidden border-0 rounded-lg bg-neutral-100 p-0 shadow-md dark:bg-neutral-900 focus-visible:outline-2 focus-visible:outline-blue-500"
+          class="rounded-lg bg-neutral-100 w-full block cursor-pointer shadow-md [content-visibility:auto] relative overflow-hidden focus-visible:outline-2 focus-visible:outline-blue-500 dark:bg-neutral-900"
           :style="{ aspectRatio: `1 / ${ratioOf(item.image)}` }"
           :aria-label="`Buka ${item.image.name}`"
           @click="openViewer(item.key)"
@@ -306,38 +306,38 @@ function reloadImages() {
     <div
       v-if="isMounted && items.length > 0"
       ref="paginationSentinel"
-      class="min-h-20 flex flex-col items-center justify-center gap-2 py-6"
+      class="py-6 flex flex-col gap-2 min-h-20 items-center justify-center"
       aria-live="polite"
     >
       <template v-if="paginationError">
-        <p class="m-0 text-sm text-red-600 dark:text-red-400">
+        <p class="text-sm text-red-600 dark:text-red-400">
           {{ paginationError }}
         </p>
         <AtomsButton variant="secondary" @click="retryLoadMore">
           Coba lagi
         </AtomsButton>
       </template>
-      <span v-else class="i-mingcute:loading-fill animate-spin text-2xl text-neutral-400" aria-label="Memuat gambar berikutnya" />
+      <span v-else class="i-mingcute:loading-fill text-2xl text-neutral-400 animate-spin" aria-label="Memuat gambar berikutnya" />
     </div>
   </section>
 
   <Teleport to="body">
     <div
       v-if="selectedImage"
-      class="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 p-3 backdrop-blur-sm md:p-8"
+      class="p-3 bg-black/95 flex items-center inset-0 justify-center fixed z-[100] backdrop-blur-xs md:p-8"
       role="dialog"
       aria-modal="true"
       :aria-label="`Pratinjau ${selectedImage.name}`"
       @click.self="closeViewer"
     >
       <AtomsCloseButton
-        class="absolute right-3 top-3 z-20 md:right-6 md:top-6 !text-white"
+        class="right-3 top-3 absolute z-20 !text-white md:right-6 md:top-6"
         @click="closeViewer"
       />
       <AtomsArrowButton
         v-if="items.length > 1"
         direction="left"
-        class="absolute left-2 z-20 md:left-6 !text-white"
+        class="left-2 absolute z-20 !text-white md:left-6"
         @click="previousImage"
       />
       <MoleculesZoomLens
@@ -348,7 +348,7 @@ function reloadImages() {
       <AtomsArrowButton
         v-if="items.length > 1"
         direction="right"
-        class="absolute right-2 z-20 md:right-6 !text-white"
+        class="right-2 absolute z-20 !text-white md:right-6"
         @click="nextImage"
       />
     </div>

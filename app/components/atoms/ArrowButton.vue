@@ -22,11 +22,11 @@ const iconClass = computed(() => ICON_CLASSES[props.direction]);
   <button
     type="button"
     :disabled="disabled"
-    class="flex cursor-pointer items-center justify-center border-none bg-transparent p-2 text-neutral-500 outline-none transition-[color,opacity,transform] duration-300 active:scale-95 focus:scale-110 hover:scale-110 disabled:cursor-not-allowed dark:text-neutral-400 hover:text-neutral-900 disabled:opacity-50 focus:outline-none dark:hover:text-white"
+    class="text-neutral-500 p-2 outline-none flex cursor-pointer transition-[color,opacity,transform] duration-300 items-center justify-center dark:text-neutral-400 hover:text-neutral-900 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 focus:scale-110 hover:scale-110 dark:hover:text-white"
     @click="emit('click', $event)"
   >
     <span
-      class="text-3xl drop-shadow-sm md:text-5xl sm:text-4xl"
+      class="text-3xl drop-shadow-xs md:text-5xl sm:text-4xl"
       :class="iconClass"
       aria-hidden="true"
     />

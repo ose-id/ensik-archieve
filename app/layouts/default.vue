@@ -1,5 +1,5 @@
 <template vapor>
-  <div class="min-h-screen bg-white dark:bg-black">
+  <div class="bg-white min-h-screen dark:bg-black">
     <OrganismTheSide />
     <OrganismTheNav />
 

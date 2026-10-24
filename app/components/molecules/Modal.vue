@@ -72,7 +72,7 @@ function requestClose() {
     >
       <div
         v-if="open"
-        class="fixed inset-0 z-[120] flex items-center justify-center bg-black/70 p-3 backdrop-blur-sm sm:p-5"
+        class="p-3 bg-black/70 flex items-center inset-0 justify-center fixed z-[120] backdrop-blur-xs sm:p-5"
         @click.self="requestClose"
       >
         <section
@@ -82,18 +82,18 @@ function requestClose() {
           aria-modal="true"
           :aria-labelledby="titleId"
           :aria-describedby="description ? `${titleId}-description` : undefined"
-          class="max-h-[calc(100dvh-1.5rem)] w-full overflow-hidden rounded-2xl bg-white shadow-2xl outline-none sm:max-h-[calc(100dvh-2.5rem)] dark:bg-neutral-900"
+          class="outline-none rounded-2xl bg-white max-h-[calc(100dvh-1.5rem)] w-full shadow-2xl overflow-hidden dark:bg-neutral-900 sm:max-h-[calc(100dvh-2.5rem)]"
           :class="sizeClass"
         >
-          <header class="flex items-start justify-between gap-4 border-b border-neutral-200 px-4 py-3 dark:border-neutral-800 sm:px-6 sm:py-4">
+          <header class="px-4 py-3 border-b border-neutral-200 flex gap-4 items-start justify-between sm:px-6 sm:py-4 dark:border-neutral-800">
             <div class="min-w-0">
-              <h2 :id="titleId" class="m-0 text-lg text-neutral-900 font-semibold dark:text-white">
+              <h2 :id="titleId" class="text-lg text-strong font-semibold">
                 {{ title }}
               </h2>
               <p
                 v-if="description"
                 :id="`${titleId}-description`"
-                class="mb-0 mt-1 text-sm text-neutral-500 dark:text-neutral-400"
+                class="text-sm text-muted mt-1"
               >
                 {{ description }}
               </p>
@@ -101,13 +101,13 @@ function requestClose() {
             <AtomsCloseButton :disabled="closeDisabled" class="shrink-0" @click="requestClose" />
           </header>
 
-          <div class="max-h-[calc(100dvh-11rem)] overflow-y-auto p-4 sm:p-6">
+          <div class="p-4 max-h-[calc(100dvh-11rem)] overflow-y-auto sm:p-6">
             <slot />
           </div>
 
           <footer
             v-if="slots.footer"
-            class="border-t border-neutral-200 bg-neutral-50 px-4 py-3 dark:border-neutral-800 dark:bg-neutral-950/60 sm:px-6 sm:py-4"
+            class="px-4 py-3 border-t border-neutral-200 bg-neutral-50 sm:px-6 sm:py-4 dark:border-neutral-800 dark:bg-neutral-950/60"
           >
             <slot name="footer" />
           </footer>

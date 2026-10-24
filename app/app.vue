@@ -6,7 +6,7 @@ useSeoMeta({
 </script>
 
 <template>
-  <div id="top" min-h-dvh>
+  <div id="top" class="min-h-dvh">
     <NuxtLayout>
       <NuxtPage />
     </NuxtLayout>
@@ -22,6 +22,8 @@ useSeoMeta({
 }
 html {
   @apply scroll-smooth;
+  /* Tap feedback comes from each control's own active styles. */
+  -webkit-tap-highlight-color: transparent;
 }
 html.dark {
   scrollbar-color: #1b1b1b #050505;
@@ -45,20 +47,10 @@ html.dark ::-webkit-scrollbar {
   background-color: #050505;
 }
 body {
-  @apply bg-white dark:bg-black m-0 overflow-x-hidden font-sans text-black dark:text-white;
-}
-button,
-input,
-optgroup,
-select,
-textarea {
-  font: inherit;
+  @apply overflow-x-hidden bg-white font-sans text-black dark:(bg-black text-white);
 }
 .dark {
   color-scheme: dark;
-}
-a {
-  @apply !no-underline text-black dark:text-white;
 }
 
 @media (min-width: 768px) {
