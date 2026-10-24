@@ -6,7 +6,7 @@ const HIDE_AFTER = 96;
 
 const route = useRoute();
 const { avatarUrl, loggedIn, logout, username } = useArchiveAccount();
-const { requestUpload } = useArchiveEvents();
+const uploadInputId = ARCHIVE_UPLOAD_INPUT_ID;
 const { isDarkMode, isTransitioning, toggleColorMode } = useAnimatedColorMode();
 const { y: scrollY } = useWindowScroll();
 const showAccount = ref(false);
@@ -37,6 +37,11 @@ onKeyStroke('Escape', closeAccount);
 
 function openAccount() {
   showAccount.value = true;
+}
+
+/** Keyboard activation for the upload label (taps go through the label itself). */
+function openUploadPicker() {
+  document.getElementById(uploadInputId)?.click();
 }
 
 function closeAccount() {
@@ -76,16 +81,37 @@ async function handleLogout() {
         Beranda
       </NuxtLink>
 
-      <div class="flex justify-center">
-        <button
-          v-if="loggedIn"
-          type="button"
-          class="[-webkit-tap-highlight-color:transparent] h-14 w-14 flex cursor-pointer items-center justify-center border-0 rounded-full bg-blue-600 text-white shadow-blue-600/30 shadow-lg ring-4 ring-white transition-[background-color,transform] duration-200 -mt-7 active:scale-90 hover:bg-blue-700 dark:ring-neutral-950"
-          aria-label="Upload gambar"
-          @click="requestUpload"
-        >
-          <span class="i-mingcute:add-line text-[26px]" aria-hidden="true" />
-        </button>
+      <!-- The center slot is always the main action: upload when signed in, sign-in otherwise. -->
+      <!-- Anchored to the bottom so the raised button overflows upward without stretching the bar. -->
+      <div class="relative h-full">
+        <div class="absolute bottom-2 left-1/2 flex flex-col items-center -translate-x-1/2">
+          <!-- A label for the shared file input opens the native photo picker directly from the tap. -->
+          <label
+            v-if="loggedIn"
+            :for="uploadInputId"
+            role="button"
+            tabindex="0"
+            class="group [-webkit-tap-highlight-color:transparent] flex flex-col cursor-pointer select-none items-center gap-1 text-[11px] text-neutral-500 font-medium dark:text-neutral-400"
+            @keydown.enter.prevent="openUploadPicker"
+            @keydown.space.prevent="openUploadPicker"
+          >
+            <span class="h-14 w-14 flex items-center justify-center rounded-full bg-blue-600 text-white shadow-blue-600/30 shadow-lg ring-4 ring-white transition-[background-color,transform] duration-200 group-active:scale-90 group-hover:bg-blue-700 dark:ring-neutral-950">
+              <span class="i-mingcute:add-line text-[26px]" aria-hidden="true" />
+            </span>
+            Upload
+          </label>
+          <NuxtLink
+            v-else
+            to="/auth/discord"
+            external
+            class="group [-webkit-tap-highlight-color:transparent] flex flex-col select-none items-center gap-1 text-[11px] font-medium !text-indigo-600 dark:!text-indigo-400"
+          >
+            <span class="h-14 w-14 flex items-center justify-center rounded-full bg-indigo-600 text-white shadow-indigo-600/30 shadow-lg ring-4 ring-white transition-[background-color,transform] duration-200 group-active:scale-90 group-hover:bg-indigo-700 dark:ring-neutral-950">
+              <span class="i-mingcute:discord-fill text-[26px]" aria-hidden="true" />
+            </span>
+            Masuk
+          </NuxtLink>
+        </div>
       </div>
 
       <button

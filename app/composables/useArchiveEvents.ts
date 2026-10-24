@@ -6,6 +6,12 @@ export type ArchiveChange
 
 type ArchiveChangeListener = (change: ArchiveChange) => void;
 
+/**
+ * The shared file input rendered by ImageUpload. The mobile upload button is a
+ * `<label for>` pointing at it, so the native picker opens straight from the tap.
+ */
+export const ARCHIVE_UPLOAD_INPUT_ID = 'archive-upload-input';
+
 const listeners = new Set<ArchiveChangeListener>();
 
 export function useArchiveEvents() {

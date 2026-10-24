@@ -6,6 +6,7 @@ const ALLOWED_TYPES = new Set(['image/jpeg', 'image/png']);
 
 const { addToast } = useToast();
 const { notifyArchiveChanged, uploadRequest } = useArchiveEvents();
+const uploadInputId = ARCHIVE_UPLOAD_INPUT_ID;
 const fileInput = ref<HTMLInputElement>();
 const selectedFile = shallowRef<File>();
 const previewUrl = ref('');
@@ -14,7 +15,10 @@ const uploadError = ref('');
 const uploadPhase = ref<'complete' | 'idle' | 'processing' | 'uploading'>('idle');
 const uploadProgress = ref(0);
 const isOpen = ref(false);
+/** Picked straight from the mobile upload button: uploads at once and shows a compact progress card instead of the modal. */
+const isDirect = ref(false);
 let activeRequest: XMLHttpRequest | undefined;
+let cancelRequested = false;
 
 const uploadStatus = computed(() => {
   if (uploadPhase.value === 'processing')
@@ -44,6 +48,7 @@ function reset() {
   revokePreview();
   selectedFile.value = undefined;
   isOpen.value = false;
+  isDirect.value = false;
   uploadError.value = '';
   uploadPhase.value = 'idle';
   uploadProgress.value = 0;
@@ -70,7 +75,7 @@ function setSelectedFile(file: File) {
     uploadError.value = message;
     addToast(message, 'warning');
     clearFileInput();
-    return;
+    return false;
   }
 
   if (file.size > MAX_IMAGE_SIZE) {
@@ -78,7 +83,7 @@ function setSelectedFile(file: File) {
     uploadError.value = message;
     addToast(message, 'error');
     clearFileInput();
-    return;
+    return false;
   }
 
   revokePreview();
@@ -87,6 +92,7 @@ function setSelectedFile(file: File) {
   uploadProgress.value = 0;
   selectedFile.value = file;
   previewUrl.value = URL.createObjectURL(file);
+  return true;
 }
 
 function chooseFile(event: Event) {
@@ -95,7 +101,29 @@ function chooseFile(event: Event) {
   if (!file)
     return;
 
-  setSelectedFile(file);
+  // With the modal open this is "Pilih/Ganti foto"; otherwise the picker was
+  // opened by the mobile upload button and the photo is uploaded right away.
+  if (isOpen.value) {
+    setSelectedFile(file);
+    return;
+  }
+
+  if (isUploading.value) {
+    addToast('Tunggu upload sebelumnya selesai.', 'info');
+    clearFileInput();
+    return;
+  }
+
+  isDirect.value = true;
+  if (setSelectedFile(file))
+    void upload();
+  else
+    isDirect.value = false;
+}
+
+function cancelUpload() {
+  cancelRequested = true;
+  activeRequest?.abort();
 }
 
 function dropFile(event: DragEvent) {
@@ -173,6 +201,7 @@ async function upload() {
     return;
 
   isUploading.value = true;
+  cancelRequested = false;
   uploadError.value = '';
   uploadPhase.value = 'uploading';
   uploadProgress.value = 0;
@@ -187,13 +216,20 @@ async function upload() {
     reset();
   }
   catch (error) {
+    if (cancelRequested) {
+      reset();
+      return;
+    }
+
     const message = error instanceof Error
       ? error.message
       : 'Upload gagal.';
     uploadError.value = message;
     uploadPhase.value = 'idle';
     uploadProgress.value = 0;
-    addToast(message, 'error');
+    // The direct-upload card already shows the error with a retry button.
+    if (!isDirect.value)
+      addToast(message, 'error');
   }
   finally {
     isUploading.value = false;
@@ -203,12 +239,83 @@ async function upload() {
 
 <template>
   <input
+    :id="uploadInputId"
     ref="fileInput"
     type="file"
     accept=".jpg,.jpeg,.png,image/jpeg,image/png"
     class="hidden"
     @change="chooseFile"
   >
+
+  <Transition
+    enter-active-class="transition-[opacity,transform] duration-200 ease-out"
+    enter-from-class="translate-y-2 opacity-0"
+    leave-active-class="transition-[opacity,transform] duration-200 ease-in"
+    leave-to-class="translate-y-2 opacity-0"
+  >
+    <div
+      v-if="isDirect && selectedFile"
+      class="fixed inset-x-3 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-[55] flex items-center gap-3 border border-neutral-200 rounded-2xl border-solid bg-white p-3 shadow-xl md:inset-x-auto md:bottom-6 md:right-6 md:w-80 dark:border-neutral-800 dark:bg-neutral-900"
+      role="status"
+      aria-live="polite"
+    >
+      <img
+        :src="previewUrl"
+        alt=""
+        class="h-12 w-12 shrink-0 rounded-lg object-cover"
+      >
+      <div class="min-w-0 flex-1">
+        <p class="m-0 truncate text-sm text-neutral-900 font-medium dark:text-white">
+          {{ uploadError ? 'Upload gagal' : uploadStatus }}
+        </p>
+        <p v-if="uploadError" class="mb-0 mt-0.5 truncate text-xs text-red-600 dark:text-red-400">
+          {{ uploadError }}
+        </p>
+        <div
+          v-else
+          class="mt-2 h-1.5 overflow-hidden rounded-full bg-neutral-200 dark:bg-neutral-800"
+          role="progressbar"
+          aria-label="Progress upload"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          :aria-valuenow="uploadProgress"
+        >
+          <div
+            class="h-full rounded-full bg-blue-600 transition-[width] duration-200"
+            :class="uploadPhase === 'processing' ? 'animate-pulse' : ''"
+            :style="{ width: `${uploadProgress}%` }"
+          />
+        </div>
+      </div>
+      <template v-if="uploadError">
+        <button
+          type="button"
+          class="h-9 w-9 flex shrink-0 cursor-pointer items-center justify-center border-0 rounded-full bg-blue-600 text-white active:scale-95"
+          aria-label="Coba upload lagi"
+          @click="upload"
+        >
+          <span class="i-mingcute:refresh-2-line text-lg" aria-hidden="true" />
+        </button>
+        <button
+          type="button"
+          class="h-9 w-9 flex shrink-0 cursor-pointer items-center justify-center border-0 rounded-full bg-transparent text-neutral-500 active:bg-neutral-100 dark:text-neutral-400 dark:active:bg-neutral-800"
+          aria-label="Tutup"
+          @click="reset"
+        >
+          <span class="i-mingcute:close-line text-xl" aria-hidden="true" />
+        </button>
+      </template>
+      <button
+        v-else-if="uploadPhase === 'uploading'"
+        type="button"
+        class="h-9 w-9 flex shrink-0 cursor-pointer items-center justify-center border-0 rounded-full bg-transparent text-neutral-500 active:bg-neutral-100 dark:text-neutral-400 dark:active:bg-neutral-800"
+        aria-label="Batalkan upload"
+        @click="cancelUpload"
+      >
+        <span class="i-mingcute:close-line text-xl" aria-hidden="true" />
+      </button>
+    </div>
+  </Transition>
 
   <MoleculesModal
     :open="isOpen"

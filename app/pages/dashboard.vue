@@ -338,7 +338,7 @@ function reloadImages() {
           Belum ada foto
         </h2>
         <p class="mx-auto mb-0 max-w-md text-sm text-neutral-600 sm:text-base dark:text-neutral-400">
-          Gunakan tombol tambah di sidebar untuk mengunggah foto pertama Anda.
+          Gunakan tombol + untuk mengunggah foto pertama Anda.
         </p>
       </div>
 
