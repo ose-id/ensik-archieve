@@ -4,47 +4,42 @@ const { requestUpload } = useArchiveEvents();
 </script>
 
 <template>
-  <aside class="border-r border-transparent bg-white flex-col hidden shadow-lg left-0 fixed z-50 dark:border-neutral-800/70 dark:bg-neutral-950 md:flex md:min-h-screen md:w-20">
-    <div class="px-4 py-6 flexcenter">
-      <NuxtImg src="/img/logo.jpg" alt="Ensik Archive" width="32" height="32" class="rounded-full" />
-    </div>
+  <!-- Pinterest-style rail: outline icons that fill in once their page is active, with labels as hover tooltips. -->
+  <aside
+    class="py-4 border-r border-neutral-200 bg-white flex-col w-20 hidden items-center inset-y-0 left-0 fixed z-50 dark:(border-neutral-800 bg-neutral-950) md:flex"
+    aria-label="Navigasi samping"
+  >
+    <NuxtLink to="/" class="group rail-item" aria-label="Ensik Archive">
+      <NuxtImg src="/img/logo.jpg" alt="" width="32" height="32" class="rounded-full size-8" />
+      <span class="rail-tooltip">Ensik Archive</span>
+    </NuxtLink>
 
-    <nav class="flex-grow">
-      <ul class="p-4 space-y-6">
-        <li v-for="item in menuItems" :key="item.route">
-          <NuxtLink
-            :to="item.route"
-            class="px-2 py-3 rounded-lg flexcenter transition-colors duration-200"
-            :class="[
-              item.active
-                ? 'hover:bg-neutral-100 dark:hover:bg-neutral-800 text-strong'
-                : 'hover:bg-neutral-100 text-muted dark:hover:bg-neutral-800',
-            ]"
-          >
-            <div
-              class="text-2xl transition-colors"
-              :class="[
-                item.icon,
-                item.active ? 'text-blue-500 dark:text-blue-400' : '',
-              ]"
-            />
-          </NuxtLink>
-        </li>
-        <li v-if="loggedIn">
-          <AtomsButton
-            variant="secondary"
-            class="py-3 flexcenter w-full !px-2 !bg-transparent hover:!bg-neutral-100 dark:hover:!bg-neutral-800"
-            title="Upload gambar"
-            @click="requestUpload"
-          >
-            <div class="i-mingcute:plus-line text-2xl text-muted" />
-          </AtomsButton>
-        </li>
-      </ul>
+    <nav class="mt-4 flex flex-1 flex-col gap-2 items-center">
+      <NuxtLink
+        v-for="item in menuItems"
+        :key="item.route"
+        :to="item.route"
+        class="group rail-item"
+        :class="item.active ? 'rail-item-active' : ''"
+        :aria-label="item.label"
+        :aria-current="item.active ? 'page' : undefined"
+      >
+        <span class="size-6" :class="item.active ? item.activeIcon : item.icon" aria-hidden="true" />
+        <span class="rail-tooltip">{{ item.label }}</span>
+      </NuxtLink>
+
+      <button
+        v-if="loggedIn"
+        type="button"
+        class="group rail-item"
+        aria-label="Upload foto"
+        @click="requestUpload"
+      >
+        <span class="i-mingcute:add-square-line size-6" aria-hidden="true" />
+        <span class="rail-tooltip">Upload foto</span>
+      </button>
     </nav>
 
-    <div class="px-4 py-6 flexcenter">
-      <MoleculesColorMode />
-    </div>
+    <MoleculesColorMode />
   </aside>
 </template>

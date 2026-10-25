@@ -54,6 +54,15 @@ export default defineConfig({
     'nav-tab': 'h-full flex cursor-pointer select-none flex-col items-center justify-center gap-1 text-2xs font-medium',
     'nav-pill': 'h-8 w-14 flex items-center justify-center rounded-full transition-[background-color,transform] duration-200 group-active:scale-90',
     'nav-fab': 'h-14 w-14 flex items-center justify-center rounded-full text-white shadow-lg ring-4 ring-white transition-[background-color,transform] duration-200 group-active:scale-90 dark:ring-neutral-950',
+    // Pinterest-style tiles, pills and actions.
+    'tile-dim': 'pointer-events-none absolute inset-0 rounded-2xl bg-black/0 transition-colors duration-200 group-hover:bg-black/25',
+    'tile-action': 'size-9 flex shrink-0 cursor-pointer items-center justify-center rounded-full bg-white/95 text-neutral-900 shadow-sm transition-transform duration-150 hover:scale-105 active:scale-95',
+    'pill-btn': 'h-11 inline-flex shrink-0 cursor-pointer select-none items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold transition-[background-color,transform] duration-150 active:scale-[0.97]',
+    'pill-btn-neutral': 'bg-neutral-200 text-neutral-900 hover:bg-neutral-300 dark:(bg-neutral-800 text-white hover:bg-neutral-700)',
+    // Desktop side rail (Pinterest-style). Items also need the `group` class for their tooltip.
+    'rail-item': 'relative size-12 flex shrink-0 cursor-pointer items-center justify-center rounded-xl text-neutral-600 transition-[background-color,color,transform] duration-150 hover:bg-neutral-100 active:scale-95 focus-visible:(outline-2 outline-offset-2 outline-neutral-900) dark:(text-neutral-400 hover:bg-neutral-800 focus-visible:outline-white)',
+    'rail-item-active': 'text-neutral-950 dark:text-white',
+    'rail-tooltip': 'pointer-events-none absolute left-full top-1/2 z-10 ml-3 -translate-y-1/2 whitespace-nowrap rounded-lg bg-neutral-900 px-2.5 py-1.5 text-xs font-semibold text-white opacity-0 shadow-md transition-opacity duration-150 group-hover:(opacity-100 delay-300) group-focus-visible:opacity-100 dark:(bg-white text-neutral-900)',
   },
   // Enforced by `unocss/blocklist` in ESLint; blocked utilities generate no CSS.
   blocklist: [

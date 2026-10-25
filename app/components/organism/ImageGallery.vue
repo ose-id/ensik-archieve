@@ -3,7 +3,6 @@ import type { ArchiveImage, ArchiveImagePage } from '~~/shared/types/images';
 
 const PAGE_SIZE = 30;
 const PRELOAD_MARGIN = 1_000;
-const HIGH_QUALITY_WIDTHS = [320, 480, 640, 960, 1280, 1920];
 
 // Vapor components can lose the Nuxt context after an `await`, so every
 // composable is registered before the first page request is awaited below.
@@ -11,18 +10,7 @@ const { onArchiveChanged } = useArchiveEvents();
 // A new random order on every page load. `useState` carries the seed from SSR
 // to hydration so both render the same first page.
 const baseSeed = useState('archive-gallery-seed', () => Math.floor(Math.random() * 0x1_0000_0000));
-// Same breakpoints as the UnoCSS theme, so the masonry column count matches md:/lg:/xl:.
-const breakpoints = useBreakpoints(BREAKPOINTS);
-const { width: viewportWidth } = useWindowSize();
-const columnCount = computed(() => {
-  if (breakpoints.xl.value)
-    return 5;
-  if (breakpoints.lg.value)
-    return 4;
-  if (breakpoints.md.value)
-    return 3;
-  return 2;
-});
+const { columnCount, highWidth } = useArchiveColumns();
 const {
   append,
   columns,
@@ -55,17 +43,6 @@ const pageRequest = useFetch<ArchiveImagePage>('/api/images', {
 });
 const { data, error, refresh, status } = pageRequest;
 
-const selectedIndex = computed(() => items.value.findIndex(item => item.key === selectedKey.value));
-const selectedImage = computed(() => items.value[selectedIndex.value]?.image);
-/** Grid images only need to be as wide as one column, not the 1920px viewer size. */
-const highWidth = computed(() => {
-  const pixelRatio = import.meta.client
-    ? window.devicePixelRatio
-    : 1;
-  const target = (viewportWidth.value / columnCount.value) * pixelRatio;
-  return HIGH_QUALITY_WIDTHS.find(width => width >= target) ?? 1920;
-});
-
 watch(data, applyFirstPage, { immediate: true });
 
 watch(sentinelVisible, (visible) => {
@@ -73,11 +50,6 @@ watch(sentinelVisible, (visible) => {
   // the page, so confirm against the real layout before loading.
   if (visible && sentinelNearViewport())
     void loadMore();
-});
-
-watch(selectedImage, (image) => {
-  if (import.meta.client)
-    document.body.style.overflow = image ? 'hidden' : '';
 });
 
 onArchiveChanged((change) => {
@@ -91,11 +63,6 @@ onMounted(() => {
   isMounted.value = true;
 });
 
-onBeforeUnmount(() => {
-  if (import.meta.client)
-    document.body.style.overflow = '';
-});
-
 onActivated(() => {
   isActive.value = true;
   setArchiveImagePreloadingPaused(false);
@@ -105,13 +72,7 @@ onDeactivated(() => {
   isActive.value = false;
   setArchiveImagePreloadingPaused(true);
   selectedKey.value = undefined;
-  if (import.meta.client)
-    document.body.style.overflow = '';
 });
-
-onKeyStroke('Escape', closeViewer);
-onKeyStroke('ArrowRight', () => void nextImage());
-onKeyStroke('ArrowLeft', previousImage);
 
 await pageRequest;
 
@@ -192,28 +153,6 @@ function openViewer(key: string) {
   selectedKey.value = key;
 }
 
-function closeViewer() {
-  selectedKey.value = undefined;
-}
-
-async function nextImage() {
-  const index = selectedIndex.value;
-  if (index === -1 || items.value.length < 2)
-    return;
-
-  if (index === items.value.length - 1)
-    await loadMore();
-  selectedKey.value = items.value[(index + 1) % items.value.length]?.key;
-}
-
-function previousImage() {
-  const index = selectedIndex.value;
-  if (index === -1 || items.value.length < 2)
-    return;
-
-  selectedKey.value = items.value[(index - 1 + items.value.length) % items.value.length]?.key;
-}
-
 function reloadImages() {
   void refresh();
 }
@@ -221,34 +160,10 @@ function reloadImages() {
 
 <template>
   <section aria-label="Galeri Ensik Archive">
-    <div
+    <MoleculesMasonrySkeleton
       v-if="!isMounted || (status === 'pending' && items.length === 0)"
-      class="flex gap-3 items-start"
       aria-label="Memuat galeri"
-    >
-      <div
-        v-for="column in 5"
-        :key="column"
-        class="flex-1 flex-col gap-3 min-w-0"
-        :class="[
-          column > 2 ? 'hidden' : 'flex',
-          column === 3 ? 'md:flex' : '',
-          column === 4 ? 'lg:flex' : '',
-          column === 5 ? 'xl:flex' : '',
-        ]"
-      >
-        <div
-          v-for="row in 3"
-          :key="row"
-          class="rounded-lg bg-neutral-200 animate-pulse dark:bg-neutral-800"
-          :class="(row + column) % 3 === 0
-            ? 'h-72'
-            : (row + column) % 2 === 0
-              ? 'h-48'
-              : 'h-60'"
-        />
-      </div>
-    </div>
+    />
 
     <div
       v-else-if="error && items.length === 0"
@@ -284,7 +199,7 @@ function reloadImages() {
           v-for="(item, row) in column"
           :key="item.key"
           type="button"
-          class="rounded-lg bg-neutral-100 w-full block cursor-pointer shadow-md [content-visibility:auto] relative overflow-hidden focus-visible:outline-2 focus-visible:outline-blue-500 dark:bg-neutral-900"
+          class="group rounded-2xl bg-neutral-100 w-full block cursor-zoom-in [content-visibility:auto] relative overflow-hidden focus-visible:(outline-2 outline-neutral-900 outline-offset-2) dark:(bg-neutral-900 focus-visible:outline-white)"
           :style="{ aspectRatio: `1 / ${ratioOf(item.image)}` }"
           :aria-label="`Buka ${item.image.name}`"
           @click="openViewer(item.key)"
@@ -299,6 +214,7 @@ function reloadImages() {
             class="h-full w-full"
             @dimensions="setMeasuredRatio(item.image, $event)"
           />
+          <span class="tile-dim" aria-hidden="true" />
         </button>
       </div>
     </div>
@@ -321,36 +237,5 @@ function reloadImages() {
     </div>
   </section>
 
-  <Teleport to="body">
-    <div
-      v-if="selectedImage"
-      class="p-3 bg-black/95 flex items-center inset-0 justify-center fixed z-[100] backdrop-blur-xs md:p-8"
-      role="dialog"
-      aria-modal="true"
-      :aria-label="`Pratinjau ${selectedImage.name}`"
-      @click.self="closeViewer"
-    >
-      <AtomsCloseButton
-        class="right-3 top-3 absolute z-20 !text-white md:right-6 md:top-6"
-        @click="closeViewer"
-      />
-      <AtomsArrowButton
-        v-if="items.length > 1"
-        direction="left"
-        class="left-2 absolute z-20 !text-white md:left-6"
-        @click="previousImage"
-      />
-      <MoleculesZoomLens
-        :key="selectedImage.id"
-        :src="selectedImage.id"
-        :alt="`Pratinjau ${selectedImage.name}`"
-      />
-      <AtomsArrowButton
-        v-if="items.length > 1"
-        direction="right"
-        class="right-2 absolute z-20 !text-white md:right-6"
-        @click="nextImage"
-      />
-    </div>
-  </Teleport>
+  <OrganismImageViewer v-model:selected-key="selectedKey" :items="items" :load-more="loadMore" />
 </template>

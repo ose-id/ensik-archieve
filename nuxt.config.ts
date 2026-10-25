@@ -115,5 +115,12 @@ export default defineNuxtConfig({
     },
   },
 
+  routeRules: {
+    // The personal photo page moved from /dashboard to /profile.
+    '/dashboard': {
+      redirect: { to: '/profile', statusCode: 301 },
+    },
+  },
+
   compatibilityDate: '2024-07-08',
 });

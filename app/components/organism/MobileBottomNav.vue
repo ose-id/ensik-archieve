@@ -5,16 +5,15 @@ const SCROLL_THRESHOLD = 8;
 const HIDE_AFTER = 96;
 
 const route = useRoute();
-const { avatarUrl, loggedIn, logout, username } = useArchiveAccount();
+const { accountSheetOpen: showAccount, avatarUrl, loggedIn, logout, username } = useArchiveAccount();
 const uploadInputId = ARCHIVE_UPLOAD_INPUT_ID;
 const { isDarkMode, isTransitioning, toggleColorMode } = useAnimatedColorMode();
 const { y: scrollY } = useWindowScroll();
-const showAccount = ref(false);
 const scrolledAway = ref(false);
 let lastScrollY = 0;
 
 const isHome = computed(() => route.path === '/');
-const isAccountActive = computed(() => showAccount.value || route.path.startsWith('/dashboard'));
+const isAccountActive = computed(() => showAccount.value || route.path === '/profile');
 // Only the gallery is long enough for the bar to get in the way of content.
 const isHidden = computed(() => isHome.value && scrolledAway.value && !showAccount.value);
 
@@ -74,7 +73,7 @@ async function handleLogout() {
         >
           <span
             class="size-5.5"
-            :class="isHome ? 'i-mingcute:home-6-fill' : 'i-mingcute:home-6-line'"
+            :class="isHome ? 'i-mingcute:home-4-fill' : 'i-mingcute:home-4-line'"
             aria-hidden="true"
           />
         </span>
@@ -114,13 +113,13 @@ async function handleLogout() {
         </div>
       </div>
 
-      <button
-        type="button"
+      <!-- Signed in, Profil opens the profile page (settings live behind its gear); guests get the account sheet. -->
+      <NuxtLink
+        v-if="loggedIn"
+        to="/profile"
         class="group nav-tab"
         :class="isAccountActive ? 'text-blue-600 dark:text-blue-400' : 'text-muted'"
-        aria-haspopup="dialog"
-        :aria-expanded="showAccount"
-        @click="openAccount"
+        :aria-current="route.path === '/profile' ? 'page' : undefined"
       >
         <span
           class="nav-pill"
@@ -144,7 +143,28 @@ async function handleLogout() {
             aria-hidden="true"
           />
         </span>
-        {{ loggedIn ? 'Profil' : 'Akun' }}
+        Profil
+      </NuxtLink>
+      <button
+        v-else
+        type="button"
+        class="group nav-tab"
+        :class="isAccountActive ? 'text-blue-600 dark:text-blue-400' : 'text-muted'"
+        aria-haspopup="dialog"
+        :aria-expanded="showAccount"
+        @click="openAccount"
+      >
+        <span
+          class="nav-pill"
+          :class="isAccountActive ? 'bg-blue-100 dark:bg-blue-500/15' : ''"
+        >
+          <span
+            class="size-5.5"
+            :class="isAccountActive ? 'i-mingcute:user-3-fill' : 'i-mingcute:user-3-line'"
+            aria-hidden="true"
+          />
+        </span>
+        Akun
       </button>
     </div>
   </nav>
@@ -213,17 +233,6 @@ async function handleLogout() {
           </header>
 
           <div class="flex flex-col gap-1">
-            <NuxtLink
-              v-if="loggedIn"
-              to="/dashboard"
-              class="text-sm font-medium px-3 rounded-xl flex gap-3 min-h-12 items-center active:bg-neutral-100 dark:active:bg-neutral-800"
-              @click="closeAccount"
-            >
-              <span class="i-mingcute:pic-line text-xl text-muted" aria-hidden="true" />
-              <span class="flex-1">Foto saya</span>
-              <span class="i-mingcute:right-line text-lg text-neutral-400" aria-hidden="true" />
-            </NuxtLink>
-
             <div class="text-sm text-strong font-medium px-3 rounded-xl flex gap-3 min-h-12 items-center">
               <span
                 class="text-xl text-muted"

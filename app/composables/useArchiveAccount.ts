@@ -10,12 +10,17 @@ export function useArchiveAccount() {
 
   const username = computed(() => user.value?.username ?? 'Guest');
 
+  /** Mobile account sheet (theme, log out). Opened from the bottom nav or the profile header. */
+  const accountSheetOpen = useState('archive:account-sheet-open', () => false);
+
   async function logout() {
+    accountSheetOpen.value = false;
     await clear();
     await navigateTo('/login');
   }
 
   return {
+    accountSheetOpen,
     avatarUrl,
     loggedIn,
     logout,
