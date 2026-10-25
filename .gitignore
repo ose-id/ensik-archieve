@@ -24,5 +24,4 @@ logs
 !.env.example
 
 # Etc
-AGENTS.md
 docs
