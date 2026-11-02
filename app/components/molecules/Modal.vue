@@ -25,25 +25,14 @@ const SIZE_CLASSES = {
 const slots = useSlots();
 const dialog = ref<HTMLElement>();
 const titleId = useId();
-let previouslyFocused: HTMLElement | null = null;
 
 const sizeClass = computed(() => SIZE_CLASSES[props.size]);
 
-watch(() => props.open, async (open) => {
-  if (!import.meta.client)
-    return;
+useFocusTrap(dialog, computed(() => props.open));
 
-  if (open) {
-    previouslyFocused = document.activeElement as HTMLElement | null;
-    document.body.style.overflow = 'hidden';
-    await nextTick();
-    dialog.value?.focus();
-  }
-  else {
-    document.body.style.overflow = '';
-    previouslyFocused?.focus();
-    previouslyFocused = null;
-  }
+watch(() => props.open, (open) => {
+  if (import.meta.client)
+    document.body.style.overflow = open ? 'hidden' : '';
 });
 
 onKeyStroke('Escape', () => {

@@ -195,7 +195,8 @@ function hideLens() {
       />
     </div>
 
-    <div class="text-white mt-4 px-5 py-2.5 rounded-full bg-black/60 flex flex-wrap gap-4 items-center justify-center backdrop-blur-xs">
+    <!-- The lens is a mouse feature; touch screens pinch to zoom instead. -->
+    <div class="text-white mt-4 px-5 py-2.5 rounded-full bg-black/60 flex-wrap gap-4 hidden items-center justify-center backdrop-blur-xs md:flex">
       <label class="text-xs font-medium flex gap-2 items-center sm:text-sm">
         Zoom
         <input

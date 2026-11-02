@@ -41,6 +41,7 @@ useSeoMeta({
 const isMounted = shallowRef(false);
 const selectedKey = ref<string>();
 const deleteCandidate = ref<ArchiveImage>();
+const deleteDialog = ref<HTMLElement>();
 const deletingImageId = ref('');
 const loadingMore = ref(false);
 const paginationError = ref('');
@@ -74,6 +75,8 @@ const {
 const isInitialLoading = computed(() => !isMounted.value
   || (!items.value.length && (status.value === 'idle' || status.value === 'pending')));
 const initial = computed(() => username.value.charAt(0).toUpperCase());
+
+useFocusTrap(deleteDialog, computed(() => Boolean(deleteCandidate.value)));
 
 watch(data, applyFirstPage, { immediate: true });
 
@@ -416,6 +419,7 @@ function reloadImages() {
     >
       <div
         v-if="deleteCandidate"
+        ref="deleteDialog"
         class="p-4 bg-black/50 flex items-center inset-0 justify-center fixed z-[110]"
         role="alertdialog"
         aria-modal="true"

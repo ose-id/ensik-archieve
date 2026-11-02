@@ -10,6 +10,7 @@ const uploadInputId = ARCHIVE_UPLOAD_INPUT_ID;
 const { isDarkMode, isTransitioning, toggleColorMode } = useAnimatedColorMode();
 const { y: scrollY } = useWindowScroll();
 const scrolledAway = ref(false);
+const accountSheet = ref<HTMLElement>();
 let lastScrollY = 0;
 
 const isHome = computed(() => route.path === '/');
@@ -31,6 +32,8 @@ watch(() => route.path, () => {
   scrolledAway.value = false;
   lastScrollY = scrollY.value;
 });
+
+useFocusTrap(accountSheet, showAccount);
 
 onKeyStroke('Escape', closeAccount);
 
@@ -189,6 +192,7 @@ async function handleLogout() {
       >
         <section
           v-if="showAccount"
+          ref="accountSheet"
           class="px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-3 rounded-t-3xl bg-white max-w-full shadow-2xl inset-x-0 bottom-0 absolute dark:bg-neutral-900"
           role="dialog"
           aria-modal="true"
