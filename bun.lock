@@ -6,6 +6,7 @@
       "name": "ensik-archieve",
       "dependencies": {
         "@nuxt/fonts": "^1.2.0",
+        "@upstash/redis": "^1.40.0",
         "@vercel/blob": "^2.8.2",
         "sharp": "^0.35.5",
       },
@@ -618,6 +619,8 @@
     "@unocss/vite": ["@unocss/vite@66.12.0", "", { "dependencies": { "@jridgewell/remapping": "^2.3.5", "@unocss/config": "66.12.0", "@unocss/core": "66.12.0", "@unocss/inspector": "66.12.0", "chokidar": "^5.0.0", "magic-string": "^1.4.4", "pathe": "^2.0.3", "tinyglobby": "^0.2.17", "unplugin-utils": "^0.3.2" }, "peerDependencies": { "vite": "^5.0.0-0 || ^6.0.0-0 || ^7.0.0-0 || ^8.0.0-0" } }, "sha512-Wd3HYIxaGrXo9sm2dCLxvjSJlttQAVhsGdxNFeALQlu4QfVXid7m8hfW+X7ma+W3Vla+52RnddDhZkoB2jLvVw=="],
 
     "@unocss/webpack": ["@unocss/webpack@66.12.0", "", { "dependencies": { "@jridgewell/remapping": "^2.3.5", "@unocss/config": "66.12.0", "@unocss/core": "66.12.0", "chokidar": "^5.0.0", "magic-string": "^1.4.4", "pathe": "^2.0.3", "tinyglobby": "^0.2.17", "unplugin": "^3.5.0", "unplugin-utils": "^0.3.2", "webpack-sources": "^3.6.0" }, "peerDependencies": { "webpack": "^5" } }, "sha512-2J0hgoqnhEj6jn4mB/sY/OFR1LxQ/a7ud8T3RNzoiKCdXbp3RpGXdHNfPCfNMlPpMrDAxMuzyoGRIk1Ex/7Lrg=="],
+
+    "@upstash/redis": ["@upstash/redis@1.40.0", "", { "dependencies": { "uncrypto": "^0.1.3" } }, "sha512-F6+V7Kof2McJtGWclusZLt7hBRmIMZg+albS32/5TuNRg/92FM2nkyKPY9wWEieMj9hjyUi4iURsN1djsHNbwA=="],
 
     "@vercel/blob": ["@vercel/blob@2.8.2", "", { "dependencies": { "@vercel/oidc": "^3.6.1", "async-retry": "^1.3.3", "is-buffer": "^2.0.5", "is-node-process": "^1.2.0", "throttleit": "^2.1.0", "undici": "^6.23.0" } }, "sha512-ZUUWO2VA00r9ZTRtKgH4va7FGOUxUtge2FaRr9WZmeeX2s3C3qVe2tOTLTbv/tkcd+L+ijxaI2eP9S1/mGHc9Q=="],
 

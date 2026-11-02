@@ -1,6 +1,6 @@
 export default defineEventHandler(async (event) => {
   assertSameOrigin(event);
-  assertRateLimit(event, 'site-password', 8, 15 * 60 * 1000);
+  await assertRateLimit(event, 'site-password', 8, 15 * 60 * 1000);
 
   const body = await readBody<{ password?: unknown }>(event);
   const password = typeof body?.password === 'string'

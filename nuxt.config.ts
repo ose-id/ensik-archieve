@@ -93,6 +93,12 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
+    // Optional Upstash Redis for state shared across serverless instances
+    // (rate limits, archive index). Without it each instance uses memory.
+    redis: {
+      url: '',
+      token: '',
+    },
     sitePasswordHash: '',
     discordGuildId: '',
     discordRoleId: '',

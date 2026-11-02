@@ -2,7 +2,7 @@ import type { ListBlobResultBlob } from '@vercel/blob';
 import type { H3Event } from 'h3';
 import type { ArchiveImage, ArchiveImagePage, ArchiveSortOrder } from '~~/shared/types/images';
 import { Buffer } from 'node:buffer';
-import { BlobAccessError, get, list } from '@vercel/blob';
+import { BlobAccessError, get, list, put } from '@vercel/blob';
 
 interface ArchiveIndexEntry {
   etag: string;
@@ -15,7 +15,6 @@ interface ArchiveIndexEntry {
 
 interface ArchiveOwner {
   discordId: string;
-  username: string;
 }
 
 interface RankedEntry {
@@ -24,15 +23,32 @@ interface RankedEntry {
   pathname: string;
 }
 
+interface StoredIndex {
+  builtAt: number;
+  entries: ArchiveIndexEntry[];
+}
+
 type ArchiveBlob = Pick<ListBlobResultBlob, 'etag' | 'pathname' | 'size' | 'uploadedAt'>;
 type IndexCursor = [key: number, pathname: string];
 
-const INDEX_TTL_MS = 60_000;
+/** How long an instance trusts its in-memory copy before checking the shared one again. */
+const MEMORY_TTL_MS = 15_000;
+/** Memory-only fallback (no Redis): how long before listing the whole store again. */
+const MEMORY_ONLY_TTL_MS = 60_000;
+/** The shared copy in Redis is rebuilt from Blob at most this often, healing any missed update. */
+const REBUILD_AFTER_MS = 10 * 60_000;
+const INDEX_KEY = 'ensik:archive-index:v1';
 const LIST_PAGE_SIZE = 1_000;
-const MODERN_PREFIX_PATTERN = /^[0-9a-f-]{36}-(?:(\d{1,5})x(\d{1,5})-)?/i;
+/**
+ * Generated filenames: `<uuid>-<W>x<H>-t<uploadedAtMs>-<name>.<ext>`. Dimensions
+ * and the timestamp are optional; the timestamp keeps the original upload time
+ * for files that were moved (Blob resets `uploadedAt` on copy).
+ */
+const MODERN_PREFIX_PATTERN = /^[0-9a-f-]{36}-(?:(\d{1,5})x(\d{1,5})-)?(?:t(\d{13})-)?/i;
 
-let archiveIndex: { entries: ArchiveIndexEntry[]; expiresAt: number } | undefined;
+let memoryIndex: { entries: ArchiveIndexEntry[]; expiresAt: number } | undefined;
 let pendingIndex: Promise<ArchiveIndexEntry[]> | undefined;
+const entriesByPath = new WeakMap<ArchiveIndexEntry[], Map<string, ArchiveIndexEntry>>();
 
 function compareNewestFirst(left: ArchiveIndexEntry, right: ArchiveIndexEntry) {
   return right.uploadedAt - left.uploadedAt || right.pathname.localeCompare(left.pathname);
@@ -86,16 +102,25 @@ function filename(pathname: string) {
   return pathname.split('/').pop() || 'archive-image';
 }
 
-function parseDimensions(pathname: string) {
+function parseGeneratedName(pathname: string) {
   const match = filename(pathname).match(MODERN_PREFIX_PATTERN);
   const width = Number(match?.[1]);
   const height = Number(match?.[2]);
-  return width > 0 && height > 0
-    ? { width, height }
-    : { width: null, height: null };
+  const uploadedAt = Number(match?.[3]);
+  return {
+    height: width > 0 && height > 0
+      ? height
+      : null,
+    uploadedAt: uploadedAt > 0
+      ? uploadedAt
+      : null,
+    width: width > 0 && height > 0
+      ? width
+      : null,
+  };
 }
 
-/** Filename without the UUID/dimension prefix and extension added on upload. */
+/** Filename without the UUID/dimension/timestamp prefix and extension added on upload. */
 export function archiveFileStem(pathname: string) {
   return filename(pathname)
     .replace(MODERN_PREFIX_PATTERN, '')
@@ -118,12 +143,14 @@ function displayName(pathname: string) {
 }
 
 function toIndexEntry(blob: ArchiveBlob): ArchiveIndexEntry {
+  const parsed = parseGeneratedName(blob.pathname);
   return {
     etag: blob.etag,
+    height: parsed.height,
     pathname: blob.pathname,
     size: blob.size,
-    uploadedAt: blob.uploadedAt.getTime(),
-    ...parseDimensions(blob.pathname),
+    uploadedAt: parsed.uploadedAt ?? blob.uploadedAt.getTime(),
+    width: parsed.width,
   };
 }
 
@@ -143,29 +170,78 @@ export function toArchiveImage(event: H3Event, blob: ArchiveBlob): ArchiveImage 
   return toArchiveImageFromEntry(event, toIndexEntry(blob));
 }
 
-async function loadArchiveIndex() {
+async function listEveryArchiveBlob() {
   const entries: ArchiveIndexEntry[] = [];
   let cursor: string | undefined;
   do {
     const page = await list({ cursor, limit: LIST_PAGE_SIZE });
-    entries.push(...page.blobs.map(toIndexEntry));
-    cursor = page.hasMore ? page.cursor : undefined;
+    for (const blob of page.blobs) {
+      // Cached image variants live in the same store but aren't archive images.
+      if (!isArchiveVariantPath(blob.pathname))
+        entries.push(toIndexEntry(blob));
+    }
+    cursor = page.hasMore
+      ? page.cursor
+      : undefined;
   } while (cursor);
 
   return entries.sort(compareNewestFirst);
 }
 
+async function readSharedIndex() {
+  const redis = useRedis();
+  if (!redis)
+    return null;
+  try {
+    return parseStored<StoredIndex>(await redis.get(INDEX_KEY));
+  }
+  catch (error) {
+    console.warn('[archive-index] Could not read the shared index.', error);
+    return null;
+  }
+}
+
+async function writeSharedIndex(index: StoredIndex) {
+  const redis = useRedis();
+  if (!redis)
+    return;
+  try {
+    await redis.set(INDEX_KEY, JSON.stringify(index));
+  }
+  catch (error) {
+    console.warn('[archive-index] Could not write the shared index.', error);
+  }
+}
+
+async function loadArchiveIndex() {
+  const shared = await readSharedIndex();
+  if (shared && Date.now() - shared.builtAt < REBUILD_AFTER_MS)
+    return shared.entries;
+
+  const entries = await listEveryArchiveBlob();
+  await writeSharedIndex({
+    builtAt: Date.now(),
+    entries,
+  });
+  return entries;
+}
+
 /**
- * Every archived image, newest first. Vercel Blob can only list by pathname,
- * so the whole store is listed once per TTL and sorted by upload time here.
+ * Every archived image, newest first. Vercel Blob can only list by pathname, so
+ * the store is listed and sorted here. With Redis the result is shared by every
+ * instance and only rebuilt every few minutes; without it each instance keeps
+ * its own copy.
  */
 async function getArchiveIndex() {
-  if (archiveIndex && archiveIndex.expiresAt > Date.now())
-    return archiveIndex.entries;
+  if (memoryIndex && memoryIndex.expiresAt > Date.now())
+    return memoryIndex.entries;
 
   pendingIndex ??= loadArchiveIndex()
     .then((entries) => {
-      archiveIndex = { entries, expiresAt: Date.now() + INDEX_TTL_MS };
+      const ttl = useRedis()
+        ? MEMORY_TTL_MS
+        : MEMORY_ONLY_TTL_MS;
+      memoryIndex = { entries, expiresAt: Date.now() + ttl };
       return entries;
     })
     .finally(() => {
@@ -175,27 +251,51 @@ async function getArchiveIndex() {
   return pendingIndex;
 }
 
-export function rememberArchiveImage(blob: ArchiveBlob) {
-  if (!archiveIndex)
-    return;
+/** Applies an upload or delete to the memory copy and, if present, the shared copy. */
+async function updateArchiveIndex(change: (entries: ArchiveIndexEntry[]) => ArchiveIndexEntry[]) {
+  if (memoryIndex)
+    memoryIndex.entries = change(memoryIndex.entries);
 
+  // Read-modify-write: a concurrent update can be lost, which the periodic rebuild repairs.
+  const shared = await readSharedIndex();
+  if (shared) {
+    await writeSharedIndex({
+      builtAt: shared.builtAt,
+      entries: change(shared.entries),
+    });
+  }
+}
+
+export async function rememberArchiveImage(blob: ArchiveBlob) {
   const entry = toIndexEntry(blob);
-  const entries = archiveIndex.entries.filter(item => item.pathname !== entry.pathname);
-  const position = entries.findIndex(item => compareNewestFirst(entry, item) < 0);
-  entries.splice(position === -1
-    ? entries.length
-    : position, 0, entry);
-  archiveIndex.entries = entries;
+  await updateArchiveIndex((entries) => {
+    const next = entries.filter(item => item.pathname !== entry.pathname);
+    const position = next.findIndex(item => compareNewestFirst(entry, item) < 0);
+    next.splice(position === -1
+      ? next.length
+      : position, 0, entry);
+    return next;
+  });
 }
 
-export function forgetArchiveImage(pathname: string) {
-  if (archiveIndex)
-    archiveIndex.entries = archiveIndex.entries.filter(item => item.pathname !== pathname);
+export async function forgetArchiveImage(pathname: string) {
+  await updateArchiveIndex(entries => entries.filter(item => item.pathname !== pathname));
 }
 
+/** Index entry for one image, used to validate cache keys without touching Blob. */
+export async function findArchiveEntry(pathname: string) {
+  const entries = await getArchiveIndex();
+  let byPath = entriesByPath.get(entries);
+  if (!byPath) {
+    byPath = new Map(entries.map(entry => [entry.pathname, entry]));
+    entriesByPath.set(entries, byPath);
+  }
+  return byPath.get(pathname);
+}
+
+/** Images belong to the Discord account in their `users/<id>/` folder. */
 function isOwnedBy(pathname: string, owner: ArchiveOwner) {
-  return pathname.startsWith(`users/${owner.discordId}/`)
-    || pathname.startsWith(`${owner.username.replace(/\s+/g, '_')}-`);
+  return pathname.startsWith(`users/${owner.discordId}/`);
 }
 
 export async function listArchiveImages(
@@ -270,7 +370,7 @@ export function validateArchivePathname(pathname: string) {
   return normalized;
 }
 
-export async function readArchiveBlob(event: H3Event, pathname: string) {
+export async function readArchiveBlob(pathname: string) {
   try {
     const result = await get(pathname, { access: 'private' });
     if (result)
@@ -282,4 +382,30 @@ export async function readArchiveBlob(event: H3Event, pathname: string) {
   }
 
   return get(pathname, { access: 'public' });
+}
+
+/** Stores a file privately, falling back to public access on stores that don't support private blobs. */
+export async function writeArchiveBlob(
+  pathname: string,
+  data: Buffer,
+  options: { allowOverwrite?: boolean; contentType: string },
+) {
+  const putOptions = {
+    addRandomSuffix: false,
+    allowOverwrite: options.allowOverwrite ?? false,
+    cacheControlMaxAge: 31_536_000,
+    contentType: options.contentType,
+  };
+
+  try {
+    return await put(pathname, data, { ...putOptions, access: 'private' });
+  }
+  catch (error) {
+    const message = error instanceof Error
+      ? error.message
+      : '';
+    if (!message.includes('Cannot use private access on a public store'))
+      throw error;
+    return put(pathname, data, { ...putOptions, access: 'public' });
+  }
 }

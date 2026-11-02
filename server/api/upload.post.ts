@@ -1,12 +1,12 @@
 import type { PutBlobResult } from '@vercel/blob';
 import type { UploadedArchiveImage } from '~~/shared/types/images';
 import { randomUUID } from 'node:crypto';
-import { head, put } from '@vercel/blob';
+import { head } from '@vercel/blob';
 import sharp from 'sharp';
 
 export default defineEventHandler(async (event) => {
   assertSameOrigin(event);
-  assertRateLimit(event, 'image-upload', 20, 60 * 60 * 1000);
+  await assertRateLimit(event, 'image-upload', 20, 60 * 60 * 1000);
   const user = await requireOAuthUser(event);
 
   const contentLength = Number(getRequestHeader(event, 'content-length'));
@@ -76,33 +76,13 @@ export default defineEventHandler(async (event) => {
 
   let blob: PutBlobResult;
   try {
-    blob = await put(pathname, file.data, {
-      access: 'private',
-      addRandomSuffix: false,
-      allowOverwrite: false,
-      cacheControlMaxAge: 31_536_000,
-      contentType: detected.mime,
-    });
+    blob = await writeArchiveBlob(pathname, file.data, { contentType: detected.mime });
   }
-  catch (error) {
-    const message = error instanceof Error
-      ? error.message
-      : '';
-    if (message.includes('Cannot use private access on a public store')) {
-      blob = await put(pathname, file.data, {
-        access: 'public',
-        addRandomSuffix: false,
-        allowOverwrite: false,
-        cacheControlMaxAge: 31_536_000,
-        contentType: detected.mime,
-      });
-    }
-    else {
-      throw createError({
-        statusCode: 500,
-        statusMessage: 'Failed to upload image to archive storage.',
-      });
-    }
+  catch {
+    throw createError({
+      statusCode: 500,
+      statusMessage: 'Failed to upload image to archive storage.',
+    });
   }
 
   let metadata;
@@ -116,7 +96,7 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  rememberArchiveImage(metadata);
+  await rememberArchiveImage(metadata);
 
   return {
     item: toArchiveImage(event, metadata),

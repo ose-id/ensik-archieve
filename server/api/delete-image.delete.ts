@@ -2,7 +2,7 @@ import { del } from '@vercel/blob';
 
 export default defineEventHandler(async (event) => {
   assertSameOrigin(event);
-  assertRateLimit(event, 'image-delete', 60, 60 * 60 * 1000);
+  await assertRateLimit(event, 'image-delete', 60, 60 * 60 * 1000);
   const user = await requireOAuthUser(event);
   const body = await readBody<{ etag?: unknown; id?: unknown }>(event);
 
@@ -21,7 +21,8 @@ export default defineEventHandler(async (event) => {
   const pathname = validateArchivePathname(fromArchiveReference(event, body.id));
   assertImageOwnership(pathname, user);
   await del(pathname, { ifMatch: body.etag });
-  forgetArchiveImage(pathname);
+  await forgetArchiveImage(pathname);
+  event.waitUntil(deleteArchiveVariants(pathname));
 
   return { success: true };
 });

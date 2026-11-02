@@ -36,25 +36,58 @@ export function assertSameOrigin(event: H3Event) {
   }
 }
 
-export function assertRateLimit(
+/** Fixed-window counter in Redis, shared by every serverless instance. */
+async function countInRedis(key: string, windowMs: number): Promise<RateLimitEntry | null> {
+  const redis = useRedis();
+  if (!redis)
+    return null;
+
+  try {
+    // MULTI runs atomically: start the window if it doesn't exist, then count.
+    const [, count, ttl] = await redis.multi()
+      .set(key, 0, { nx: true, px: windowMs })
+      .incr(key)
+      .pttl(key)
+      .exec<[unknown, number, number]>();
+    return { count, resetAt: Date.now() + Math.max(ttl, 0) };
+  }
+  catch (error) {
+    console.warn('[rate-limit] Redis unavailable, using memory.', error);
+    return null;
+  }
+}
+
+/** Per-instance fallback used when Redis isn't configured or is unreachable. */
+function countInMemory(key: string, windowMs: number): RateLimitEntry {
+  const now = Date.now();
+  const current = rateLimitStore.get(key);
+  const entry = !current || current.resetAt <= now
+    ? { count: 0, resetAt: now + windowMs }
+    : current;
+  entry.count += 1;
+  rateLimitStore.set(key, entry);
+
+  if (rateLimitStore.size > 5_000) {
+    for (const [storedKey, value] of rateLimitStore) {
+      if (value.resetAt <= now)
+        rateLimitStore.delete(storedKey);
+    }
+  }
+  return entry;
+}
+
+export async function assertRateLimit(
   event: H3Event,
   scope: string,
   limit: number,
   windowMs: number,
 ) {
-  const now = Date.now();
   const clientAddress = getRequestIP(event, { xForwardedFor: true }) || 'unknown';
-  const identifier = createHash('sha256')
+  const key = `ensik:rate:${createHash('sha256')
     .update(`${scope}:${clientAddress}`)
-    .digest('hex');
+    .digest('hex')}`;
 
-  const current = rateLimitStore.get(identifier);
-  const entry = !current || current.resetAt <= now
-    ? { count: 0, resetAt: now + windowMs }
-    : current;
-
-  entry.count += 1;
-  rateLimitStore.set(identifier, entry);
+  const entry = await countInRedis(key, windowMs) ?? countInMemory(key, windowMs);
 
   const remaining = Math.max(0, limit - entry.count);
   setResponseHeader(event, 'X-RateLimit-Limit', String(limit));
@@ -62,17 +95,10 @@ export function assertRateLimit(
   setResponseHeader(event, 'X-RateLimit-Reset', String(Math.ceil(entry.resetAt / 1000)));
 
   if (entry.count > limit) {
-    setResponseHeader(event, 'Retry-After', Math.ceil((entry.resetAt - now) / 1000));
+    setResponseHeader(event, 'Retry-After', Math.ceil((entry.resetAt - Date.now()) / 1000));
     throw createError({
       statusCode: 429,
       statusMessage: 'Too many requests. Please try again later.',
     });
-  }
-
-  if (rateLimitStore.size > 5_000) {
-    for (const [key, value] of rateLimitStore) {
-      if (value.resetAt <= now)
-        rateLimitStore.delete(key);
-    }
   }
 }

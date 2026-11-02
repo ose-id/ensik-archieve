@@ -26,6 +26,15 @@ function getContentDisposition(filename: string) {
   return `attachment; filename="${fallback}"; filename*=UTF-8''${encodeURIComponent(filename)}`;
 }
 
+async function readSourceImage(pathname: string) {
+  const source = await readArchiveBlob(pathname);
+  if (!source || source.statusCode !== 200 || !source.stream)
+    throw createError({ statusCode: 404, statusMessage: 'Image not found.' });
+  if (source.blob.size > 20 * 1024 * 1024)
+    throw createError({ statusCode: 413, statusMessage: 'Source image is too large.' });
+  return source as typeof source & { stream: ReadableStream<Uint8Array> };
+}
+
 function integerModifier(
   value: unknown,
   minimum: number,
@@ -41,7 +50,7 @@ function integerModifier(
 
 export default defineEventHandler(async (event) => {
   await requireSiteAccess(event);
-  assertRateLimit(event, 'private-media', 360, 60 * 1000);
+  await assertRateLimit(event, 'private-media', 360, 60 * 1000);
 
   const reference = getRouterParam(event, 'reference');
   if (
@@ -54,24 +63,13 @@ export default defineEventHandler(async (event) => {
 
   const pathname = validateArchivePathname(fromArchiveReference(event, reference));
   const query = getQuery(event);
-  const isDownload = query.download === '1';
 
-  if (isDownload) {
-    assertRateLimit(event, 'image-download', 60, 60 * 60 * 1000);
+  if (query.download === '1') {
+    await assertRateLimit(event, 'image-download', 60, 60 * 60 * 1000);
     const user = await requireOAuthUser(event);
     assertImageOwnership(pathname, user);
-  }
 
-  const source = await readArchiveBlob(event, pathname);
-  if (!source || source.statusCode !== 200 || !source.stream) {
-    throw createError({ statusCode: 404, statusMessage: 'Image not found.' });
-  }
-
-  if (source.blob.size > 20 * 1024 * 1024) {
-    throw createError({ statusCode: 413, statusMessage: 'Source image is too large.' });
-  }
-
-  if (isDownload) {
+    const source = await readSourceImage(pathname);
     const input = Buffer.from(await new Response(source.stream).arrayBuffer());
     const detected = detectImage(input);
     if (!detected) {
@@ -116,13 +114,41 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  const variant = `${source.blob.etag}:${width || ''}:${height || ''}:${quality}:${format}:${fit}`;
+  // The index already knows the source etag, so revalidation and cache hits
+  // don't have to download the original.
+  let source: Awaited<ReturnType<typeof readSourceImage>> | undefined;
+  let sourceEtag = (await findArchiveEntry(pathname))?.etag;
+  if (!sourceEtag) {
+    source = await readSourceImage(pathname);
+    sourceEtag = source.blob.etag;
+  }
+
+  const variant = `${sourceEtag}:${width || ''}:${height || ''}:${quality}:${format}:${fit}`;
   const etag = `"${createHash('sha256').update(variant).digest('base64url')}"`;
+  const contentType = `image/${format}`;
+  const headers = {
+    'Cache-Control': 'private, max-age=86400, stale-while-revalidate=604800',
+    'Content-Type': contentType,
+    'ETag': etag,
+    'Vary': 'Cookie',
+  };
   if (getRequestHeader(event, 'if-none-match') === etag) {
     setResponseStatus(event, 304);
     return null;
   }
 
+  const cachedPathname = variantPathname(pathname, variant, format);
+  const cached = await readArchiveVariant(cachedPathname);
+  if (cached) {
+    setResponseHeaders(event, {
+      ...headers,
+      'Content-Length': String(cached.byteLength),
+      'X-Archive-Variant': 'hit',
+    });
+    return cached;
+  }
+
+  source ??= await readSourceImage(pathname);
   const input = Buffer.from(await new Response(source.stream).arrayBuffer());
   let image = sharp(input, {
     failOn: 'warning',
@@ -146,13 +172,12 @@ export default defineEventHandler(async (event) => {
     image = image.webp({ quality, effort: 4 });
 
   const output = await image.toBuffer();
+  // Cache the variant for later requests without delaying this response.
+  event.waitUntil(writeArchiveVariant(cachedPathname, output, contentType));
   setResponseHeaders(event, {
-    'Cache-Control': 'private, max-age=86400, stale-while-revalidate=604800',
+    ...headers,
     'Content-Length': String(output.byteLength),
-    'Content-Type': `image/${format}`,
-    'ETag': etag,
-    'Vary': 'Cookie',
+    'X-Archive-Variant': 'miss',
   });
-
   return output;
 });

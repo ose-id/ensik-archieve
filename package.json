@@ -10,10 +10,12 @@
     "postinstall": "nuxt prepare",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "typecheck": "nuxt typecheck"
+    "typecheck": "nuxt typecheck",
+    "migrate:legacy-owners": "bun scripts/migrate-legacy-owners.ts"
   },
   "dependencies": {
     "@nuxt/fonts": "^1.2.0",
+    "@upstash/redis": "^1.40.0",
     "@vercel/blob": "^2.8.2",
     "sharp": "^0.35.5"
   },
