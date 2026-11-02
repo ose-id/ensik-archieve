@@ -60,7 +60,12 @@ Follow the official docs at <https://unocss.dev>.
 
 ## Data and API
 
-- `server/utils/archive-image.ts` keeps an in-memory index of every blob (60s TTL, updated on upload and delete). Blob `list()` only orders by pathname.
+- `server/utils/archive-image.ts` keeps an index of every archive blob, because Blob `list()` only orders by pathname. With Upstash Redis (`NUXT_REDIS_URL`/`NUXT_REDIS_TOKEN`, see `server/utils/kv.ts`) the index is shared and rebuilt from Blob every 10 minutes, and each instance caches it for 15s. Without Redis, each instance relists the store every 60s. Uploads and deletes update both copies.
+- Rate limits (`assertRateLimit`, which is async) use an atomic Redis `MULTI` counter, and fall back to memory when Redis is missing or unreachable.
+- Ownership is **only** the `users/<discordId>/` folder. Legacy root files (`<username>-img-….jpg`) belong to nobody until `bun run migrate:legacy-owners --map owners.json [--apply]` moves them. The command is a dry run by default, and the map is `{ "username": "discordId" }`.
+- Resized images are cached in Blob under `variants/<hash of source path>/`. The cache key includes the source etag. Variants are excluded from the index and deleted with their source. `/api/media` answers 304s and cache hits from the index without downloading the original, and sets `X-Archive-Variant: hit|miss`.
+- The viewer (`OrganismImageViewer`) syncs the open photo to `?foto=<id>`. Opening pushes a history entry, stepping replaces it, and the back button closes the viewer. It only reacts on its owner page, since KeepAlive keeps the gallery's viewer alive. On touch screens, swipe left/right steps, swipe down closes, pinch or double-tap zooms, and a drag pans while zoomed.
+- Dialogs, the viewer and the account sheet use `useFocusTrap`.
 - Pages use keyset cursors. With no `seed`, `/api/images` is chronological. With `seed` it returns a stable shuffle, and the gallery uses a new seed on every page load and loops endlessly. `/api/user-images` is chronological and supports `order`.
 - Uploads store intrinsic dimensions in the pathname (`uuid-WxH-name.ext`). Legacy files have none and report their size after loading.
 
